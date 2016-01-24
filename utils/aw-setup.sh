@@ -46,7 +46,8 @@ $TERM_DIR/$BB
 $DOWNLOAD_DIR/$BB
 $DOWNLOAD_DIR/$BB.txt
 /sdcard/Download/$BB
-/sdcard/Download/$BB.txt"
+/sdcard/Download/$BB.txt
+/sdcard/Download/AndrewWIDE-master/utils/bin/$BB"
 
 find_bb() {
   local bb
