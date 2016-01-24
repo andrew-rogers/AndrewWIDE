@@ -23,6 +23,6 @@ Navigate to AndrewWIDE-master.zip in your Download directory. Unzip into Downloa
 
 To install busybox source the aw-setup.sh file provided in the utils directory. Source the file as it is not executable from the sdcard directory and it also sets up environment variables and aliases in your shell.
 
-> $ source /sdcard/Download/AndrewWIDE/utils/aw-setup.sh
+> $ source /sdcard/Download/AndrewWIDE-master/utils/aw-setup.sh
 
 Copy the above command, excluding the '$', into terminal app. ConnectBot allows you to add this to Post-login automation thus you can easily create an entry to start this automatically in the Hosts menu in ConnectBot.
