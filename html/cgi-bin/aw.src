@@ -1,0 +1,7 @@
+echo "Content-type: text/plain"
+echo
+echo "Environment variables are:"
+echo
+env
+echo
+echo

@@ -38,7 +38,8 @@ else
 fi
 
 UTILS_BIN=$AW_DIR/utils/bin
-PATH=$PATH:$UTILS_BIN
+PATH=$UTILS_BIN:$PATH
+HTML_DIR=$AW_DIR/html
 # -----------------------
 
 BB_LOCS="$UTILS_BIN/$BB
@@ -49,11 +50,21 @@ $DOWNLOAD_DIR/$BB.txt
 /sdcard/Download/$BB.txt
 /sdcard/Download/AndrewWIDE-master/utils/bin/$BB"
 
+AW_SRC_LOCS="/sdcard/Download/AndrewWIDE-master"
+
 find_bb() {
   local bb
   echo "$BB_LOCS" | while read -r bb
   do
     [ -e "$bb" ] && echo $bb && break
+  done
+}
+
+find_aw_src() {
+  local aw
+  echo "$AW_SRC_LOCS" | while read -r aw
+  do
+    [ -e "$aw/$1" ] && echo "$aw/$1" && break
   done
 }
 
@@ -82,6 +93,10 @@ install_bb() {
   
   msg "Making symlinks for busybox applets, could take a while."
   bb_symlinks
+  local src=$(find_aw_src utils/httpd.sh)
+  [ -n "$src" ] && cp "$src" "$AW_DIR/utils/"
+  src=$(find_aw_src html)
+  [ -n "$src" ] && cp -r "$src" "$AW_DIR"
 }
 
 bb_symlink() {
@@ -112,6 +127,11 @@ error()
 msg()
 {
   echo "$1" 1>&2
+}
+
+aw_start() {
+  . $AW_DIR/utils/$1.sh
+  aw_$1 $*
 }
 
 check_bb
