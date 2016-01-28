@@ -16,11 +16,17 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-aw_httpd_cgi() {
+aw-httpd-install() {
+  msg "Installing HTML files."
+  local src=$(aw-utils-find-src html)
+  [ -n "$src" ] && cp -r "$src" "$AW_DIR"
+}
+
+aw-httpd-cgi() {
   local cgi=$AW_DIR/html/cgi-bin/aw.sh
   if [ ! -e "$cgi" ]
   then
-    local src=$(find_aw_src)/html/cgi-bin/aw.src
+    local src=$AW_DIR/html/cgi-bin/aw.src
     if [ -e "$src" ]
     then
       echo "#!$UTILS_BIN/$BB sh" > "$cgi"
@@ -33,7 +39,7 @@ aw_httpd_cgi() {
   fi
 }
 
-aw_httpd() {
-  aw_httpd_cgi
+aw-httpd() {
+  aw-httpd-cgi
   $UTILS_BIN/$BB httpd -p 8080 -h "$HTML_DIR"
 }

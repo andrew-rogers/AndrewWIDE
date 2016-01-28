@@ -42,25 +42,9 @@ PATH=$UTILS_BIN:$PATH
 HTML_DIR=$AW_DIR/html
 # -----------------------
 
-BB_LOCS="$UTILS_BIN/$BB
-$TERM_DIR/$BB
-$DOWNLOAD_DIR/$BB
-$DOWNLOAD_DIR/$BB.txt
-/sdcard/Download/$BB
-/sdcard/Download/$BB.txt
-/sdcard/Download/AndrewWIDE-master/utils/bin/$BB"
-
 AW_SRC_LOCS="/sdcard/Download/AndrewWIDE-master"
 
-find_bb() {
-  local bb
-  echo "$BB_LOCS" | while read -r bb
-  do
-    [ -e "$bb" ] && echo $bb && break
-  done
-}
-
-find_aw_src() {
+aw-utils-find-src() {
   local aw
   echo "$AW_SRC_LOCS" | while read -r aw
   do
@@ -68,8 +52,8 @@ find_aw_src() {
   done
 }
 
-install_bb() {
-  local bb=$(find_bb)
+aw-busybox-install() {
+  local bb=$(aw-utils-find-src "utils/bin/$BB")
   [ -z "$bb" ] && error "Can't find: $BB" && return 1
   msg "Found busybox at: $bb"
 
@@ -92,30 +76,33 @@ install_bb() {
   fi
   
   msg "Making symlinks for busybox applets, could take a while."
-  bb_symlinks
-  local src=$(find_aw_src utils/httpd.sh)
-  [ -n "$src" ] && cp "$src" "$AW_DIR/utils/"
-  src=$(find_aw_src html)
-  [ -n "$src" ] && cp -r "$src" "$AW_DIR"
+  aw-busybox-symlinks
 }
 
-bb_symlink() {
+aw-install() {
+  local src=$(aw-utils-find-src utils/"$1".sh)
+  [ -n "$src" ] && cp "$src" "$AW_DIR/utils/"
+  local scr=$AW_DIR/utils/"$1".sh
+  [ -n "$scr" ] && . "$scr" && "aw-$1-install" $*
+}
+
+aw-busybox-symlink() {
   local pdir=$PWD
   cd "$UTILS_BIN"
   $BB ln -s $BB $1
   cd "$pdir"
 }
 
-bb_symlinks() {
+aw-busybox-symlinks() {
   for app in $($BB --list)
   do
     echo "> $app"
-    bb_symlink "$app"
+    aw-busybox-symlink "$app"
   done
 }
 
-check_bb() {
-  $UTILS_BIN/$BB true 2> /dev/null || install_bb
+aw-busybox-check() {
+  $UTILS_BIN/$BB true 2> /dev/null || aw-busybox-install
 }
 
 # Print string on stderr
@@ -129,10 +116,10 @@ msg()
   echo "$1" 1>&2
 }
 
-aw_start() {
+aw-start() {
   . $AW_DIR/utils/$1.sh
-  aw_$1 $*
+  aw-$1 $*
 }
 
-check_bb
+aw-busybox-check
 cd "$AW_DIR"
