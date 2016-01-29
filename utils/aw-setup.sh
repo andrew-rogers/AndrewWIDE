@@ -22,27 +22,22 @@ if test -f /system/bin/sh
 then
   # Android setup - User may not have yet unzipped
   TERM_DIR=/data/data/$(cat /proc/$PPID/cmdline)
-  AW_DIR=$TERM_DIR/AndrewWIDE
-  DOWNLOAD_DIR=/sdcard/Download/AndrewWIDE
-  WGET=/system/bin/wget
   BB=busybox-armv7l
-  AW_ZIP=${DOWNLOAD_DIR}-master.zip
 else
-  # LSB - Assume user will CD into AndrewWIDE after unzipping
-  AW_DIR=$PWD
+  # LSB - Assume user has AndrewWIDE-master in current directory
   TERM_DIR=$PWD
-  DOWNLOAD_DIR=$AW_DIR/Download
-  WGET=$(which wget)
   #BB=busybox-i686
   BB=busybox-armv7l # use with qemu user mode on non-ARM hosts
 fi
 
+AW_DIR=$TERM_DIR/AndrewWIDE
 UTILS_BIN=$AW_DIR/utils/bin
 PATH=$UTILS_BIN:$PATH
 HTML_DIR=$AW_DIR/html
 # -----------------------
 
-AW_SRC_LOCS="/sdcard/Download/AndrewWIDE-master"
+AW_SRC_LOCS="/sdcard/Download/AndrewWIDE-master
+$TERM_DIR/AndrewWIDE-master"
 
 aw-utils-find-src() {
   local aw
