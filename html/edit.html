@@ -1,0 +1,53 @@
+<html>
+  <meta charset="utf-8">
+  <body>
+    <textarea rows="30" id="ta" style="width: 100%;"></textarea><br>
+    <textarea id="filename">html/test.html</textarea>
+    <button onclick="ls()">List</button>
+    <button onclick="load()">Load</button>
+    <button id="btn_save" onclick="save()" disabled>Save</button>
+  </body>
+  <script>
+function query_sh(script,stdin,callback)
+{
+  var blob = new Blob([script,'\n\n',stdin], { type: "text/plain" });
+  var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
+  xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+      if(callback)callback(xmlhttp.responseText);
+    }
+  };
+  xmlhttp.open("POST", "/cgi-bin/aw.sh", true);
+  xmlhttp.send(blob);
+}
+
+function display(obj)
+{
+  document.getElementById("ta").value=obj;
+}
+
+function load()
+{
+  var filename=document.getElementById("filename").value;
+  var script='cat "../../'+filename+'"';
+  query_sh(script, "", display);
+  document.getElementById("btn_save").disabled=false;
+}
+
+function save()
+{
+  var filename=document.getElementById("filename").value;
+  var script='cat > "../../'+filename+'"';
+  var text=document.getElementById("ta").value;
+  query_sh(script, text);
+}
+
+function ls()
+{
+  var filename=document.getElementById("filename").value;
+  var script='ls -l "../../'+filename+'"';
+  query_sh(script, "", display);
+  document.getElementById("btn_save").disabled=true;
+}
+  </script>
+</html>
