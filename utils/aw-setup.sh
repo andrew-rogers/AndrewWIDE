@@ -1,6 +1,6 @@
 
 #    AndrewWIDE - setup root filesystems in user directory or app directory
-#    Copyright (C) 2015  Andrew Rogers
+#    Copyright (C) 2015,2016  Andrew Rogers
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,11 +23,15 @@ then
   # Android setup - User may not have yet unzipped
   TERM_DIR=/data/data/$(cat /proc/$PPID/cmdline)
   BB=busybox-armv7l
+  AW_OS=Android
+  AW_ARCH=armv7h
 else
   # LSB - Assume user has AndrewWIDE-master in current directory
   TERM_DIR=$PWD
   #BB=busybox-i686
   BB=busybox-armv7l # use with qemu user mode on non-ARM hosts
+  AW_OS=LSB
+  AW_ARCH=i686
 fi
 
 AW_DIR=$TERM_DIR/AndrewWIDE
@@ -38,6 +42,14 @@ HTML_DIR=$AW_DIR/html
 
 AW_SRC_LOCS="/sdcard/Download/AndrewWIDE-master
 $TERM_DIR/AndrewWIDE-master"
+
+aw-utils-find-src-dir() {
+  local aw
+  echo "$AW_SRC_LOCS" | while read -r aw
+  do
+    [ -e "$aw/" ] && echo "$aw" && break
+  done
+}
 
 aw-utils-find-src() {
   local aw
@@ -112,9 +124,13 @@ msg()
 }
 
 aw-start() {
-  . $AW_DIR/utils/$1.sh
-  aw-$1 $*
+  local service=$1
+  shift
+  . $AW_DIR/utils/$service.sh
+  aw-$service $*
 }
+
+AW_SRC_DIR=$(aw-utils-find-src-dir)
 
 aw-busybox-check
 cd "$AW_DIR"
