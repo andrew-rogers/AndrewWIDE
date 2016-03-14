@@ -87,10 +87,22 @@ aw-busybox-install() {
 }
 
 aw-install() {
+  local ext=$1
   local src=$(aw-utils-find-src utils/"$1".sh)
   [ -n "$src" ] && cp "$src" "$AW_DIR/utils/"
   local scr=$AW_DIR/utils/"$1".sh
-  [ -n "$scr" ] && . "$scr" && "aw-$1-install" $*
+  shift
+  [ -n "$scr" ] && . "$scr" && "aw-$ext-install" $*
+}
+
+aw_install_file() {
+  cp "$AW_SRC_DIR/$1" "$AW_DIR/$1"
+}
+
+aw_run_sh() {
+  local script=$1
+  shift
+  $BB sh "$AW_DIR/$script" $*
 }
 
 aw-busybox-symlink() {

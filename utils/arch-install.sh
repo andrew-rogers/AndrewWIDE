@@ -22,20 +22,8 @@ if [ -d "$AW_ARCH_ROOT" ]
 then
   PDIR=$PWD
   cd $AW_ARCH_ROOT
-  if [ -f "usr/bin/bash" ]
-  then
-    echo "Already installed"
-  else
-    echo "Installing..."
-    install_pkg filesystem
-    install_pkg glibc
-    install_pkg gcc-libs
-    install_pkg ncurses
-    install_pkg readline
-    install_pkg bash
-    install_pkg patchelf
-    set_interp usr/bin/bash
-  fi
+  echo "pkg>$1"
+  install_$1
   cd $PDIR
 else
   echo "Cannot find: $AW_ARCH_ROOT"

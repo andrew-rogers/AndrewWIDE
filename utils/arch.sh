@@ -23,21 +23,18 @@ export AW_ARCH_LD=$AW_ARCH_ROOT/lib/ld-linux-aarch64.so.1
 export LD_LIBRARY_PATH=$AW_ARCH_ROOT/lib
 export LD_PRELOAD=
 export AW_DIR
+export C_INCLUDE_PATH=$AW_ARCH_ROOT/usr/include
+export PATH="$AW_ARCH_ROOT/bin":"$AW_ARCH_ROOT/usr/bin":"$PATH"
 
 aw-arch-install() {
-  local root=$AW_ARCH_ROOT
-
-  # Copy install & startup scripts
-  mkdir -p $root/utils
-  mkdir -p $root/sdcard
-  cp "$AW_SRC_DIR/utils/arch-install-functions.sh" "$AW_DIR/utils/"
-  cp "$AW_SRC_DIR/utils/arch-install.sh" "$AW_DIR/utils/"
+  mkdir -p $AW_ARCH_ROOT/pkginfo
+  aw_install_file "utils/arch-install-functions.sh"
+  aw_install_file "utils/arch-install.sh"
 
   # Run install script
-  sh "$AW_DIR/utils/arch-install.sh"
+  aw_run_sh "utils/arch-install.sh" "$1"
 }
 
 aw-arch() {
-  PATH="$AW_ARCH_ROOT/bin":"$AW_ARCH_ROOT/usr/bin":"$PATH"
   "$AW_ARCH_ROOT/bin/bash"
 }
