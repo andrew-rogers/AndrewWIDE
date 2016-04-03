@@ -10,4 +10,7 @@ echo
 POST="$(cat)"
 SCR=$(echo -n "$POST" | head -n1)
 STDIN=$(echo -n "$POST" | tail -n +3) 
-echo -n "$STDIN" | eval "$SCR"
+STDOUT=$(echo -n "$STDIN" | eval "$SCR")
+echo $?
+echo h2
+echo -n "$STDOUT"

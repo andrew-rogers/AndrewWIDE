@@ -1,53 +1,28 @@
+<!DOCTYPE html>
 <html>
-  <meta charset="utf-8">
-  <body>
-    <textarea rows="30" id="ta" style="width: 100%;"></textarea><br>
-    <textarea id="filename">html/test.html</textarea>
-    <button onclick="ls()">List</button>
-    <button onclick="load()">Load</button>
-    <button id="btn_save" onclick="save()" disabled>Save</button>
-  </body>
-  <script>
-function query_sh(script,stdin,callback)
-{
-  var blob = new Blob([script,'\n\n',stdin], { type: "text/plain" });
-  var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
-  xmlhttp.onreadystatechange = function() {
-    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-      if(callback)callback(xmlhttp.responseText);
-    }
-  };
-  xmlhttp.open("POST", "/cgi-bin/aw.sh", true);
-  xmlhttp.send(blob);
-}
+<head>
+<link rel="stylesheet" type="text/css" href="edit.css">
 
-function display(obj)
-{
-  document.getElementById("ta").value=obj;
-}
+<script src="aw-sh.js"></script>
+<script src="edit.js"></script>
+</head>
+<body>
 
-function load()
-{
-  var filename=document.getElementById("filename").value;
-  var script='cat "../../'+filename+'"';
-  query_sh(script, "", display);
-  document.getElementById("btn_save").disabled=false;
-}
+<div class="menu">
+  <textarea id="ta_filename" cols="100"></textarea>
+  <button id="btn_load" >Load...</button>
+  <button id="btn_save" >Save</button>
+  <div id="div_filelist">
+    <a href="#">Link 1</a>
+    <a href="#">Link 2</a>
+    <a href="#">Link 3</a>
+  </div>
+</div>
 
-function save()
-{
-  var filename=document.getElementById("filename").value;
-  var script='cat > "../../'+filename+'"';
-  var text=document.getElementById("ta").value;
-  query_sh(script, text);
-}
+<div>
+<textarea id="ta_edit" rows="30" cols="100">Test</textarea>
+</div>
 
-function ls()
-{
-  var filename=document.getElementById("filename").value;
-  var script='ls -l "../../'+filename+'"';
-  query_sh(script, "", display);
-  document.getElementById("btn_save").disabled=true;
-}
-  </script>
+
+</body>
 </html>
