@@ -110,7 +110,8 @@ SVGFileWriter.prototype.image = function(svg) {
     for( var i=0; i<uses.length; i++) {
 	refs.push(uses[i].getAttribute("href"))
     }
-    str=(new XMLSerializer).serializeToString(svg);
+    str=xml2str(svg,'');
+    console.log(str);
     this.images.push({svg: str, uses: refs});
 };
 
@@ -119,13 +120,12 @@ SVGFileWriter.prototype.getImage = function(index) {
 
     // Construct the defs tag
     var uses=image.uses;
-    var defstr="  <defs>\n"
+    var defstr="  <defs>"
     for( var i=0; i<uses.length; i++){
 	var ref=uses[i];
 	ref=ref.substring(1);
 	var def=this.map[ref];
-	def=(new XMLSerializer).serializeToString(def);
-	defstr+="    "+def+"\n";
+        defstr+=xml2str(def,'    ');
     }
     defstr+="  </defs>\n";
 
@@ -143,3 +143,29 @@ SVGFileWriter.prototype.getImage = function(index) {
     return svgstr;
 };
 
+function xml2str(xml, indent)
+{
+  var str=indent;
+  str+='<'+xml.nodeName;
+
+  var atts=xml.attributes;
+  for( var i=0; i<atts.length; i++)
+  {
+    var name=atts[i].name;
+    if( name=='href') name='xlink:href';
+    str+=' '+name+'="'+atts[i].value+'"';
+  }
+  str+='>';
+
+  var closing_indent=''; // The closing tag is only indented if there are child nodes
+  var c=xml.childNodes;
+  for( var i=0; i<c.length; i++)
+  {
+    if( i==0 )str+='\n';
+    str+=xml2str(c[i],indent+'  ');
+    closing_indent=indent; // The parent closing tag will be on new line so indent.
+  }
+  str+=closing_indent+'</'+xml.nodeName+'>\n';
+
+  return str;
+}
