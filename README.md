@@ -5,6 +5,7 @@ The intention is to be able to edit source code or scripts via a web-browser fro
 
 ## Status
 Got ArchLinux gcc working. Uses ArchLinux aarch64 packages.
+Markdown editor working, also has maths support via MathJax. 
 
 ## Installation on Android device
 
@@ -51,5 +52,3 @@ Then run the installer to install gcc form Arch packages
 The installation takes about 20 seconds on a Lenovo TAB2 A8-50F. The installer tests gcc by compiling a very simple program.
 
 Dependency resolution is not yet implemented, nor are .INSTALL functions executed. patchelf is used to modify the interpreter for ld-linux-aarch64.so.1 to the location in our filesystem. It might be possible to use wget to download packages, this is future work.
-
-

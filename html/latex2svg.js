@@ -63,14 +63,24 @@ var SVGViewer = function(div) {
   div.appendChild(this.ta_source);
   this.div_dl=document.createElement("div");
   div.appendChild(this.div_dl);
+  this.cnt=0;
 };
 
 SVGViewer.prototype.clear = function() {
   this.div_svg.innerHTML="";
+  this.cnt=0;
 };
 
 SVGViewer.prototype.append = function(svg) {
   var divi=document.createElement("div");
+  if( this.cnt%2 )
+  {
+    divi.style.backgroundColor="#ccffcc";
+  }
+  else
+  {
+    divi.style.backgroundColor="#ccccff";
+  }
   var blob=new Blob([svg]);
   var url = URL.createObjectURL(blob);
 	var a_download = '<a href="' + url + '" download="equation.svg">Download</a>';
@@ -81,6 +91,7 @@ SVGViewer.prototype.append = function(svg) {
     that.displaySource(svg);
   } ,false);
   this.div_svg.appendChild(divi);
+  this.cnt+=1;
 };
 
 SVGViewer.prototype.displaySource = function(svg) {

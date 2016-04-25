@@ -117,6 +117,7 @@ window.onload=function(e){
   var ta_filename=document.getElementById("ta_filename");
   var btnload = document.getElementById('btn_load'); 
   var btnsave = document.getElementById('btn_save'); 
+  var btnmdhtml = document.getElementById('btn_md_html');
   var menu=new Menu(document.getElementById("div_filelist"));
   var edit=new Edit(document.getElementById("ta_edit"));
   var fs=new FileSelector(menu);
@@ -132,5 +133,14 @@ window.onload=function(e){
       edit.load(fn);
       ta_filename.value=fn;
     });
+  }, false);
+
+  // Handle MD / HTML button click
+  btnmdhtml.addEventListener('click', function() {
+    var md=document.getElementById("ta_edit").value;
+    var html=marked(md);
+    var el_html=document.getElementById("div_html");
+    el_html.innerHTML=html;
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,el_html]);
   }, false);
 }
