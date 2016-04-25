@@ -25,39 +25,30 @@
  *
  */
 
-var Edit = function(div) {
+var Menu = function(div) {
   this.div=div;
+  this.onselect=null;
+  this.numitems=0;
 };
 
-Edit.prototype.save = function( fn, callback ) {
-    filewrite( fn, this.div.value );
+Menu.prototype.clear = function() {
+  this.numitems=0;
+  this.div.innerHTML='';
 };
 
-Edit.prototype.load = function( fn, callback ) {
+Menu.prototype.add = function(item) {
   var that=this;
-  fileread(fn, function(err,data){
-    that.div.value=data;
-  });
+  var ni=this.numitems;
+  item.addEventListener('click', function() {
+    if(that.onselect) that.onselect(ni,this.innerHTML);
+    that.div.style.display="none";
+  }, false);
+
+  this.numitems+=1;
+  this.div.appendChild(item);
 };
 
-window.onload=function(e){
-  var ta_filename=document.getElementById("ta_filename");
-  var btnload = document.getElementById('btn_load'); 
-  var btnsave = document.getElementById('btn_save'); 
-  var edit=new Edit(document.getElementById("ta_edit"));
-  var fs=new FileSelector(document.getElementById("div_filelist"));
-
-
-  // Handle Save button click
-  btnsave.addEventListener('click', function() {
-    edit.save(ta_filename.value);
-  }, false);
-
-  // Handle Load button click
-  btnload.addEventListener('click', function() {
-    fs.show(function(fn){ // Show the file selector
-      edit.load(fn);
-      ta_filename.value=fn;
-    });
-  }, false);
-}
+Menu.prototype.show = function(onselect){
+  this.onselect=onselect;
+  this.div.style.display="block";
+};

@@ -25,39 +25,48 @@
  *
  */
 
-var Edit = function(div) {
+var FileSelector = function( div )
+{
   this.div=div;
+  this.selector=new Menu(div);
+  this.dir="html";
 };
 
-Edit.prototype.save = function( fn, callback ) {
-    filewrite( fn, this.div.value );
-};
-
-Edit.prototype.load = function( fn, callback ) {
+FileSelector.prototype.show = function( callback )
+{
+  this.selector.clear();
   var that=this;
-  fileread(fn, function(err,data){
-    that.div.value=data;
+  ls(this.dir,function(obj) {
+    var list=obj.list;
+    that.dir=obj.dir;
+    
+    if( list.length==0 )
+    {
+       that.dir='';
+       list.push({flags: 'dwrx------', path: 'sdcard'});
+       list.push({flags: 'dwrx------', path: 'data/data/org.connectbot/AndrewWIDE'});
+    }
+ 
+    for( var i=0; i<list.length; i++ )
+    {
+      var item=document.createElement('p');
+      item.innerHTML=list[i].path;
+      if( list[i].flags[0]=='d' )
+      {
+        item.className='dir_item';
+      }
+      that.selector.add(item);
+    }
+    that.selector.show(function(i, fn){
+      if( list[i].flags[0]=='d' )
+      {
+        that.dir=that.dir+'/'+list[i].path;
+        that.show( callback );
+      }
+      else
+      {
+        callback(that.dir+'/'+list[i].path);
+      }
+    });
   });
 };
-
-window.onload=function(e){
-  var ta_filename=document.getElementById("ta_filename");
-  var btnload = document.getElementById('btn_load'); 
-  var btnsave = document.getElementById('btn_save'); 
-  var edit=new Edit(document.getElementById("ta_edit"));
-  var fs=new FileSelector(document.getElementById("div_filelist"));
-
-
-  // Handle Save button click
-  btnsave.addEventListener('click', function() {
-    edit.save(ta_filename.value);
-  }, false);
-
-  // Handle Load button click
-  btnload.addEventListener('click', function() {
-    fs.show(function(fn){ // Show the file selector
-      edit.load(fn);
-      ta_filename.value=fn;
-    });
-  }, false);
-}

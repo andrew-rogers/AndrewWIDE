@@ -25,79 +25,6 @@
  *
  */
 
-var Menu = function(div) {
-  this.div=div;
-  this.onselect=null;
-  this.numitems=0;
-};
-
-Menu.prototype.clear = function() {
-  this.numitems=0;
-  this.div.innerHTML='';
-};
-
-Menu.prototype.add = function(item) {
-  var that=this;
-  var ni=this.numitems;
-  item.addEventListener('click', function() {
-    if(that.onselect) that.onselect(ni,this.innerHTML);
-    that.div.style.display="none";
-  }, false);
-
-  this.numitems+=1;
-  this.div.appendChild(item);
-};
-
-Menu.prototype.show = function(onselect){
-  this.onselect=onselect;
-  this.div.style.display="block";
-};
-
-var FileSelector = function( selector )
-{
-  this.selector=selector;
-  this.dir="html";
-};
-
-FileSelector.prototype.show = function( callback )
-{
-  this.selector.clear();
-  var that=this;
-  ls(this.dir,function(obj) {
-    var list=obj.list;
-    that.dir=obj.dir;
-    
-    if( list.length==0 )
-    {
-       that.dir='';
-       list.push({flags: 'dwrx------', path: 'sdcard'});
-       list.push({flags: 'dwrx------', path: 'data/data/org.connectbot/AndrewWIDE'});
-    }
- 
-    for( var i=0; i<list.length; i++ )
-    {
-      var item=document.createElement('p');
-      item.innerHTML=list[i].path;
-      if( list[i].flags[0]=='d' )
-      {
-        item.className='dir_item';
-      }
-      that.selector.add(item);
-    }
-    that.selector.show(function(i, fn){
-      if( list[i].flags[0]=='d' )
-      {
-        that.dir=that.dir+'/'+list[i].path;
-        that.show( callback );
-      }
-      else
-      {
-        callback(that.dir+'/'+list[i].path);
-      }
-    });
-  });
-};
-
 var Edit = function(div) {
   this.div=div;
 };
@@ -118,9 +45,8 @@ window.onload=function(e){
   var btnload = document.getElementById('btn_load'); 
   var btnsave = document.getElementById('btn_save'); 
   var btnmdhtml = document.getElementById('btn_md_html');
-  var menu=new Menu(document.getElementById("div_filelist"));
   var edit=new Edit(document.getElementById("ta_edit"));
-  var fs=new FileSelector(menu);
+  var fs=new FileSelector(document.getElementById("div_filelist"));
 
   // Handle Save button click
   btnsave.addEventListener('click', function() {
