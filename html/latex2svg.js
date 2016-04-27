@@ -41,18 +41,46 @@ window.onload = function(e)
 
     div.addEventListener('click', function() {
       viewer.clear();
+      var html=document.body.innerHTML;
+      var fns=getEquationFileNames(html);
 	    var defs=document.getElementById("MathJax_SVG_glyphs");
 	    svgWriter.defs(defs.childNodes);
 	    mjs=document.getElementsByClassName("MathJax_SVG");
 	    for( var i=0; i<mjs.length; i++) {
         svgWriter.image(mjs[i].firstChild);
-        viewer.append(svgWriter.getImage(i));
+        viewer.append(svgWriter.getImage(i), fns[i]);
+	console.log("5>"+fns[i]);
 	    }
+            
+	    
     }, false);
     document.body.appendChild(div);
     document.body.appendChild(div_svg);
 
 };
+
+function getEquationFileNames(html)
+{
+    var fns=[];
+    var i=0;
+    do{
+	i=html.indexOf('<script type="math/tex');
+	if(i>0){
+	    var fn="";
+	    html=html.substring(i+10);
+	    var j=html.indexOf('</script>(');
+	    if(j>0){
+		var fn1=html.substring(j+1);
+		var j1=fn1.indexOf(')');
+		if(j1>0){
+		    fn=fn1.substring(9,j1);
+		}
+	    }
+	    fns.push(fn);
+	}
+    }while(i>=0);
+    return fns;
+}
 
 var SVGViewer = function(div) {
   this.div_svg=document.createElement("div");
@@ -71,7 +99,7 @@ SVGViewer.prototype.clear = function() {
   this.cnt=0;
 };
 
-SVGViewer.prototype.append = function(svg) {
+SVGViewer.prototype.append = function(svg,fn) {
   var divi=document.createElement("div");
   if( this.cnt%2 )
   {
@@ -83,7 +111,7 @@ SVGViewer.prototype.append = function(svg) {
   }
   var blob=new Blob([svg]);
   var url = URL.createObjectURL(blob);
-	var a_download = '<a href="' + url + '" download="equation.svg">Download</a>';
+	var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
   
   divi.innerHTML=svg+a_download;
   var that=this;
