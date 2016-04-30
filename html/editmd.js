@@ -41,20 +41,29 @@ Edit.prototype.load = function( fn, callback ) {
 };
 
 window.onload=function(e){
+  // Get elements
   var ta_filename=document.getElementById("ta_filename");
-  var btnload = document.getElementById('btn_load'); 
-  var btnsave = document.getElementById('btn_save'); 
-  var btnmdhtml = document.getElementById('btn_md_html');
-  var edit=new Edit(document.getElementById("ta_edit"));
-  var fs=new FileSelector(document.getElementById("div_filelist"));
+  var div_filelist=document.getElementById("div_filelist");
+  var btn_load = document.getElementById('btn_load'); 
+  var btn_save = document.getElementById('btn_save'); 
+  var ta_edit=document.getElementById("ta_edit");
+  var div_html=document.getElementById("div_html");
+  var btn_mdhtml = document.getElementById('btn_md_html');
+
+  var edit=new Edit(ta_edit);
+  var fs=new FileSelector(div_filelist);
+
+  MathJax.Hub.Config({
+    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+  });
 
   // Handle Save button click
-  btnsave.addEventListener('click', function() {
+  btn_save.addEventListener('click', function() {
     edit.save(ta_filename.value);
   }, false);
 
   // Handle Load button click
-  btnload.addEventListener('click', function() {
+  btn_load.addEventListener('click', function() {
     fs.show(function(fn){ // Show the file selector
       edit.load(fn);
       ta_filename.value=fn;
@@ -62,11 +71,13 @@ window.onload=function(e){
   }, false);
 
   // Handle MD / HTML button click
-  btnmdhtml.addEventListener('click', function() {
-    var md=document.getElementById("ta_edit").value;
-    var html=marked(md);
-    var el_html=document.getElementById("div_html");
-    el_html.innerHTML=html;
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub,el_html]);
+  btn_mdhtml.addEventListener('click', function() {
+    div_html.innerHTML=ta_edit.value;
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,div_html]);
   }, false);
+
+  // Register EndProcess hook
+  MathJax.Hub.Register.MessageHook("End Process", function(message) {
+    div_html.innerHTML=marked(div_html.innerHTML);
+  });
 }
