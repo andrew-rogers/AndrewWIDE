@@ -41,6 +41,8 @@ Edit.prototype.load = function( fn, callback ) {
 };
 
 window.onload=function(e){
+  var processing=false;
+
   // Get elements
   var ta_filename=document.getElementById("ta_filename");
   var div_filelist=document.getElementById("div_filelist");
@@ -49,9 +51,14 @@ window.onload=function(e){
   var ta_edit=document.getElementById("ta_edit");
   var div_html=document.getElementById("div_html");
   var btn_mdhtml = document.getElementById('btn_md_html');
+  var div_downloadhtml = document.getElementById("div_downloadhtml");
 
   var edit=new Edit(ta_edit);
   var fs=new FileSelector(div_filelist);
+
+  ta_edit.style.display='block'
+  div_html.style.display='none'
+  btn_mdhtml.innerHTML='View';
 
   MathJax.Hub.Config({
     tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
@@ -67,17 +74,59 @@ window.onload=function(e){
     fs.show(function(fn){ // Show the file selector
       edit.load(fn);
       ta_filename.value=fn;
+      ta_edit.style.display='block'
+      div_html.style.display='none'
+      btn_mdhtml.innerHTML='View';
+      div_downloadhtml.innerHTML="";
     });
   }, false);
 
   // Handle MD / HTML button click
   btn_mdhtml.addEventListener('click', function() {
-    div_html.innerHTML=ta_edit.value;
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub,div_html]);
+    if(ta_edit.style.display=='block'){
+      div_html.innerHTML=ta_edit.value;
+      processing=true;
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub,div_html]);
+    }
+    else{
+      ta_edit.style.display='block';
+      div_html.style.display='none';
+      btn_mdhtml.innerHTML='View';
+      div_downloadhtml.innerHTML="";
+    }
   }, false);
 
   // Register EndProcess hook
   MathJax.Hub.Register.MessageHook("End Process", function(message) {
-    div_html.innerHTML=marked(div_html.innerHTML);
+    if(processing){
+      div_html.innerHTML=marked(div_html.innerHTML);
+      ta_edit.style.display='none';
+      div_html.style.display='block';
+      btn_mdhtml.innerHTML='Edit';
+      processing=false;
+
+      var html="<!DOCTYPE html>\n<html>\n<body>";
+
+      // Get the SVG path definitions
+      var defs=document.getElementById("MathJax_SVG_Hidden");
+      if(defs)html+=defs.parentNode.outerHTML;
+
+      // Remove MathML stuff
+      var maths=document.getElementsByTagName("math");
+      for(var i=0; i<maths.length; i++){
+	var span=maths[i].parentNode;
+	span.parentNode.removeChild(span);
+      }
+
+      // The main HTML and equation SVGs
+      html+=div_html.outerHTML;
+
+      html+="</body>\n</html>";
+      var blob=new Blob([html],{type: "text/html"});
+      var url = URL.createObjectURL(blob);
+      var fn="MJMD_out.html";
+      var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
+      div_downloadhtml.innerHTML=a_download;
+    }
   });
 }
