@@ -118,8 +118,8 @@ window.onload=function(e){
       // Remove MathML stuff
       var mjs=document.getElementsByClassName("MathJax_SVG");
       for(var i=0; i<mjs.length; i++){
-	var span=mjs[i].getElementsByTagName("math")[0].parentNode;
-	span.parentNode.removeChild(span);
+        var span=mjs[i].getElementsByTagName("math")[0].parentNode;
+        span.parentNode.removeChild(span);
       }
 
       // The main HTML and equation SVGs
