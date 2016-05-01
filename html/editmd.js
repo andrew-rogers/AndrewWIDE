@@ -61,7 +61,11 @@ window.onload=function(e){
   btn_mdhtml.innerHTML='View';
 
   MathJax.Hub.Config({
-    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+    tex2jax: {
+      inlineMath: [["$","$"],["\\(","\\)"]],
+      processEscapes: true
+    },
+    jax: ["input/TeX","output/SVG"]
   });
 
   // Handle Save button click
@@ -112,9 +116,9 @@ window.onload=function(e){
       if(defs)html+=defs.parentNode.outerHTML;
 
       // Remove MathML stuff
-      var maths=document.getElementsByTagName("math");
-      for(var i=0; i<maths.length; i++){
-	var span=maths[i].parentNode;
+      var mjs=document.getElementsByClassName("MathJax_SVG");
+      for(var i=0; i<mjs.length; i++){
+	var span=mjs[i].getElementsByTagName("math")[0].parentNode;
 	span.parentNode.removeChild(span);
       }
 
