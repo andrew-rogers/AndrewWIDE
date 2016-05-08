@@ -149,7 +149,7 @@ SVGFileWriter.prototype.image = function(svg) {
     for( var i=0; i<uses.length; i++) {
 	refs.push(uses[i].getAttribute("href"))
     }
-    str=xml2str(svg,'');
+    str=this.xml2str(svg,'');
     console.log(str);
     this.images.push({svg: str, uses: refs});
 };
@@ -159,12 +159,12 @@ SVGFileWriter.prototype.getImage = function(index) {
 
     // Construct the defs tag
     var uses=image.uses;
-    var defstr="  <defs>"
+    var defstr="  <defs>\n"
     for( var i=0; i<uses.length; i++){
 	var ref=uses[i];
 	ref=ref.substring(1);
 	var def=this.map[ref];
-        defstr+=xml2str(def,'    ');
+        defstr+=this.xml2str(def,'    ');
     }
     defstr+="  </defs>\n";
 
@@ -182,7 +182,7 @@ SVGFileWriter.prototype.getImage = function(index) {
     return svgstr;
 };
 
-function xml2str(xml, indent)
+SVGFileWriter.prototype.xml2str = function(xml, indent)
 {
   var str=indent;
   str+='<'+xml.nodeName;
@@ -201,7 +201,7 @@ function xml2str(xml, indent)
   for( var i=0; i<c.length; i++)
   {
     if( i==0 )str+='\n';
-    str+=xml2str(c[i],indent+'  ');
+    str+=this.xml2str(c[i],indent+'  ');
     closing_indent=indent; // The parent closing tag will be on new line so indent.
   }
   str+=closing_indent+'</'+xml.nodeName+'>\n';

@@ -42,6 +42,7 @@ Edit.prototype.load = function( fn, callback ) {
 
 window.onload=function(e){
   var processing=false;
+  var svgarray = new SVGArray();
 
   // Get elements
   var ta_filename=document.getElementById("ta_filename");
@@ -109,23 +110,9 @@ window.onload=function(e){
       btn_mdhtml.innerHTML='Edit';
       processing=false;
 
-      var html="<!DOCTYPE html>\n<html>\n<body>";
+      processMathJaxOutput(svgarray, div_html);
 
-      // Get the SVG path definitions
-      var defs=document.getElementById("MathJax_SVG_Hidden");
-      if(defs)html+=defs.parentNode.outerHTML;
-
-      // Remove MathML stuff
-      var mjs=document.getElementsByClassName("MathJax_SVG");
-      for(var i=0; i<mjs.length; i++){
-        var span=mjs[i].getElementsByTagName("math")[0].parentNode;
-        span.parentNode.removeChild(span);
-      }
-
-      // The main HTML and equation SVGs
-      html+=div_html.outerHTML;
-
-      html+="</body>\n</html>";
+      var html = createHTML(div_html);
       var blob=new Blob([html],{type: "text/html"});
       var url = URL.createObjectURL(blob);
       var fn="MJMD_out.html";
@@ -133,4 +120,51 @@ window.onload=function(e){
       div_downloadhtml.innerHTML=a_download;
     }
   });
+}
+
+function processMathJaxOutput(svgarray, elem)
+{
+    // Get the SVG path definitions
+    var defs=document.getElementById("MathJax_SVG_glyphs");
+    svgarray.addDefs(defs);
+
+    // Remove MathML stuff
+    var mjs=elem.getElementsByClassName("MathJax_SVG");
+    for(var i=0; i<mjs.length; i++){
+        addClickHandler(svgarray, mjs, i);
+        var svg = mjs[i].getElementsByTagName("svg")[0];
+        svgarray.addImage(svg);
+        var span = mjs[i].getElementsByTagName("math")[0].parentNode;
+        span.parentNode.removeChild(span);
+        console.log(svgarray.getImageIncDefs(i));
+    }
+}
+
+function addClickHandler(svgarray, elems, index)
+{
+    elems[index].addEventListener("click", function(e) {
+        for(var i=0; i<elems.length; i++) elems[i].style.backgroundColor="";
+        elems[index].style.backgroundColor="#ccccff"
+
+	var blob=new Blob([svgarray.getImageIncDefs(index)]);
+        var url = URL.createObjectURL(blob);
+        var fn = "equation.svg"
+	var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
+  
+        document.getElementById("div_downloadeqn").innerHTML=a_download;
+    });
+}
+
+function createHTML(elem)
+{
+  var html="<!DOCTYPE html>\n<html>\n<body>";
+
+      // Get the SVG path definitions
+      var defs=document.getElementById("MathJax_SVG_Hidden");
+      if(defs)html+=defs.parentNode.outerHTML;
+
+      // The main HTML and equation SVGs
+      html+=div_html.outerHTML;
+
+      html+="</body>\n</html>";  
 }
