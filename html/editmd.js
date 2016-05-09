@@ -126,6 +126,7 @@ function processMathJaxOutput(svgarray, elem)
 {
     // Get the SVG path definitions
     var defs=document.getElementById("MathJax_SVG_glyphs");
+    svgarray.clear();
     svgarray.addDefs(defs);
 
     // Remove MathML stuff
@@ -157,14 +158,15 @@ function addClickHandler(svgarray, elems, index)
 
 function createHTML(elem)
 {
-  var html="<!DOCTYPE html>\n<html>\n<body>";
+    var html="<!DOCTYPE html>\n<html>\n<body>";
 
-      // Get the SVG path definitions
-      var defs=document.getElementById("MathJax_SVG_Hidden");
-      if(defs)html+=defs.parentNode.outerHTML;
+    // Get the SVG path definitions
+    var defs=document.getElementById("MathJax_SVG_Hidden");
+    if(defs)html+=defs.parentNode.outerHTML;
 
-      // The main HTML and equation SVGs
-      html+=div_html.outerHTML;
+    // The main HTML and equation SVGs
+    html+=div_html.outerHTML;
 
-      html+="</body>\n</html>";  
+    html+="</body>\n</html>";  
+    return html;
 }

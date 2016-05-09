@@ -106,3 +106,9 @@ SVGArray.prototype.xml2str = function(xml, indent)
 
   return str;
 }
+
+SVGArray.prototype.clear = function ()
+{
+    this.map_defs={};
+    this.images=[];
+}
