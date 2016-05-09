@@ -42,7 +42,7 @@ Edit.prototype.load = function( fn, callback ) {
 
 window.onload=function(e){
   var processing=false;
-  var svgarray = new SVGArray();
+  var mjmd = new MathJaxMarkdownEditor();
 
   // Get elements
   var ta_filename=document.getElementById("ta_filename");
@@ -50,24 +50,9 @@ window.onload=function(e){
   var btn_load = document.getElementById('btn_load'); 
   var btn_save = document.getElementById('btn_save'); 
   var ta_edit=document.getElementById("ta_edit");
-  var div_html=document.getElementById("div_html");
-  var btn_mdhtml = document.getElementById('btn_md_html');
-  var div_downloadhtml = document.getElementById("div_downloadhtml");
 
   var edit=new Edit(ta_edit);
   var fs=new FileSelector(div_filelist);
-
-  ta_edit.style.display='block'
-  div_html.style.display='none'
-  btn_mdhtml.innerHTML='View';
-
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [["$","$"],["\\(","\\)"]],
-      processEscapes: true
-    },
-    jax: ["input/TeX","output/SVG"]
-  });
 
   // Handle Save button click
   btn_save.addEventListener('click', function() {
@@ -79,85 +64,105 @@ window.onload=function(e){
     fs.show(function(fn){ // Show the file selector
       edit.load(fn);
       ta_filename.value=fn;
-      ta_edit.style.display='block'
-      div_html.style.display='none'
-      btn_mdhtml.innerHTML='View';
-      div_downloadhtml.innerHTML="";
+      mjmd.displayEditTab();
     });
   }, false);
+};
 
-  // Handle MD / HTML button click
-  btn_mdhtml.addEventListener('click', function() {
-    if(ta_edit.style.display=='block'){
-      div_html.innerHTML=ta_edit.value;
-      processing=true;
-      MathJax.Hub.Queue(["Typeset",MathJax.Hub,div_html]);
-    }
-    else{
-      ta_edit.style.display='block';
-      div_html.style.display='none';
-      btn_mdhtml.innerHTML='View';
-      div_downloadhtml.innerHTML="";
-    }
-  }, false);
+var MathJaxMarkdownEditor = function() {
+    this.svgarray = new SVGArray();
 
-  // Register EndProcess hook
-  MathJax.Hub.Register.MessageHook("End Process", function(message) {
-    if(processing){
-      div_html.innerHTML=marked(div_html.innerHTML);
-      ta_edit.style.display='none';
-      div_html.style.display='block';
-      btn_mdhtml.innerHTML='Edit';
-      processing=false;
+    // Get elements
+    this.ta_edit=document.getElementById("ta_edit");
+    this.div_html=document.getElementById("div_html");
+    this.btn_mdhtml = document.getElementById('btn_md_html');
+    this.div_downloadhtml = document.getElementById("div_downloadhtml");
 
-      processMathJaxOutput(svgarray, div_html);
+    this.displayEditTab();
 
-      var html = createHTML(div_html);
-      var blob=new Blob([html],{type: "text/html"});
-      var url = URL.createObjectURL(blob);
-      var fn="MJMD_out.html";
-      var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
-      div_downloadhtml.innerHTML=a_download;
-    }
-  });
-}
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [["$","$"],["\\(","\\)"]],
+            processEscapes: true
+        },
+        jax: ["input/TeX","output/SVG"]
+    });
 
-function processMathJaxOutput(svgarray, elem)
-{
+    // Handle MD / HTML button click
+    var that=this;
+    this.btn_mdhtml.addEventListener('click', function() {
+        if(that.ta_edit.style.display=='block'){
+          that.div_html.innerHTML=that.ta_edit.value;
+          MathJax.Hub.Queue(["Typeset",MathJax.Hub,that.div_html]);
+          MathJax.Hub.Queue(function() {
+	      that.mathjaxDoneHandler();
+          });
+        }
+        else{
+            that.ta_edit.style.display='block';
+            that.div_html.style.display='none';
+            that.btn_mdhtml.innerHTML='View';
+            that.div_downloadhtml.innerHTML="";
+        }
+    }, false);
+};
+
+MathJaxMarkdownEditor.prototype.displayEditTab = function() {
+    this.ta_edit.style.display='block';
+    this.div_html.style.display='none';
+    this.btn_mdhtml.innerHTML='View';
+    this.div_downloadhtml.innerHTML="";
+};
+
+MathJaxMarkdownEditor.prototype.mathjaxDoneHandler = function() {
+    this.div_html.innerHTML=marked(this.div_html.innerHTML);
+    this.ta_edit.style.display='none';
+    this.div_html.style.display='block';
+    this.btn_mdhtml.innerHTML='Edit';
+
+    this.processMathJaxOutput();
+
+    var html = this.createHTML();
+    var blob=new Blob([html],{type: "text/html"});
+    var url = URL.createObjectURL(blob);
+    var fn="MJMD_out.html";
+    var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
+    this.div_downloadhtml.innerHTML=a_download;
+};
+
+MathJaxMarkdownEditor.prototype.processMathJaxOutput = function() {
     // Get the SVG path definitions
     var defs=document.getElementById("MathJax_SVG_glyphs");
-    svgarray.clear();
-    svgarray.addDefs(defs);
+    this.svgarray.clear();
+    this.svgarray.addDefs(defs);
 
     // Remove MathML stuff
-    var mjs=elem.getElementsByClassName("MathJax_SVG");
+    var mjs=this.div_html.getElementsByClassName("MathJax_SVG");
     for(var i=0; i<mjs.length; i++){
-        addClickHandler(svgarray, mjs, i);
+        this.addClickHandler(mjs, i);
         var svg = mjs[i].getElementsByTagName("svg")[0];
-        svgarray.addImage(svg);
+        this.svgarray.addImage(svg);
         var span = mjs[i].getElementsByTagName("math")[0].parentNode;
         span.parentNode.removeChild(span);
-        console.log(svgarray.getImageIncDefs(i));
     }
-}
+};
 
-function addClickHandler(svgarray, elems, index)
-{
+MathJaxMarkdownEditor.prototype.addClickHandler = function(elems, index){
+    var that=this;
     elems[index].addEventListener("click", function(e) {
         for(var i=0; i<elems.length; i++) elems[i].style.backgroundColor="";
         elems[index].style.backgroundColor="#ccccff"
 
-	var blob=new Blob([svgarray.getImageIncDefs(index)]);
+	var blob=new Blob([that.svgarray.getImageIncDefs(index)]);
         var url = URL.createObjectURL(blob);
         var fn = "equation.svg"
 	var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
   
         document.getElementById("div_downloadeqn").innerHTML=a_download;
     });
-}
+};
 
-function createHTML(elem)
-{
+MathJaxMarkdownEditor.prototype.createHTML = function(){
     var html="<!DOCTYPE html>\n<html>\n<body>";
 
     // Get the SVG path definitions
@@ -165,8 +170,8 @@ function createHTML(elem)
     if(defs)html+=defs.parentNode.outerHTML;
 
     // The main HTML and equation SVGs
-    html+=div_html.outerHTML;
+    html+=this.div_html.outerHTML;
 
     html+="</body>\n</html>";  
     return html;
-}
+};
