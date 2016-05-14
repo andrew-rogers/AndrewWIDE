@@ -115,7 +115,25 @@ MathJaxMarkdownEditor.prototype.displayEditTab = function() {
 };
 
 MathJaxMarkdownEditor.prototype.mathjaxDoneHandler = function() {
-    this.div_html.innerHTML=marked(this.div_html.innerHTML);
+
+    // --- Handle code sections without '>' displaying as '&gt;' ---
+    // https://github.com/chjj/marked/issues/160#issuecomment-18611040
+
+    // Let marked do its normal token generation.
+    var tokens = marked.lexer( this.div_html.innerHTML );
+
+    // Mark all code blocks as already being escaped.
+    // This prevents the parser from encoding anything inside code blocks
+    tokens.forEach(function( token ) {
+        if ( token.type === "code" ) {
+            token.escaped = true;
+        }
+    });
+
+    // Let marked do its normal parsing, but without encoding the code blocks
+    this.div_html.innerHTML = marked.parser( tokens );
+    // -------------------------------------------------------------
+
     this.ta_edit.style.display='none';
     this.div_html.style.display='block';
     this.btn_mdhtml.innerHTML='Edit';
@@ -134,7 +152,7 @@ MathJaxMarkdownEditor.prototype.processMathJaxOutput = function() {
     // Get the SVG path definitions
     var defs=document.getElementById("MathJax_SVG_glyphs");
     this.svgarray.clear();
-    this.svgarray.addDefs(defs);
+    if(defs)this.svgarray.addDefs(defs);
 
     // Remove MathML stuff
     var mjs=this.div_html.getElementsByClassName("MathJax_SVG");
