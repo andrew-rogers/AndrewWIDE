@@ -25,7 +25,7 @@
  *
  */
 
-function query_sh(script,stdin,callback)
+function query_sh1(script,stdin,callback)
 {
   var blob = new Blob([script,'\n\n',stdin], { type: "text/plain" });
   var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
@@ -44,6 +44,28 @@ function query_sh(script,stdin,callback)
   xmlhttp.open("POST", "/cgi-bin/aw.sh", true);
   xmlhttp.send(blob);
 }
+
+function query_sh(script,stdin,callback)
+{
+  var b64=btoa(stdin);
+  var blob = new Blob([script,"\n\n",b64], { type: "text/plain" });
+  var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
+  xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+      var rt=xmlhttp.responseText;
+      var i=rt.indexOf("\n");
+      var err=rt.substring(0,i);
+      rt=rt.substring(i+1);
+      i=rt.indexOf("\n");
+      var h2=rt.substring(0,i);
+      rt=rt.substring(i+1);
+      if(callback)callback(err,atob(rt));
+    }
+  };
+  xmlhttp.open("POST", "/cgi-bin/aw.sh", true);
+  xmlhttp.send(blob);
+}
+
 
 function fileread(fn, callback)
 {
