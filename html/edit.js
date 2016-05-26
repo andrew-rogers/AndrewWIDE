@@ -25,39 +25,71 @@
  *
  */
 
-var Edit = function(div) {
-  this.div=div;
+var Editor = function(div) {
+    if(div){
+        this.div=div;
+    } else{
+        this.div=document.createElement("div");
+        document.body.appendChild(this.div);
+    }
+
+    // Add file menu
+    this.div_menu=document.createElement("div");
+    this.btn_load=document.createElement("button");
+    this.btn_load.innerHTML="Load...";
+    this.div_menu.setAttribute("class","menu");
+    this.ta_filename=document.createElement("textarea");
+    this.ta_filename.setAttribute("cols","100");
+    this.div_menu.appendChild(this.btn_load);
+    this.div_menu.appendChild(this.ta_filename);
+    this.btn_save = document.createElement("button");
+    this.btn_save.innerHTML="Save";
+    this.div_menu.appendChild(this.btn_save);
+    this.div_filelist=document.createElement("div");
+    this.div_menu.appendChild(this.div_filelist);
+    this.div.appendChild(this.div_menu);
+
+    var fs = new FileSelector(this.div_filelist);
+
+    var that = this;
+
+    // Handle Load button click
+    this.btn_load.addEventListener('click', function() {
+        fs.show(function(fn){ // Show the file selector
+            that.load(fn);
+            that.ta_filename.value=fn;
+        });
+    }, false);
+
+    // Handle Save button click
+    this.btn_save.addEventListener('click', function() {
+        that.save(that.ta_filename.value);
+    }, false);
+
+
+
+    // Add textarea
+    this.ta=document.createElement("textarea");
+    this.ta.setAttribute("rows","30");
+    this.ta.setAttribute("cols","100");
+    this.div.appendChild(this.ta);
 };
 
-Edit.prototype.save = function( fn, callback ) {
-    filewrite( fn, this.div.value );
+Editor.prototype.save = function( fn, callback ) {
+    filewrite( fn, this.ta.value );
 };
 
-Edit.prototype.load = function( fn, callback ) {
+Editor.prototype.load = function( fn, callback ) {
   var that=this;
   fileread(fn, function(err,data){
-    that.div.value=data;
+    that.ta.value=data;
   });
 };
 
-window.onload=function(e){
-  var ta_filename=document.getElementById("ta_filename");
-  var btnload = document.getElementById('btn_load'); 
-  var btnsave = document.getElementById('btn_save'); 
-  var edit=new Edit(document.getElementById("ta_edit"));
-  var fs=new FileSelector(document.getElementById("div_filelist"));
+Editor.prototype.getText = function() {
+    return this.ta.value;
+};
 
-
-  // Handle Save button click
-  btnsave.addEventListener('click', function() {
-    edit.save(ta_filename.value);
-  }, false);
-
-  // Handle Load button click
-  btnload.addEventListener('click', function() {
-    fs.show(function(fn){ // Show the file selector
-      edit.load(fn);
-      ta_filename.value=fn;
-    });
-  }, false);
-}
+/*window.onload=function(e){
+    var edit=new Editor();
+}*/

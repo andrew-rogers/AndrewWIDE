@@ -25,58 +25,28 @@
  *
  */
 
-var Edit = function(div) {
-  this.div=div;
-};
+var MathJaxMarkdownEditor = function(div) {
+    if(div){
+        this.div=div;
+    } else{
+        this.div=document.createElement("div");
+        document.body.appendChild(this.div);
+    }
 
-Edit.prototype.save = function( fn, callback ) {
-    filewrite( fn, this.div.value );
-};
+    // Create elements
+    this.div_md=document.createElement("div");
+    this.div.appendChild(this.div_md);
+    this.div_html=document.createElement("div");
+    this.div.appendChild(this.div_html);
+    this.btn_mdhtml=document.createElement("button");
+    this.div.appendChild(this.btn_mdhtml);
+    this.div_downloadhtml=document.createElement("div");
+    this.div.appendChild(this.div_downloadhtml);
+    this.div_downloadeqn=document.createElement("div");
+    this.div.appendChild(this.div_downloadeqn);
 
-Edit.prototype.load = function( fn, callback ) {
-  var that=this;
-  fileread(fn, function(err,data){
-    that.div.value=data;
-  });
-};
-
-window.onload=function(e){
-  var processing=false;
-  var mjmd = new MathJaxMarkdownEditor();
-
-  // Get elements
-  var ta_filename=document.getElementById("ta_filename");
-  var div_filelist=document.getElementById("div_filelist");
-  var btn_load = document.getElementById('btn_load'); 
-  var btn_save = document.getElementById('btn_save'); 
-  var ta_edit=document.getElementById("ta_edit");
-
-  var edit=new Edit(ta_edit);
-  var fs=new FileSelector(div_filelist);
-
-  // Handle Save button click
-  btn_save.addEventListener('click', function() {
-    edit.save(ta_filename.value);
-  }, false);
-
-  // Handle Load button click
-  btn_load.addEventListener('click', function() {
-    fs.show(function(fn){ // Show the file selector
-      edit.load(fn);
-      ta_filename.value=fn;
-      mjmd.displayEditTab();
-    });
-  }, false);
-};
-
-var MathJaxMarkdownEditor = function() {
     this.svgarray = new SVGArray();
-
-    // Get elements
-    this.ta_edit=document.getElementById("ta_edit");
-    this.div_html=document.getElementById("div_html");
-    this.btn_mdhtml = document.getElementById('btn_md_html');
-    this.div_downloadhtml = document.getElementById("div_downloadhtml");
+    this.edit = new Editor(this.div_md);
 
     this.displayEditTab();
 
@@ -91,15 +61,15 @@ var MathJaxMarkdownEditor = function() {
     // Handle MD / HTML button click
     var that=this;
     this.btn_mdhtml.addEventListener('click', function() {
-        if(that.ta_edit.style.display=='block'){
-          that.div_html.innerHTML=that.ta_edit.value;
+        if(that.div_md.style.display=='block'){
+          that.div_html.innerHTML=that.edit.getText();
           MathJax.Hub.Queue(["Typeset",MathJax.Hub,that.div_html]);
           MathJax.Hub.Queue(function() {
 	      that.mathjaxDoneHandler();
           });
         }
         else{
-            that.ta_edit.style.display='block';
+            that.div_md.style.display='block';
             that.div_html.style.display='none';
             that.btn_mdhtml.innerHTML='View';
             that.div_downloadhtml.innerHTML="";
@@ -108,7 +78,7 @@ var MathJaxMarkdownEditor = function() {
 };
 
 MathJaxMarkdownEditor.prototype.displayEditTab = function() {
-    this.ta_edit.style.display='block';
+    this.div_md.style.display='block';
     this.div_html.style.display='none';
     this.btn_mdhtml.innerHTML='View';
     this.div_downloadhtml.innerHTML="";
@@ -134,7 +104,7 @@ MathJaxMarkdownEditor.prototype.mathjaxDoneHandler = function() {
     this.div_html.innerHTML = marked.parser( tokens );
     // -------------------------------------------------------------
 
-    this.ta_edit.style.display='none';
+    this.div_md.style.display='none';
     this.div_html.style.display='block';
     this.btn_mdhtml.innerHTML='Edit';
 
@@ -176,7 +146,8 @@ MathJaxMarkdownEditor.prototype.addClickHandler = function(elems, index){
         var fn = "equation.svg"
 	var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
   
-        document.getElementById("div_downloadeqn").innerHTML=a_download;
+        //document.getElementById("div_downloadeqn").innerHTML=a_download;
+        that.div_downloadeqn.innerHTML = a_download;
     });
 };
 
