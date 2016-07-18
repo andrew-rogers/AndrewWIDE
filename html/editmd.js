@@ -152,7 +152,7 @@ MathJaxMarkdownEditor.prototype.addClickHandler = function(elems, index){
 };
 
 MathJaxMarkdownEditor.prototype.createHTML = function(){
-    var html="<!DOCTYPE html>\n<html>\n<body>";
+    var html="<!DOCTYPE html>\n<html>\n<head><meta charset=\"UTF-8\"></head>\n<body>";
 
     // Get the SVG path definitions
     var defs=document.getElementById("MathJax_SVG_Hidden");
