@@ -30,6 +30,11 @@ var FileSelector = function( div )
   this.div=div;
   this.selector=new Menu(div);
   this.dir="html";
+  this.filesytems='';
+  var that=this;
+  filesystems(function(obj){
+    that.filesystems=obj;
+  });
 };
 
 FileSelector.prototype.show = function( callback )
@@ -40,13 +45,8 @@ FileSelector.prototype.show = function( callback )
     var list=obj.list;
     that.dir=obj.dir;
     
-    if( list.length==0 )
-    {
-       that.dir='';
-       list.push({flags: 'dwrx------', path: 'sdcard'});
-       list.push({flags: 'dwrx------', path: 'data/data/org.connectbot/AndrewWIDE'});
-    }
- 
+    list = list.concat(that.filesystems);
+
     for( var i=0; i<list.length; i++ )
     {
       var item=document.createElement('p');
@@ -58,14 +58,16 @@ FileSelector.prototype.show = function( callback )
       that.selector.add(item);
     }
     that.selector.show(function(i, fn){
+      var path = list[i].path;
+      if( path[0]!='/' ) path = that.dir+'/'+path;
       if( list[i].flags[0]=='d' )
       {
-        that.dir=that.dir+'/'+list[i].path;
+        that.dir=path;
         that.show( callback );
       }
       else
       {
-        callback(that.dir+'/'+list[i].path);
+        callback(path);
       }
     });
   });

@@ -32,7 +32,7 @@ else
   AW_OS=LSB
 fi
 
-AW_DIR=$TERM_DIR/AndrewWIDE
+export AW_DIR=$TERM_DIR/AndrewWIDE
 UTILS_BIN=$AW_DIR/utils/bin
 PATH=$UTILS_BIN:$PATH
 HTML_DIR=$AW_DIR/html
@@ -49,7 +49,7 @@ aw_find_src_dir() {
   done
 }
 
-AW_SRC_DIR=$(aw_find_src_dir)
+export AW_SRC_DIR=$(aw_find_src_dir)
 
 aw_busybox_install() {
   local bb="$AW_SRC_DIR/utils/bin/$BB"

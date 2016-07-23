@@ -1,5 +1,8 @@
 <html>
-  <meta charset="utf-8">
+  <head>  
+    <meta charset="utf-8">
+    <script src="aw-sh.js"></script>
+  </head>
   <body>
     <textarea rows="10" id="ta" style="width: 100%;" placeholder="stdin">All the contents of this textarea goes to stdin
 including the above line, this line
@@ -9,22 +12,9 @@ and this one!</textarea><br>
     <button onclick="run()">Run</button>
   </body>
   <script>
-function query_sh(script,stdin,callback)
+function display(err,data)
 {
-  var blob = new Blob([script,'\n\n',stdin], { type: "text/plain" });
-  var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
-  xmlhttp.onreadystatechange = function() {
-    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-      if(callback)callback(xmlhttp.responseText);
-    }
-  };
-  xmlhttp.open("POST", "/cgi-bin/aw.sh", true);
-  xmlhttp.send(blob);
-}
-
-function display(obj)
-{
-  document.getElementById("out").value=obj;
+  document.getElementById("out").value=data;
 }
 
 function run()

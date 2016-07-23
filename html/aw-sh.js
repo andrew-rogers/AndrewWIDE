@@ -25,25 +25,37 @@
  *
  */
 
-function query_sh1(script,stdin,callback)
-{
-  var blob = new Blob([script,'\n\n',stdin], { type: "text/plain" });
-  var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
-  xmlhttp.onreadystatechange = function() {
-    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-      var rt=xmlhttp.responseText;
-      var i=rt.indexOf("\n");
-      var err=rt.substring(0,i);
-      rt=rt.substring(i+1);
-      i=rt.indexOf("\n");
-      var h2=rt.substring(0,i);
-      rt=rt.substring(i+1);
-      if(callback)callback(err,rt);
+var Tokeniser = function(input) {
+    this.buffer = input;
+};
+
+// Read until delim is matched, delim can be a regular expression, eg. '\s+' for one or more whitespace
+Tokeniser.prototype.readToken = function(delim) {
+    if(typeof delim === 'undefined') delim = /\s+/; // If not defined, define as whitespace.
+    var m = this.buffer.match(delim);
+    var ret='';
+    if(m == null){ // Return remaining if no match
+	ret = this.buffer;
+	this.buffer='';
+    }else{
+	ret = this.buffer.substring(0,m.index);
+	this.buffer = this.buffer.substring(m.index+m[0].length);
     }
-  };
-  xmlhttp.open("POST", "/cgi-bin/aw.sh", true);
-  xmlhttp.send(blob);
-}
+    return ret;
+
+};
+
+// Read remaining contents of buffer
+Tokeniser.prototype.readRemaining = function() {
+    var ret = this.buffer;
+    this.buffer='';
+    return ret;
+};
+
+// Returns number of remaining characters
+Tokeniser.prototype.remaining = function() {
+    return this.buffer.length;
+};
 
 function query_sh(script,stdin,callback)
 {
@@ -79,6 +91,19 @@ function filewrite(fn, data, callback)
   query_sh(script, data);
 }
 
+function filesystems(callback)
+{
+  query_sh( 'ls -lead "$AW_SRC_DIR" "$AW_DIR"', '', function( err, data ) {
+    data=data.split('\n');
+    var list = [];
+    for( var i=0; i<data.length; i++ ){ 
+      var obj = parse_ls_line( data[i] );
+      if( obj.flags ) list.push( obj );
+    }
+    if( callback ) callback( list );
+  });
+}
+
 function ls(path, callback)
 {
   if( path[0]!='/' ) path="../../"+path;
@@ -88,55 +113,26 @@ function ls(path, callback)
     var list=[];
     for( var i=2; i<data.length; i++ )
     {
-      var line=data[i];
-
-      var index=line.indexOf(':');
-      var info=line.substring(0,index+11);
-      var fn=line.substring(index+12);
-
-      // Get flags
-      var index=info.indexOf(' ');
-      var flags=info.substring(0,index);
-      info=info.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-      
-      // Get links
-      index=line.indexOf(' ');
-      var links=line.substring(0,index);
-      line=line.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-
-      // Get owner
-      index=line.indexOf(' ');
-      var owner=line.substring(0,index);
-      line=line.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-
-      // Get group
-      index=line.indexOf(' ');
-      var group=line.substring(0,index);
-      line=line.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-            
-      // Get size
-      index=line.indexOf(' ');
-      var size=line.substring(0,index);
-      line=line.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-
-      // Get month
-      index=line.indexOf(' ');
-      var month=line.substring(0,index);
-      line=line.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-
-      // Get day of month
-      index=line.indexOf(' ');
-      var day=line.substring(0,index);
-      line=line.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-            
-      // Get time or year
-      index=line.indexOf(' ');
-      var time=line.substring(0,index);
-      line=line.substring(index+1).replace(/^\s+/g,''); // Remove leading spaces
-            
-
-      list.push({flags: flags, path: fn});
+      var obj = parse_ls_line( data[i] );
+      if( obj.flags ) list.push( obj );
     }
     if( callback )callback({dir: dir, list: list});
   });
+}
+
+function parse_ls_line( line )
+{
+  var tok = new Tokeniser(line);
+  return {flags:        tok.readToken(),
+	  links:        tok.readToken(),
+          owner:        tok.readToken(),
+	  group:        tok.readToken(),
+	  size:         tok.readToken(),
+	  day_of_week:  tok.readToken(),
+	  month:        tok.readToken(),
+	  day_of_month: tok.readToken(),
+	  time:         tok.readToken(),
+	  year:         tok.readToken(),
+          path:         tok.readRemaining()
+  };
 }
