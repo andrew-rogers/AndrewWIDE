@@ -20,11 +20,11 @@
 # check if root dir exists
 if [ -d "$AW_ARCH_ROOT" ]
 then
-  PDIR=$PWD
+  PDIR="$PWD"
   cd $AW_ARCH_ROOT
   echo "pkg>$1"
-  install_$1
-  cd $PDIR
+  install_"$1"
+  cd "$PDIR"
 else
   echo "Cannot find: $AW_ARCH_ROOT"
 fi

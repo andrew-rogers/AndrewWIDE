@@ -24,14 +24,12 @@ then
   TERM_DIR=/data/data/$(cat /proc/$PPID/cmdline)
   BB=busybox-armv7l
   AW_OS=Android
-  AW_ARCH=armv7h
 else
   # LSB - Assume user has AndrewWIDE-master in current directory
   TERM_DIR=$PWD
-  #BB=busybox-i686
-  BB=busybox-armv7l # use with qemu user mode on non-ARM hosts
+  BB=busybox-i686
+  #BB=busybox-armv7l # use with qemu user mode on non-ARM hosts
   AW_OS=LSB
-  AW_ARCH=i686
 fi
 
 AW_DIR=$TERM_DIR/AndrewWIDE
@@ -43,25 +41,19 @@ HTML_DIR=$AW_DIR/html
 AW_SRC_LOCS="/sdcard/Download/AndrewWIDE-master
 $TERM_DIR/AndrewWIDE-master"
 
-aw-utils-find-src-dir() {
-  local aw
-  echo "$AW_SRC_LOCS" | while read -r aw
+aw_find_src_dir() {
+  local sd
+  echo "$AW_SRC_LOCS" | while read -r sd
   do
-    [ -e "$aw/" ] && echo "$aw" && break
+    [ -e "$sd/" ] && echo "$sd" && break
   done
 }
 
-aw-utils-find-src() {
-  local aw
-  echo "$AW_SRC_LOCS" | while read -r aw
-  do
-    [ -e "$aw/$1" ] && echo "$aw/$1" && break
-  done
-}
+AW_SRC_DIR=$(aw_find_src_dir)
 
-aw-busybox-install() {
-  local bb=$(aw-utils-find-src "utils/bin/$BB")
-  [ -z "$bb" ] && error "Can't find: $BB" && return 1
+aw_busybox_install() {
+  local bb="$AW_SRC_DIR/utils/bin/$BB"
+  [ ! -f "$bb" ] && error "Can't find: $BB" && return 1
   msg "Found busybox at: $bb"
 
   if [ "$bb" == "$UTILS_BIN/$BB" ]
@@ -83,20 +75,20 @@ aw-busybox-install() {
   fi
   
   msg "Making symlinks for busybox applets, could take a while."
-  aw-busybox-symlinks
+  aw_busybox_symlinks
 }
 
-aw-install() {
+aw_install() {
   local ext=$1
-  local src=$(aw-utils-find-src utils/"$1".sh)
-  [ -n "$src" ] && cp "$src" "$AW_DIR/utils/"
+  local src="$AW_SRC_DIR"/utils/"$1".sh
+  [ -f "$src" ] && aw_install_file utils/"$1".sh
   local scr=$AW_DIR/utils/"$1".sh
   shift
-  [ -n "$scr" ] && . "$scr" && "aw-$ext-install" $*
+  [ -n "$scr" ] && . "$scr" && aw_"$ext"_install $*
 }
 
 aw_install_file() {
-  cp "$AW_SRC_DIR/$1" "$AW_DIR/$1"
+  $BB cp "$AW_SRC_DIR/$1" "$AW_DIR/$1"
 }
 
 aw_run_sh() {
@@ -105,23 +97,23 @@ aw_run_sh() {
   $BB sh "$AW_DIR/$script" $*
 }
 
-aw-busybox-symlink() {
+aw_busybox_symlink() {
   local pdir=$PWD
   cd "$UTILS_BIN"
   $BB ln -s $BB $1
   cd "$pdir"
 }
 
-aw-busybox-symlinks() {
+aw_busybox_symlinks() {
   for app in $($BB --list)
   do
     echo "> $app"
-    aw-busybox-symlink "$app"
+    aw_busybox_symlink "$app"
   done
 }
 
-aw-busybox-check() {
-  $UTILS_BIN/$BB true 2> /dev/null || aw-busybox-install
+aw_busybox_check() {
+  $UTILS_BIN/$BB true 2> /dev/null || aw_busybox_install
 }
 
 # Print string on stderr
@@ -135,14 +127,15 @@ msg()
   echo "$1" 1>&2
 }
 
-aw-start() {
+aw_start() {
   local service=$1
   shift
   . $AW_DIR/utils/$service.sh
-  aw-$service $*
+  aw_"$service" $*
 }
 
-AW_SRC_DIR=$(aw-utils-find-src-dir)
-
-aw-busybox-check
+aw_busybox_check
 cd "$AW_DIR"
+AW_ARCH=$($BB uname -m)
+PATH="$UTILS_BIN"
+

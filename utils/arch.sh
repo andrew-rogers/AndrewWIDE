@@ -18,15 +18,25 @@
 
 export AW_ARCH_ROOT=$AW_DIR/roots/arch
 export AW_ARCH_PKG_SRC_DIR=/sdcard/Download
-export AW_ARCH_PKG_EXT=aarch64.pkg.tar.xz
-export AW_ARCH_LD=$AW_ARCH_ROOT/lib/ld-linux-aarch64.so.1
+export AW_ARCH_PKG_EXT=$AW_ARCH.pkg.tar.xz
+export AW_ARCH_LD=$AW_ARCH_ROOT/lib/ld-linux-$AW_ARCH.so.1
 export LD_LIBRARY_PATH=$AW_ARCH_ROOT/lib
 export LD_PRELOAD=
 export AW_DIR
 export C_INCLUDE_PATH=$AW_ARCH_ROOT/usr/include
 export PATH="$AW_ARCH_ROOT/bin":"$AW_ARCH_ROOT/usr/bin":"$PATH"
 
-aw-arch-install() {
+if [ "$AW_OS" == "LSB" ]
+then
+  export AW_ARCH_PKG_SRC_DIR=~/Downloads/
+fi
+
+if [ "$AW_ARCH" == "i686" ]
+then
+  export AW_ARCH_LD=$AW_ARCH_ROOT/lib/ld-linux.so.2
+fi
+
+aw_arch_install() {
   mkdir -p $AW_ARCH_ROOT/pkginfo
   aw_install_file "utils/arch-install-functions.sh"
   aw_install_file "utils/arch-install.sh"
@@ -35,6 +45,6 @@ aw-arch-install() {
   aw_run_sh "utils/arch-install.sh" "$1"
 }
 
-aw-arch() {
-  "$AW_ARCH_ROOT/bin/bash"
+aw_arch() {
+  echo "Environment variables setup for ArchLinux."
 }
