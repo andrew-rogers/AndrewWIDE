@@ -72,6 +72,22 @@ var Editor = function(div) {
     this.ta=document.createElement("textarea");
     this.ta.setAttribute("rows","30");
     this.ta.setAttribute("cols","100");
+    this.ta.onkeydown = function(e) {
+        // Detect tab key
+        if( e.keyCode == 9 ) {
+            // Prevent browser tabbing to next widget
+            e.preventDefault();
+            
+            // Insert tab char into value
+            var ss = this.selectionStart;
+            this.value = this.value.substring(0, ss)
+                       + '\t'
+                       + this.value.substring(this.selectionEnd);
+                       
+            // Move caret after inserted tab
+            this.selectionEnd = ss+1;
+        }
+    }
     this.div.appendChild(this.ta);
 };
 
@@ -90,6 +106,3 @@ Editor.prototype.getText = function() {
     return this.ta.value;
 };
 
-/*window.onload=function(e){
-    var edit=new Editor();
-}*/
