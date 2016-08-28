@@ -24,7 +24,9 @@ export LD_LIBRARY_PATH=$AW_ARCH_ROOT/lib
 export LD_PRELOAD=
 export AW_DIR
 export C_INCLUDE_PATH=$AW_ARCH_ROOT/usr/include
+export CPLUS_INCLUDE_PATH=$AW_ARCH_ROOT/usr/include
 export PATH="$AW_ARCH_ROOT/bin":"$AW_ARCH_ROOT/usr/bin":"$PATH"
+export UTILS_BIN
 
 if [ "$AW_OS" == "LSB" ]
 then

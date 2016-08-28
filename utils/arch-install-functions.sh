@@ -70,6 +70,7 @@ install_gcc_pkgs () {
   install_pkg mpfr
   install_pkg gmp
   install_pkg zlib
+  install_pkg linux-api-headers
   install_pkg gcc
   install_pkg binutils
 }
@@ -77,9 +78,12 @@ install_gcc_pkgs () {
 setup_gcc () {
   local GCC_DIR=$(find $AW_ARCH_ROOT/usr/lib/gcc/ | sed -n 's=/lto-wrapper==p')
   set_interp usr/bin/gcc
+  set_interp usr/bin/g++
+  set_interp usr/bin/ar
   set_interp usr/bin/as
   set_interp usr/bin/ld
   set_interp $GCC_DIR/cc1
+  set_interp $GCC_DIR/cc1plus
   set_interp $GCC_DIR/collect2
   set_so_libpath usr/lib/libc.so
   local dst=$GCC_DIR/specs
@@ -106,6 +110,27 @@ install_gcc () {
   install_gcc_pkgs
   setup_gcc
   test_gcc
+}
+
+install_make () {
+  install_pkg guile
+  install_pkg gc
+  install_pkg libffi
+  install_pkg libunistring
+  install_pkg libtool
+  install_pkg libatomic_ops
+  install_pkg make
+  
+  set_interp usr/bin/make || return
+  
+  # Make a wrapper for make to set the SHELL variable.
+  mv usr/bin/make usr/bin/make.orig
+  cat << EOF > usr/bin/make
+#!$UTILS_BIN/sh
+
+make.orig SHELL=$UTILS_BIN/sh \$@
+EOF
+	chmod +x usr/bin/make
 }
 
 
