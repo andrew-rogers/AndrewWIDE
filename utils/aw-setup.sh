@@ -16,6 +16,26 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+aw_logo() {
+echo
+echo "   #             #                    "
+echo "  # #            #                    "
+echo " #   # # ##      #  ###   ###  #   #  "
+echo " ##### ##  #  #### #   # #   # #   #  "
+echo " #   # #   # #   # #     ####  # # #  "
+echo " #   # #   # #   # #     #     # # #  "
+echo " #   # #   #  #### #      ####  # #   "
+echo "                                      "
+echo " #       #  #######  ######   ######  "
+echo " #   #   #     #     #     #  #       "
+echo " #   #   #     #     #     #  ####    "
+echo " #   #   #     #     #     #  #       "
+echo "  ### ###   #######  ######   ######  "
+echo
+echo "Web Integrated Development Environment"
+echo
+}
+
 
 # ---Setup variables---
 if test -f /system/bin/sh
@@ -138,4 +158,4 @@ aw_busybox_check
 cd "$AW_DIR"
 AW_ARCH=$($BB uname -m)
 PATH="$UTILS_BIN"
-
+aw_logo
