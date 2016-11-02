@@ -11,8 +11,10 @@ The app name for the installer shall be 'org.andrewwide'. The installer shall se
 The app shall, by default, only expand the zip archive if it has not already done so. The installer may optionally provide a means for the user to force an expansion.
 
 The installer shall search for the following in the specified order:
+
 1. In the Download directory '/sdcard/Download/AndrewWIDE-master.zip' as this is the likely default location that the browser would place the file if the user manually downloaded the latest from GitHub.
 2. Download from GitHub, https://github.com/andrew-rogers/AndrewWIDE/archive/master.zip, and saved in the Download directory, '/sdcard/Download/AndrewWIDE-master.zip'.
+
 The above search order ensures that the archive is only downloaded once. The installer may optionally provide an means for the user to force a download.
 
 The above steps, if successful, will result in a zip file being present at '/sdcard/Download/AndrewWIDE-master.zip'. This zip archive shall be expanded into '/data/data/org.andrewwide/'. Correct expansion of the zip archive will result in the __android.conf__ file having the full path, '/data/data/org.andrewwide/android.conf'.
