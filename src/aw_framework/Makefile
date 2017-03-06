@@ -1,4 +1,4 @@
-OBJS=main.o awapp.o awfdlistener.o
+OBJS=main.o awapp.o awfdlistener.o awsocket.o awserver.o
 
 test:	$(OBJS)
 	g++ $^ -o $@

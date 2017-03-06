@@ -26,14 +26,50 @@ using namespace std;
 
 int AwFDListener::cnt=0;
 
-AwFDListener::AwFDListener(AwApp &a, int fd) : fd(fd)
+AwFDListener::AwFDListener() : dead(false)
 {
   id=cnt++;
   cout<<id<<": Constructed"<<endl;
-  a.addListener(*this);
 }
 
 AwFDListener::~AwFDListener()
 {
-  cout<<id<<": Destroyed"<<endl;
+  cout<<id<<": Destroyed fd="<<fd<<endl;
+  //usleep(5000000);
+  int r=::close(fd);
+  cout<<"r="<<r<<endl;
+}
+
+int AwFDListener::onReadable()
+{
+    return onEvent(EPOLLIN);
+}
+
+int AwFDListener::onWritable()
+{
+    return onEvent(EPOLLOUT);
+}
+
+int AwFDListener::onEvent( uint32_t event)
+{
+    return 0;
+}
+
+int AwFDListener::read( void *buffer, int count)
+{
+    int nr=::read( fd, buffer, count );
+    cout<<"Read: "<<nr<<" bytes on fd"<<fd<<endl;
+    return nr;
+}
+
+int AwFDListener::write( const void *buffer, int count)
+{
+    int nw=::write( fd, buffer, count);
+    cout<<"Written: "<<nw<<" bytes on fd"<<fd<<endl;
+    return nw;
+}
+
+int AwFDListener::dispose()
+{
+    dead=true;
 }

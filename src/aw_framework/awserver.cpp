@@ -17,36 +17,24 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef AWFDLISTENER_H
-#define AWFDLISTENER_H
+#include "awserver.h"
 
-#include <sys/epoll.h>
-
-class AwApp;
-
-class AwFDListener
+AwServer::AwServer( AwApp &app, const std::string &addr, uint16_t port) : app(app)
 {
-  friend class AwApp;
+    bind(addr, port);
+    listen();
+    app.addListener(*this);
+}
 
- protected:
-  int fd,id;
-
-  private:
-    static int cnt;
-    //int id;
-    struct epoll_event ev;
-    bool dead;
-
-  public:
-    AwFDListener();
-    ~AwFDListener();
-    virtual int onReadable();
-    virtual int onWritable();
-    virtual int onEvent(uint32_t events);
-    int read(void *buffer, int count);
-    int write( const void *buffer, int count);
-    int dispose();
-    int getFD(){return fd;}
-};
-
-#endif
+int AwServer::onReadable()
+{
+    int cfd;
+    do
+    {
+        AwSocket &conn = newSocket();
+        cfd=conn.getFD();
+        if(cfd>0)app.addListener(conn);
+        else delete &conn;
+    }
+    while(cfd>0);
+}

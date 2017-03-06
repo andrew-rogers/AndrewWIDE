@@ -22,6 +22,7 @@
 
 #include <sys/epoll.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <iostream>
 
 using namespace std;
@@ -37,6 +38,12 @@ AwApp::AwApp()
 int AwApp::addListener(AwFDListener &l)
 {
   cout<<l.id<<": add() fd="<<l.fd<<endl;
+
+  // Set file to non-blocking
+  int flags = fcntl(l.fd, F_GETFL, 0);
+  flags = flags | O_NONBLOCK;
+  fcntl(l.fd, F_SETFL, flags);
+
   l.ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
   l.ev.data.ptr = (void *)(&l);
   if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, l.fd, &(l.ev)) == -1) {
@@ -63,8 +70,20 @@ int AwApp::wait(int timeout)
   
   for (int n = 0; n < num_events; ++n) {
     AwFDListener *l = (AwFDListener *)(events[n].data.ptr);
+    uint32_t event = events[n].events;
     cout<<l->id<<": Event "<<events[n].events<<endl;
-    l->onEvent(events[n].events);
+    
+    if( !l->dead )
+    {
+        if( event & EPOLLIN ) l->onReadable();
+        if( event & EPOLLOUT ) l->onWritable();
+        if( event & ~( EPOLLIN | EPOLLOUT) ) l->onEvent( event );
+    }
+    if( l->dead )
+    {
+        remove( *l );
+        delete l;
+    }
   }
   return num_events;
 }
