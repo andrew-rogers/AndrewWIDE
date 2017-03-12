@@ -22,15 +22,20 @@
 
 #include "awsocket.h"
 #include "awapp.h"
+#include "awfdlistener.h"
 
-class AwServer : public AwSocket
+class AwServer : public AwSocket, public AwFDListener
 {
   private:
     AwApp &app;
+    bool forking;
   public:
     AwServer(AwApp &app, const std::string &addr, uint16_t port);
-    virtual int onReadable();
-    virtual AwSocket &newSocket() = 0;
+    virtual int onReadable(AwFD &fd);
+    AwSocket *accept();
+    virtual int onConnection(AwFD &fd)=0;
+    void setForking( bool f=true){forking=f;}
+    
 };
 
 #endif

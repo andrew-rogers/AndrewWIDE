@@ -26,50 +26,28 @@ using namespace std;
 
 int AwFDListener::cnt=0;
 
-AwFDListener::AwFDListener() : dead(false)
+AwFDListener::AwFDListener()
 {
   id=cnt++;
-  cout<<id<<": Constructed"<<endl;
+  cout<<id<<": FDL Constructed"<<endl;
 }
 
 AwFDListener::~AwFDListener()
 {
-  cout<<id<<": Destroyed fd="<<fd<<endl;
-  //usleep(5000000);
-  int r=::close(fd);
-  cout<<"r="<<r<<endl;
+  
 }
 
-int AwFDListener::onReadable()
+int AwFDListener::onReadable(AwFD &fd)
 {
-    return onEvent(EPOLLIN);
+  return onEvent(fd, EPOLLIN);
 }
 
-int AwFDListener::onWritable()
+int AwFDListener::onWritable(AwFD &fd)
 {
-    return onEvent(EPOLLOUT);
+  return onEvent(fd, EPOLLOUT);
 }
 
-int AwFDListener::onEvent( uint32_t event)
+int AwFDListener::onEvent(AwFD &fd, uint32_t event)
 {
     return 0;
-}
-
-int AwFDListener::read( void *buffer, int count)
-{
-    int nr=::read( fd, buffer, count );
-    cout<<"Read: "<<nr<<" bytes on fd"<<fd<<endl;
-    return nr;
-}
-
-int AwFDListener::write( const void *buffer, int count)
-{
-    int nw=::write( fd, buffer, count);
-    cout<<"Written: "<<nw<<" bytes on fd"<<fd<<endl;
-    return nw;
-}
-
-int AwFDListener::dispose()
-{
-    dead=true;
 }

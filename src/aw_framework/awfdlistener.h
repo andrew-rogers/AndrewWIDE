@@ -22,31 +22,25 @@
 
 #include <sys/epoll.h>
 
-class AwApp;
+class AwFD;
 
 class AwFDListener
 {
-  friend class AwApp;
+  
 
  protected:
-  int fd,id;
+  int id;
 
   private:
     static int cnt;
     //int id;
-    struct epoll_event ev;
-    bool dead;
 
   public:
     AwFDListener();
     ~AwFDListener();
-    virtual int onReadable();
-    virtual int onWritable();
-    virtual int onEvent(uint32_t events);
-    int read(void *buffer, int count);
-    int write( const void *buffer, int count);
-    int dispose();
-    int getFD(){return fd;}
+    virtual int onReadable(AwFD &fd);
+    virtual int onWritable(AwFD &fd);
+    virtual int onEvent(AwFD &fd, uint32_t events);
 };
 
 #endif

@@ -17,33 +17,22 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef AWSOCKET_H
-#define AWSOCKET_H
+#ifndef AWFORKINGSERVER_H
+#define AWFORKINGSERVER_H
 
-#include "awfd.h"
+#include "awsocket.h"
+#include "awapp.h"
+#include "awfdlistener.h"
 
-#include <string>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-
-class AwServer;
-
-class AwSocket : public AwFD
+class AwForkingServer : public AwSocket, public AwFDListener
 {
- private:
-  std::string peer_address;
-  uint16_t peer_port;
-  sockaddr_in addr_local;
-  sockaddr_in addr_peer;
- public:
-  AwSocket();
-  AwSocket(int fd);
-  ~AwSocket();
-  int bind(const std::string &addr, uint16_t port); // TCP server method
-  int listen(int backlog=1000);
-  int connect(const std::string &addr, uint16_t port); // TCP client method 
-  int shutdown();
-  virtual int close();
+  private:
+  public:
+    AwForkingServer(const std::string &addr, uint16_t port);
+    virtual int onReadable(AwFD &fd);
+    void acceptAndHandle();
+    virtual int onConnection(AwFD &fd)=0;
+    
 };
 
 #endif

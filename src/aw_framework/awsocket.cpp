@@ -18,6 +18,7 @@
 */
 
 #include "awsocket.h"
+#include "awserver.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -25,14 +26,17 @@
 
 using namespace std;
 
-AwSocket::AwSocket(void) : AwFDListener()
+AwSocket::AwSocket() : AwFD()
 {
     // TCP socket
+  
     if ( (fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
     {
       // Error
     }
 
+    cout<<"AwSocket fd="<<fd<<endl;
+
     // Socket can re-use port
     int enable = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
@@ -40,34 +44,20 @@ AwSocket::AwSocket(void) : AwFDListener()
     }
 
 }
-
-// Construct a connection socket from server socket
-AwSocket::AwSocket(AwSocket &ss)
-{
-    socklen_t addrlen( sizeof(addr_peer) );
-    fd = accept(ss.fd, (struct sockaddr*)&addr_peer, &addrlen);
-    cout<<"ss.id="<<ss.id<<" ss.fd="<<ss.fd<<" accept() fd="<<fd<<endl;
-}
-
 
 // Construct AwSocket object from file descriptor.
-AwSocket::AwSocket(int fd)
+AwSocket::AwSocket(int fd) : AwFD(fd)
 {
-    this->fd=fd;
-
-    // Socket can re-use port
-    int enable = 1;
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-      // Error
-    }
+  
 }
 
 AwSocket::~AwSocket()
 {
-    if(fd>=0)
+  cout<<"~AwSocket() fd="<<getFD()<<endl;
+    if(getFD()>=0)
     {
         shutdown();
-        ::close(fd);
+        close();
     }
 }
 
@@ -81,7 +71,7 @@ int AwSocket::bind(const string &addr, uint16_t port)
     int ret=inet_pton( AF_INET, addr.c_str(), &addr_local.sin_addr.s_addr);
     printf("0x%08x\n", addr_local.sin_addr.s_addr);
 
-    ret=::bind(fd, (struct sockaddr*)&addr_local, sizeof(addr_local));
+    ret=::bind(getFD(), (struct sockaddr*)&addr_local, sizeof(addr_local));
     if( ret != 0 )
     {
         // error
@@ -91,7 +81,7 @@ int AwSocket::bind(const string &addr, uint16_t port)
 
 int AwSocket::listen( int backlog )
 {
-    int ret=::listen(fd, 20);
+    int ret=::listen(getFD(), backlog);
     if( ret != 0 )
     {
         // error
@@ -102,11 +92,11 @@ int AwSocket::listen( int backlog )
 int AwSocket::shutdown()
 {
     char buffer[1024];
-    ::shutdown(fd, SHUT_WR);
+    ::shutdown(getFD(), SHUT_WR);
     cout<<"Shutdown"<<endl;
     for(;;)
     {
-      int res=::read(fd, buffer, 1024);
+      int res=::read(getFD(), buffer, 1024);
         if(res < 0) {
             perror("reading");
             break;
@@ -114,4 +104,11 @@ int AwSocket::shutdown()
         if(res == 0)
             break;
     }
+}
+
+int AwSocket::close()
+{
+  cout<<"AwSocket::close() fd="<<getFD()<<" pid="<<getpid()<<endl;
+    int ret=AwFD::close();
+    return(ret);
 }

@@ -17,33 +17,44 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef AWSOCKET_H
-#define AWSOCKET_H
+#ifndef AWFD_H
+#define AWFD_H
 
-#include "awfd.h"
+//#include "awfdlistener.h"
 
-#include <string>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#include <vector>
+#include <sys/epoll.h>
 
-class AwServer;
+class AwApp;
+class AwFDListener;
 
-class AwSocket : public AwFD
+class AwFD
 {
- private:
-  std::string peer_address;
-  uint16_t peer_port;
-  sockaddr_in addr_local;
-  sockaddr_in addr_peer;
- public:
-  AwSocket();
-  AwSocket(int fd);
-  ~AwSocket();
-  int bind(const std::string &addr, uint16_t port); // TCP server method
-  int listen(int backlog=1000);
-  int connect(const std::string &addr, uint16_t port); // TCP client method 
-  int shutdown();
-  virtual int close();
+  friend class AwApp;
+
+ protected:
+  int id,fd;
+
+  private:
+    static int cnt;
+    //int id;
+    //int fd;
+    struct epoll_event ev;
+    std::vector<AwFDListener *>listeners;
+
+  public:
+    AwFD();
+    AwFD(int fd);
+    ~AwFD();
+    int addListener(AwFDListener &l);
+    int removeListener(AwFDListener &l);
+    int numListeners();
+    int read(void *buffer, int count);
+    int write( const void *buffer, int count);
+    virtual int close();
+    void setNonBlocking( bool non_blocking=true );
+    void notify(uint32_t event);
+    int getFD(){return fd;}
 };
 
 #endif

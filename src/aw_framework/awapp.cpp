@@ -18,6 +18,7 @@
 */
 
 #include "awapp.h"
+#include "awfd.h"
 #include "awfdlistener.h"
 
 #include <sys/epoll.h>
@@ -31,32 +32,32 @@ AwApp::AwApp()
 {
   epoll_fd = epoll_create(20);
   if (epoll_fd == -1) {
-    perror("epoll_create");
+    perror("AwApp: epoll_create");
   }
 }
 
-int AwApp::addListener(AwFDListener &l)
+int AwApp::add(AwFD &fd)
 {
-  cout<<l.id<<": add() fd="<<l.fd<<endl;
+  cout<<fd.id<<": add() fd="<<fd.fd<<endl;
 
   // Set file to non-blocking
-  int flags = fcntl(l.fd, F_GETFL, 0);
+  int flags = fcntl(fd.fd, F_GETFL, 0);
   flags = flags | O_NONBLOCK;
-  fcntl(l.fd, F_SETFL, flags);
+  fcntl(fd.fd, F_SETFL, flags);
 
-  l.ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
-  l.ev.data.ptr = (void *)(&l);
-  if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, l.fd, &(l.ev)) == -1) {
-    perror("epoll_ctl: listen_sock");
+  fd.ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+  fd.ev.data.ptr = (void *)(&fd);
+  if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd.fd, &(fd.ev)) == -1) {
+    perror("AwApp: add");
   }
   return 0;
 }
 
-int AwApp::remove(AwFDListener &l)
+int AwApp::remove(AwFD &fd)
 {
-  cout<<l.id<<": remove()"<<endl;
-  if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, l.fd, NULL) == -1) {
-    perror("epoll_ctl: listen_sock");
+  cout<<fd.id<<": remove() fd="<<fd.fd<<endl;
+  if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd.fd, NULL) == -1) {
+    perror("AwApp: remove");
   }
   return 0;
 }
@@ -65,24 +66,17 @@ int AwApp::wait(int timeout)
 {
   int num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, timeout);
   if (num_events == -1) {
-    perror("epoll_wait");
+    perror("AwApp: epoll_wait");
   }
   
   for (int n = 0; n < num_events; ++n) {
-    AwFDListener *l = (AwFDListener *)(events[n].data.ptr);
+    AwFD *l = (AwFD *)(events[n].data.ptr);
     uint32_t event = events[n].events;
-    cout<<l->id<<": Event "<<events[n].events<<endl;
+    l->notify(event);
     
-    if( !l->dead )
+    if( l->fd < 0 )
     {
-        if( event & EPOLLIN ) l->onReadable();
-        if( event & EPOLLOUT ) l->onWritable();
-        if( event & ~( EPOLLIN | EPOLLOUT) ) l->onEvent( event );
-    }
-    if( l->dead )
-    {
-        remove( *l );
-        delete l;
+      //remove( *l );
     }
   }
   return num_events;

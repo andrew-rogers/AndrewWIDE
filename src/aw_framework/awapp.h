@@ -22,7 +22,7 @@
 
 #include <sys/epoll.h>
 
-class AwFDListener;
+class AwFD;
 
 class AwApp
 {
@@ -37,8 +37,8 @@ class AwApp
 
   public:
     AwApp();
-    int addListener(AwFDListener &l);
-    int remove(AwFDListener &l);
+    int add(AwFD &fd);
+    int remove(AwFD &fd);
     int wait(int timeout);
 };
 

@@ -19,22 +19,85 @@
 
 #include "awserver.h"
 
-AwServer::AwServer( AwApp &app, const std::string &addr, uint16_t port) : app(app)
+#include <iostream>
+#include <signal.h>
+
+using namespace std;
+
+AwServer::AwServer( AwApp &app, const std::string &addr, uint16_t port) : AwSocket(), app(app), forking(false)
 {
     bind(addr, port);
     listen();
-    app.addListener(*this);
+    signal(SIGCHLD, SIG_IGN);
+    //app.add(*this);
+    //addListener(*this);
 }
 
-int AwServer::onReadable()
+int AwServer::onReadable(AwFD &fd)
+{
+  cout<<"Yes"<<endl;
+  return onConnection(fd);
+}
+
+#if 0
+int AwServer::onReadable(AwFD &fd)
 {
     int cfd;
+    //if(child) return -1;
     do
     {
-        AwSocket &conn = newSocket();
-        cfd=conn.getFD();
-        if(cfd>0)app.addListener(conn);
-        else delete &conn;
+        AwSocket conn = newSocket();
+        cfd=conn->getFD();
+        //if(cfd>0)app.addListener(conn);
+        if(cfd>0){
+	  int pid=fork();
+	  if( pid == 0 ) {
+	    //close(fd); // Close server fd in child
+	    //fd=-1;
+	    cout<<"Child pid="<<getpid()<<endl;
+	    close();
+	    app.addListener(*conn);
+	    //child=true;
+	    break; // If child then break out of this loop.
+	  }
+	  else{
+	    conn->close();
+	    //::close(cfd);
+	  }
+	}
+        else delete conn;
     }
     while(cfd>0);
 }
+#endif
+
+AwSocket *AwServer::accept()
+{
+  cout<<"AwServer::accept() pid="<<getpid()<<endl;
+    AwSocket *conn = new AwSocket(*this);
+    if(conn->getFD()<0){
+      delete conn;
+      conn=0;
+    }
+    else{
+      //app.add(*conn);
+      if(forking){
+	int pid=fork();
+	if(pid==0){ // Child
+	  cout<<"fork() child pid="<<getpid()<<endl;
+          app.add(*conn);
+	  conn->notify(EPOLLIN);
+	  close();
+	}
+	else{ // Parent or failed
+	  conn->close();
+	  //::close(conn->getFD());
+	  //delete conn;
+	  conn=0;
+	}
+      }
+      else app.add(*conn);
+    }
+    return conn;
+}
+
