@@ -38,12 +38,7 @@ AwApp::AwApp()
 
 int AwApp::add(AwFD &fd)
 {
-  cout<<fd.id<<": add() fd="<<fd.fd<<endl;
-
-  // Set file to non-blocking
-  int flags = fcntl(fd.fd, F_GETFL, 0);
-  flags = flags | O_NONBLOCK;
-  fcntl(fd.fd, F_SETFL, flags);
+  fd.setNonBlocking(true);
 
   fd.ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
   fd.ev.data.ptr = (void *)(&fd);
@@ -55,7 +50,6 @@ int AwApp::add(AwFD &fd)
 
 int AwApp::remove(AwFD &fd)
 {
-  cout<<fd.id<<": remove() fd="<<fd.fd<<endl;
   if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd.fd, NULL) == -1) {
     perror("AwApp: remove");
   }
@@ -73,11 +67,6 @@ int AwApp::wait(int timeout)
     AwFD *l = (AwFD *)(events[n].data.ptr);
     uint32_t event = events[n].events;
     l->notify(event);
-    
-    if( l->fd < 0 )
-    {
-      //remove( *l );
-    }
   }
   return num_events;
 }

@@ -27,14 +27,11 @@
 class AwServer : public AwSocket, public AwFDListener
 {
   private:
-    AwApp &app;
-    bool forking;
   public:
-    AwServer(AwApp &app, const std::string &addr, uint16_t port);
+    AwServer(const std::string &addr, uint16_t port);
     virtual int onReadable(AwFD &fd);
-    AwSocket *accept();
+    void acceptAndHandle();
     virtual int onConnection(AwFD &fd)=0;
-    void setForking( bool f=true){forking=f;}
     
 };
 

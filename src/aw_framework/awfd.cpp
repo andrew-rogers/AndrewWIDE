@@ -27,28 +27,21 @@
 
 using namespace std;
 
-int AwFD::cnt=0;
-
 AwFD::AwFD() : fd(-1)
 {
-  id=cnt++;
-  cout<<id<<": AwFD()"<<endl;
+  
 }
 
 AwFD::AwFD(int fd) : fd(fd)
 {
-  id=cnt++;
-  cout<<id<<": AwFD()"<<endl;
+  
 }
 
 AwFD::~AwFD()
 {
-  cout<<id<<": ~AwFD() fd="<<fd<<endl;
   if(fd>=0){ 
     close();
   }
-
-  //usleep(5000000);
 }
 
 int AwFD::addListener(AwFDListener &l)
@@ -101,10 +94,11 @@ void AwFD::setNonBlocking( bool non_blocking )
 
 void AwFD::notify(uint32_t event)
 {
-    cout<<"pid: "<<getpid()<<" id="<<id<<" fd="<<fd<<": Event "<<event<<endl;
+    cout<<"pid: "<<getpid()<<" fd="<<fd<<": Event "<<event;
+    if(listeners.size() == 0) cout<<" has no listeners!";
+    cout<<endl;
     for( vector<AwFDListener *>::iterator li=listeners.begin(); li<listeners.end(); li++){
         AwFDListener *listener = *li;
-	cout<<id<<" fd="<<fd<<": Event "<<event<<endl;
     
 	if( (fd > 0) && (event & EPOLLIN) ) listener->onReadable(*this);
 	if( (fd > 0) && (event & EPOLLOUT) ) listener->onWritable(*this);
@@ -115,7 +109,6 @@ void AwFD::notify(uint32_t event)
 int AwFD::close()
 {
   if(fd>0){
-    //app.remove(*this);
     ::close(fd);
   }
   fd=-1;

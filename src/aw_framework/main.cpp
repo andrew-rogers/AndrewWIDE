@@ -20,8 +20,11 @@
 #include "awsocket.h"
 #include "awapp.h"
 #include "awforkingserver.h"
+#include "awserver.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <string>
 #include <iostream>
 
@@ -65,12 +68,13 @@ private:
     public:
   MyServer(AwApp &app, const string &addr, uint16_t port) : AwForkingServer( addr, port ), app(app)
   {
+    //app.add(*this);
+    addListener(*this);
   }
-  virtual int onConnection(AwFD &fd)
+  virtual int onConnectionProcess(AwFD &fd)
   {
-    int session_fd = fd.getFD();
     MyListener listener;
-
+      
     app.add(fd);
     fd.addListener(listener);
     fd.notify(EPOLLIN); // We generate this event as very occasionally the parent gets the event straight after accept() when multiple connections are made simultaneously. If the parent gets the event then the child does not.
@@ -78,6 +82,12 @@ private:
       app.wait(1000);
       cout<<"pid="<<getpid()<<", fd = "<<fd.getFD()<<", No. listeners = "<<fd.numListeners()<<endl;
     }
+
+
+    delete &fd;
+    _exit(0);
+    
+    
   }
   
 };
@@ -88,6 +98,8 @@ int main( int argc, char *args[] )
   MyServer s(app, "127.0.0.1", 8082);
 
   while(1){
-    s.acceptAndHandle(); // Returns when a connection is made
+    //app.wait(1000);
+    cout<<"tick!"<<endl;
+    s.acceptAndHandle();
   }
 }

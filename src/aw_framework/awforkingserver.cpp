@@ -27,43 +27,27 @@
 
 using namespace std;
 
-AwForkingServer::AwForkingServer( const std::string &addr, uint16_t port) : AwSocket()
+AwForkingServer::AwForkingServer( const std::string &addr, uint16_t port) : AwServer( addr, port)
 {
-    bind(addr, port);
-    listen();
-    signal(SIGCHLD, SIG_IGN);
+    
 }
 
-int AwForkingServer::onReadable(AwFD &fd)
+
+int AwForkingServer::onConnection(AwFD &fd)
 {
-  while(1){
-    int fd_connection=::accept(this->fd,NULL,0);
-    if( fd_connection == -1 ){
-      if( errno == EINTR )break;
-      perror("accept");
-      exit(errno);
-    }
-    pid_t pid=fork();
-    if( pid==-1 ){ // Forking error
-      perror("fork");
-      exit(errno);
-    }
-    else if( pid==0 ){ // Child processs
-      close();
-      AwFD *fd=new AwFD(fd_connection);
-      onConnection(*fd);
-      delete fd;
-      _exit(0);
-    }
-    else{ // Parent process
-      ::close(fd_connection);
-    }
+
+  cout<<"pid="<<getpid()<<": onConnection()"<<endl;
+
+  pid_t pid=fork();
+  if( pid==-1 ){ // Forking error
+    perror("fork");
+    exit(errno);
   }
-
+  else if( pid==0 ){ // Child processs
+    close();
+    onConnectionProcess(fd);
+  }
+  else{ // Parent process
+    delete &fd;
+  }
 }
-
-void AwForkingServer::acceptAndHandle()
-{
-    onReadable(*this);
-}
-

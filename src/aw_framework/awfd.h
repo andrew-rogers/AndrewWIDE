@@ -20,8 +20,6 @@
 #ifndef AWFD_H
 #define AWFD_H
 
-//#include "awfdlistener.h"
-
 #include <vector>
 #include <sys/epoll.h>
 
@@ -33,12 +31,10 @@ class AwFD
   friend class AwApp;
 
  protected:
-  int id,fd;
+  int fd;
 
   private:
     static int cnt;
-    //int id;
-    //int fd;
     struct epoll_event ev;
     std::vector<AwFDListener *>listeners;
 
