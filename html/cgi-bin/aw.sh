@@ -1,3 +1,4 @@
+#!/bin/sh
 
 # NOTE: arbitrary execution of commands. Only allow this CGI script to run
 #       on a trusted connection.

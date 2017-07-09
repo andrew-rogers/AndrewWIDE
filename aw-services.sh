@@ -1,6 +1,7 @@
+#!/bin/sh
 
 #    AndrewWIDE - http server setup and startup functions
-#    Copyright (C) 2015,2016  Andrew Rogers
+#    Copyright (C) 2017  Andrew Rogers
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,30 +17,32 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-aw_httpd_install() {
-  msg "Installing HTML files."
-  local src="$AW_SRC_DIR"/html
-  [ -n "$src" ] && cp -r "$src" "$AW_DIR"
-}
+local pdir="$PWD"
+cd $(dirname $0)
+local HTML_DIR="$PWD/html"
+cd "$pdir"
 
-aw_httpd_cgi() {
-  local cgi=$AW_DIR/html/cgi-bin/aw.sh
-  if [ ! -e "$cgi" ]
-  then
-    local src=$AW_DIR/html/cgi-bin/aw.src
-    if [ -e "$src" ]
-    then
-      echo "#!$UTILS_BIN/$BB sh" > "$cgi"
-      cat "$src" >> "$cgi"
-      chmod 755 "$cgi"
-      msg "Configured CGI shebang."
-    else
-      error "Can't find CGI script source."
+fix_cgi_shebang() {
+  local sb="#!$(which sh)"
+  for fn in $(find "$HTML_DIR/cgi-bin/" -type f); do
+    local sbf=$(head -n1 "$fn")
+    if [ "$sbf" != "$sb" ]; then
+      sed -i "1s|#!.*|$sb|" "$fn"
     fi
-  fi
+  done
 }
 
-aw_httpd() {
-  aw_httpd_cgi
-  httpd -p 127.0.0.1:8080 -h "$HTML_DIR"
-}
+local cmd=$1
+[ -n "$cmd" ] && shift
+case $cmd in
+
+  "start" )
+    fix_cgi_shebang
+    httpd -p 127.0.0.1:8080 -h "$HTML_DIR"
+  ;;
+
+  * )
+    echo "Commands:"
+    echo "  start"
+
+esac
