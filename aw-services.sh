@@ -17,14 +17,31 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-local pdir="$PWD"
+PDIR="$PWD"
 cd $(dirname $0)
-local HTML_DIR="$PWD/html"
-cd "$pdir"
+AW_DIR="$PWD"
+cd "$PDIR"
+
+BB="busybox"
+
+busybox_links() {
+  BB_PATH=$(which "$BB")
+  "$BB_PATH" --help > /dev/null
+  BB_DIR=$(dirname "$BB_PATH")
+  if [ $? -eq 0 ]; then
+    if [ ! -L "$BB_DIR/head" ]; then
+      cd "$BB_DIR"
+      for fn in $("$BB_PATH" --list); do
+        ln -s "$BB" "$fn"
+      done
+      cd "$PDIR"
+    fi
+  fi
+}
 
 fix_cgi_shebang() {
   local sb="#!$(which sh)"
-  for fn in $(find "$HTML_DIR/cgi-bin/" -type f); do
+  for fn in $(find "$AW_DIR/html/cgi-bin/" -type f); do
     local sbf=$(head -n1 "$fn")
     if [ "$sbf" != "$sb" ]; then
       sed -i "1s|#!.*|$sb|" "$fn"
@@ -32,13 +49,17 @@ fix_cgi_shebang() {
   done
 }
 
-local cmd=$1
-[ -n "$cmd" ] && shift
-case $cmd in
+CMD=$1
+[ -n "$CMD" ] && shift
+case $CMD in
 
   "start" )
     fix_cgi_shebang
-    httpd -p 127.0.0.1:8080 -h "$HTML_DIR"
+    httpd -p 8080 -h "$AW_DIR/html"
+  ;;
+
+  "make_busybox_links" )
+    busybox_links
   ;;
 
   * )

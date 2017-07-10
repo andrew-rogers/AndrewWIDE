@@ -3,6 +3,10 @@ Create applications that run on Android or LSB with GUI via web browser.
 
 The intention is to be able to edit source code or scripts via a web-browser front end. From the browser it should be possible to compile and run the code with output being passed back to the browser.
 
+## Security Notice
+
+Only run AndrewWIDE services on a secure and trusted network. Traffic is currently unencrypted and the AndrewWIDE service intentionally enables administrative access to the host.
+
 ## Status
 Markdown editor working, also has maths support via MathJax. 
 
@@ -29,6 +33,6 @@ The shebang line of the aw-services.sh script needs to be set, this can be done 
 
 Now it is ready to run
 
-> ./AndrewWIDE-master/aw-services.sh start
+> $ ./AndrewWIDE-master/aw-services.sh start
 
 It should now be possible to access AndrewWIDE from the browser [here](http://127.0.0.1:8080/)
