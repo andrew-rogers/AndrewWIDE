@@ -26,9 +26,8 @@ BB="busybox"
 
 busybox_links() {
   BB_PATH=$(which "$BB")
-  "$BB_PATH" --help > /dev/null
-  BB_DIR=$(dirname "$BB_PATH")
   if [ $? -eq 0 ]; then
+    BB_DIR=$(dirname "$BB_PATH")
     if [ ! -L "$BB_DIR/head" ]; then
       cd "$BB_DIR"
       for fn in $("$BB_PATH" --list); do
@@ -36,6 +35,8 @@ busybox_links() {
       done
       cd "$PDIR"
     fi
+  else
+    echo "Can't locate busybox. Check that busybox is in path." 1>&2
   fi
 }
 
