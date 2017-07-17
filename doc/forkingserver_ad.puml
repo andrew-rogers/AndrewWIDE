@@ -1,0 +1,22 @@
+@startuml
+start
+repeat
+:Waiting for a connection;
+note left
+ accept() function.
+end note
+split
+:Terminate<
+stop
+split again
+:Connection<
+ fork
+   :Initialise session;
+   :Run session;
+   :Clean up;
+   end
+ fork again
+ end fork
+end split
+repeat while()
+@enduml

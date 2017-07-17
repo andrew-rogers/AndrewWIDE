@@ -1,0 +1,9 @@
+@startuml
+start
+repeat
+:dispatch application events();
+:dispatch operating system events();
+repeat while ()
+:exit<
+stop
+@enduml

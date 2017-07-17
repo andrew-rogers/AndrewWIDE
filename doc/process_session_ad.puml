@@ -1,0 +1,21 @@
+@startuml
+start
+repeat
+ :Waiting for data;
+split
+ :Data from socket <
+ :Send to process >
+split again
+ :Data from process <
+ :Send to socket >
+split again
+ :Process closed <
+ :Close socket;
+ stop
+split again
+ :Socket closed <
+ :Close process;
+ stop
+end split
+repeat while
+@enduml

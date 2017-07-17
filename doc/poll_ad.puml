@@ -1,0 +1,16 @@
+@startuml
+start
+:poll();
+note right
+This is a call to the operating system 
+which blocks until registered file 
+descriptors are ready to perform I/O.
+end note
+:file descriptor(s) ready<
+repeat
+if (file descriptor has event) then (yes)
+:notify>
+endif
+repeat while (more file descriptors) is (yes)
+stop
+@enduml
