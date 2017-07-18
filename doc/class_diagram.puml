@@ -1,0 +1,8 @@
+@startuml
+AwFDListener <|-- AwFDConnector
+AwFD <|-- AwSocket
+AwFD --* AwProcess
+AwFD o-- AwFDListener
+class AwProcess
+note left: Has two FDs; stdin and stdout
+@enduml
