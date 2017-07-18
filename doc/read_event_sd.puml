@@ -1,0 +1,7 @@
+@startuml
+hide footbox
+AwEventLoop -> AwEventLoop : poll()
+AwEventLoop -> AwFD : notify()
+AwFD -> AwFDListener : onReadable()
+AwFDListener -> AwFD : read()
+@enduml

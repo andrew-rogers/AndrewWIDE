@@ -1,0 +1,8 @@
+@startuml
+hide footbox
+AwEventLoop -> AwEventLoop : poll()
+AwEventLoop -> AwSocket : notify()
+AwSocket -> AwFDConnector : onReadable()
+AwFDConnector -> AwSocket : read()
+AwFDConnector -> AwProcess : write()
+@enduml
