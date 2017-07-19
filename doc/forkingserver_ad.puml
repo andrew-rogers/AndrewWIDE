@@ -2,14 +2,12 @@
 start
 repeat
 :Waiting for a connection;
-note left
- accept() function.
-end note
 split
 :Terminate<
 stop
 split again
 :Connection<
+:accept();
  fork
    :Initialise session;
    :Run session;

@@ -4,5 +4,5 @@ AwEventLoop -> AwEventLoop : poll()
 AwEventLoop -> AwSocket : notify()
 AwSocket -> AwFDConnector : onReadable()
 AwFDConnector -> AwSocket : read()
-AwFDConnector -> AwProcess : write()
+AwFDConnector -> AwProcess.fd_write : write()
 @enduml
