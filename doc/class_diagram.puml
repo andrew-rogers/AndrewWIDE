@@ -3,6 +3,27 @@ AwFDListener <|-- AwFDConnector
 AwFD <|-- AwSocket
 AwFD --* AwProcess
 AwFD o-- AwFDListener
-class AwProcess
-note left: Has two FDs; stdin and stdout
+
+class AwFDListener {
+ +onReadable()
+ +onWritable()
+}
+
+class AwFD {
+ -listeners : std::vector<AwFDListener *>
+ #fd : int
+ +write()
+ +read()
+ +addListener()
+ +notify()
+}
+
+class AwProcess {
+ #fd_stdin : AwFD
+ #fd_stdout : AwFD
+ #fd_stderr : AwFD
+ +write()
+ +read()
+ +readErr()
+}
 @enduml
