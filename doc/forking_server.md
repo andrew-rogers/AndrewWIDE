@@ -5,9 +5,9 @@ At the centre of the AndrewWIDE framework is a server that forks other processes
 
 ## Forking Server
 
-The activity diagram below outlines the main activity of the forking server:
+The sequence diagram below outlines the main activity of the forking server:
 
-![alternative text](http://www.plantuml.com/plantuml/proxy?src=https://github.com/andrew-rogers/AndrewWIDE/raw/master/doc/forkingserver_ad.puml)
+![alternative text](http://www.plantuml.com/plantuml/proxy?src=https://github.com/andrew-rogers/AndrewWIDE/raw/master/doc/forkingserver_sd.puml)
 
 ## Session Activity 
 
@@ -32,3 +32,11 @@ Examples of system generated events are those that are generated on file descrip
 ![alternative text](http://www.plantuml.com/plantuml/proxy?src=https://github.com/andrew-rogers/AndrewWIDE/raw/master/doc/read_write_sd.puml)
 
 ![alternative text](http://www.plantuml.com/plantuml/proxy?src=https://github.com/andrew-rogers/AndrewWIDE/raw/master/doc/class_diagram.puml?v=2)
+
+## Contributors
+
+| Contributor   | Contributions                  |
+| ------------- | ------------------------------ |
+| Andrew Rogers | Main author                    |
+| Feng Wenpo    | Review of high level operation |
+

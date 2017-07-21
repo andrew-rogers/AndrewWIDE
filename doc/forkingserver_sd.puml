@@ -1,0 +1,12 @@
+@startuml
+hide footbox
+Client -> Server : Connect
+Server -> Client : Success
+participant "Session Handler Process" as child
+create child
+Server -> child : fork()
+loop
+ Client -> child : some data
+ child -> Client : some data
+end
+@enduml
