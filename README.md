@@ -36,3 +36,9 @@ Now it is ready to run
 > $ ./AndrewWIDE-master/aw-services.sh start
 
 It should now be possible to access AndrewWIDE from the browser [here](http://127.0.0.1:8080/)
+
+## Notes
+
+The CppUTest source can be downloaded using wget:
+
+> $ wget https://github.com/cpputest/cpputest/archive/master.zip -O cpputest.zip

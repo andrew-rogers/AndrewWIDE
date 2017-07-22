@@ -20,26 +20,37 @@
 #ifndef AWAPP_H
 #define AWAPP_H
 
-#include <sys/epoll.h>
+#include <vector>
 
-class AwFD;
+/**
+ *  The main application handling class, a real application should
+ *   have only one instance of this.
+ */
 
 class AwApp
 {
-  public:
-    static const int MAX_EVENTS = 20;
+ public:
 
-  private:
-    struct epoll_event events[MAX_EVENTS];
+  /**
+   *  Constructor
+   *  
+   *  @param argc Number of command line arguments
+   *  @param args The command line arguments
+   *
+   */
+  AwApp( int &argc, char *args[] );
+  
+  /**
+   *  Get the command line arguments as a vector
+   *
+   *  @return vector of command line arguments
+   *
+   */
+  std::vector<const char *> getArgs();
 
-  public:
-    int epoll_fd;
-
-  public:
-    AwApp();
-    int add(AwFD &fd);
-    int remove(AwFD &fd);
-    int wait(int timeout);
+ protected:
+ private:
+  std::vector<const char *> args;
 };
 
-#endif
+#endif //AWAPP_H

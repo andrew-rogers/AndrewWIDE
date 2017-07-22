@@ -3,6 +3,18 @@ AwFDListener <|-- AwFDConnector
 AwFD <|-- AwSocket
 AwFD --* AwProcess
 AwFD o-- AwFDListener
+AwPoll <|-- AwEventLoop
+AwEventLoop <|-- AwApp
+AwPoll o-- AwFD
+
+class AwApp {
+ -args : std::vector<const char *>
+ +getArgs()
+ +getOptionValue( ... )
+}
+
+class AwEventLoop {
+}
 
 class AwFDListener {
  +onReadable()
