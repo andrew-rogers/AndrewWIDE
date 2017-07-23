@@ -21,22 +21,21 @@
 #define AWFD_H
 
 #include <vector>
-#include <sys/epoll.h>
+#include <poll.h>
 
-class AwApp;
+class AwPoll;
 class AwFDListener;
 
 class AwFD
 {
-  friend class AwApp;
+  friend class AwPoll;
 
  protected:
   int fd;
 
   private:
-    static int cnt;
-    struct epoll_event ev;
     std::vector<AwFDListener *>listeners;
+    pollfd* poll_flags;
 
   public:
     AwFD();
@@ -45,11 +44,12 @@ class AwFD
     int addListener(AwFDListener &l);
     int removeListener(AwFDListener &l);
     int numListeners();
-    int read(void *buffer, int count);
-    int write( const void *buffer, int count);
+    virtual int read(void *buffer, size_t count);
+    virtual int write( const void *buffer, size_t count);
     virtual int close();
     void setNonBlocking( bool non_blocking=true );
-    void notify(uint32_t event);
+    virtual void notify(short event);
+    void setFD(int fd){this->fd=fd;}
     int getFD(){return fd;}
 };
 

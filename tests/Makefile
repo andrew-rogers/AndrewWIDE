@@ -7,7 +7,8 @@ TEST_OBJS= \
 OBJ_DIR=../src/aw_framework
 OBJS= \
  $(OBJ_DIR)/awapp.o \
- $(OBJ_DIR)/awprocess.o
+ $(OBJ_DIR)/awprocess.o \
+ $(OBJ_DIR)/awfd.o
 
 CPPUTEST=../src/third_party/cpputest-master
 CPPUTEST_OBJS= \

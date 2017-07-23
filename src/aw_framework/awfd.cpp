@@ -18,10 +18,11 @@
 */
 
 #include "awfd.h"
-#include "awapp.h"
+#include "awpoll.h"
 #include "awfdlistener.h"
 
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <iostream>
 
@@ -66,17 +67,18 @@ int AwFD::numListeners()
   return listeners.size();
 }
 
-int AwFD::read( void *buffer, int count)
+int AwFD::read( void *buffer, size_t count)
 {
     int nr=::read( fd, buffer, count );
     cout<<"Read: "<<nr<<" bytes on fd"<<fd<<endl;
     return nr;
 }
 
-int AwFD::write( const void *buffer, int count)
+int AwFD::write( const void *buffer, size_t count)
 {
     int nw=::write( fd, buffer, count);
-    cout<<"Wrote: "<<nw<<" bytes on fd"<<fd<<endl;
+    if( nw < count && nw != 0 && poll_flags) poll_flags->events |= POLLOUT;
+    cout<<"AwFD Wrote: "<<nw<<" bytes on fd"<<fd<<endl;
     return nw;
 }
 
@@ -92,17 +94,20 @@ void AwFD::setNonBlocking( bool non_blocking )
   fcntl( fd, F_SETFL, flags );
 }
 
-void AwFD::notify(uint32_t event)
+void AwFD::notify(short event)
 {
-    cout<<"pid: "<<getpid()<<" fd="<<fd<<": Event "<<event;
+  cout<<"pid: "<<getpid()<<" fd="<<fd<<": Event "<<event;
     if(listeners.size() == 0) cout<<" has no listeners!";
     cout<<endl;
     for( vector<AwFDListener *>::iterator li=listeners.begin(); li<listeners.end(); li++){
         AwFDListener *listener = *li;
     
-	if( (fd > 0) && (event & EPOLLIN) ) listener->onReadable(*this);
-	if( (fd > 0) && (event & EPOLLOUT) ) listener->onWritable(*this);
-	if( (fd > 0) && (event & ~( EPOLLIN | EPOLLOUT)) ) listener->onEvent( *this, event );
+	if( (fd > 0) && (event & POLLIN) ) listener->onReadable(*this);
+	if( (fd > 0) && (event & POLLOUT) ) {
+	  poll_flags->revents &= ~POLLOUT;
+	  listener->onWritable(*this);
+	}
+	if( (fd > 0) && (event & ~( POLLIN | POLLOUT)) ) listener->onEvent( *this, event );
     }
 }
 

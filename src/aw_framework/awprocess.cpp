@@ -83,13 +83,13 @@ void AwProcess::run(const char *cmd, char *const args[])
     close(in_pipe[0]);
     
     // Make stdin write fd available
-    stdin = in_pipe[1];
+    fd_stdin.setFD( in_pipe[1] );
     
     // Make stdout read fd available
-    stdout = out_pipe[0];
+    fd_stdout.setFD( out_pipe[0] );
     
     // Make stderr read fd available
-    stderr = err_pipe[0];
+    fd_stderr.setFD( err_pipe[0] );
   }
 }
 

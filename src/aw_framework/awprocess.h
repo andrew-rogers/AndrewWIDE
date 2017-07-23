@@ -20,6 +20,8 @@
 #ifndef AWPROCESS_H
 #define AWPROCESS_H
 
+#include "awfd.h"
+
 #include <unistd.h>
 #include <string>
 #include <vector>
@@ -27,8 +29,7 @@
 class AwProcess
 {
  public:
-  /// @todo Use AwFD here
-  int stdin, stdout, stderr;
+  AwFD fd_stdin, fd_stdout, fd_stderr;
  private:
   int in_pipe[2];
   int out_pipe[2];

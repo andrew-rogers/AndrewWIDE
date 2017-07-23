@@ -5,11 +5,11 @@
 
 using namespace std;
 
-TEST_GROUP(FirstTestGroup)
+TEST_GROUP(AppTestGroup)
 {
 };
 
-TEST(FirstTestGroup, FirstTest)
+TEST(AppTestGroup, FirstTest)
 {
   vector<char*> args;
   string arg("./thing");
