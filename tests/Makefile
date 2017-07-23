@@ -1,11 +1,13 @@
 TEST_OBJS= \
  main.o \
- awapp_test.o 
+ awapp_test.o \
+ awprocess_test.o
 
 
 OBJ_DIR=../src/aw_framework
 OBJS= \
- $(OBJ_DIR)/awapp.o
+ $(OBJ_DIR)/awapp.o \
+ $(OBJ_DIR)/awprocess.o
 
 CPPUTEST=../src/third_party/cpputest-master
 CPPUTEST_OBJS= \
