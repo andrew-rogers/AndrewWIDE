@@ -22,11 +22,6 @@
 
 using namespace std;
 
-AwProcess::AwProcess(const char *cmd, char *const args[])
-{
-  run(cmd, args);
-}
-
 AwProcess::AwProcess(const string& cmd, vector<string>& args)
 {
   cout<<"Process constructed cmd="<<cmd<<endl;

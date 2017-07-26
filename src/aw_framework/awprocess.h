@@ -26,20 +26,33 @@
 #include <string>
 #include <vector>
 
+/**
+ *  Process wrapper class, forks a user specified command line process and
+ *   creates pipes for the input and output to and from the process.
+ */
+
 class AwProcess
 {
  public:
-  AwFD fd_stdin, fd_stdout, fd_stderr;
+  AwFD fd_stdin;  ///< Write to this file descriptor for process input
+  AwFD fd_stdout; ///< Read from this file descriptor for process output
+  AwFD fd_stderr; ///< Read from this file descriptor for process error
  private:
   int in_pipe[2];
   int out_pipe[2];
   int err_pipe[2];
- public:
-  /// @todo Proper descriptions of constructors and methods
-  // cmd should contain a slash if PATH is not to be searched, ie. in a CGI server.
-  AwProcess(const char *cmd, char *const args[]);
-  AwProcess(const std::string& cmd, std::vector<std::string>& args);
+
   void run(const char *cmd, char *const args[]);
+
+ public:
+
+  /*
+   * @param cmd name of command to run. Should contain a slash if PATH is not
+   *  to be searched, ie. in a CGI server.
+   *
+   * @param args the command line arguments that are passed to the process. 
+   */
+  AwProcess(const std::string& cmd, std::vector<std::string>& args);
   ~AwProcess();
 };
 

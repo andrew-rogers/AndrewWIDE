@@ -18,18 +18,14 @@
 */
 
 #include "awfdlistener.h"
-#include "awapp.h"
 
-#include <iostream>
+#include <poll.h>
 
 using namespace std;
 
-int AwFDListener::cnt=0;
-
 AwFDListener::AwFDListener()
 {
-  id=cnt++;
-  cout<<id<<": FDL Constructed"<<endl;
+  
 }
 
 AwFDListener::~AwFDListener()
@@ -39,12 +35,12 @@ AwFDListener::~AwFDListener()
 
 int AwFDListener::onReadable(AwFD &fd)
 {
-  return onEvent(fd, EPOLLIN);
+  return onEvent(fd, POLLIN);
 }
 
 int AwFDListener::onWritable(AwFD &fd)
 {
-  return onEvent(fd, EPOLLOUT);
+  return onEvent(fd, POLLOUT);
 }
 
 int AwFDListener::onEvent(AwFD &fd, uint32_t event)

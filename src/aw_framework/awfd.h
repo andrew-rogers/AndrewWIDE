@@ -22,35 +22,83 @@
 
 #include <vector>
 #include <poll.h>
+#include <stdlib.h>
 
 class AwPoll;
 class AwFDListener;
+
+/**
+ *  Performs IO operations on file descriptor and calls the registered 
+ *   listener methods when notified of IO events. The AwFD objects are
+ *   to be registered with an AwPoll instance to receive IO events.
+ */
 
 class AwFD
 {
   friend class AwPoll;
 
- protected:
-  int fd;
-
-  private:
-    std::vector<AwFDListener *>listeners;
-    pollfd* poll_flags;
-
   public:
     AwFD();
     AwFD(int fd);
     ~AwFD();
+
+    /**
+     * @brief Register a listener.
+     *
+     * @param l the AwFDListener object that handles the events.
+     *
+     */
     int addListener(AwFDListener &l);
+
+    /**
+     * @brief Remove a listener
+     *
+     * @param l the AwFDListener to be removed.
+     *
+     */
     int removeListener(AwFDListener &l);
+
+    /**
+     * @brief Get number of registered listeners
+     *
+     * @return the number of registered listeners
+     *
+     */ 
     int numListeners();
+
+    /**
+     * @brief Read the file descriptor
+     *
+     * @param buffer the memory to store the read data
+     *
+     * @param count the maximum number of bytes to read
+     *
+     */
     virtual int read(void *buffer, size_t count);
+
+    /**
+     * @brief Write the file descriptor
+     *
+     * @param buffer the memory that stores the data to be written
+     *
+     * @param count the maximum number of bytes to write
+     *
+     * @return number of bytes actually written
+     *
+     */
     virtual int write( const void *buffer, size_t count);
     virtual int close();
     void setNonBlocking( bool non_blocking=true );
     virtual void notify(short event);
     void setFD(int fd){this->fd=fd;}
     int getFD(){return fd;}
+
+  protected:
+    int fd;
+
+  private:
+    std::vector<AwFDListener *>listeners;
+    pollfd* poll_flags;
 };
 
 #endif
