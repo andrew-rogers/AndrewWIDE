@@ -8,20 +8,26 @@
 including the above line, this line
 and this one!</textarea><br>
     <textarea rows="15" id="out" style="width: 100%;" placeholder="stdout" readonly></textarea><br>
-    <textarea rows="1" id="script" style="width: 100%;">printf "Vowels removed:\n"; sed 's/[aeiou]//g'; echo -e "\n\nFiles in $PWD:"; ls -l; echo; echo -e "blah\nmore blah" | mycat</textarea><br>
-    <button onclick="run()">Run</button>
+    <textarea rows="2" id="script" onkeypress="onScriptChange();" style="width: 100%;">printf "Vowels removed:\n"; sed 's/[aeiou]//g'; echo -e "\n\nFiles in $PWD:"; ls -l; echo; echo -e "blah\nmore blah" | mycat</textarea><br>
   </body>
   <script>
 function display(err,data)
 {
   document.getElementById("out").value=data;
+  document.getElementById("script").value="";
 }
 
-function run()
+function onScriptChange()
 {
-  var script=document.getElementById("script").value;
-  var text=document.getElementById("ta").value;
-  query_sh(script, text, display);
+  var key=window.event.keyCode;
+  if(key==13){
+    var script=document.getElementById("script").value;
+    var text=document.getElementById("ta").value;
+    query_sh(script, text, display);
+    return false;
+  }
+  return true;
 }
+
   </script>
 </html>
