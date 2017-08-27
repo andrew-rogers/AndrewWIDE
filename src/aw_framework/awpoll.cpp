@@ -22,8 +22,6 @@
 
 #include <stdio.h>
 
-using namespace std;
-
 AwPoll::AwPoll()
 {
   
@@ -38,7 +36,8 @@ int AwPoll::add(AwFD &fd)
   pfd.revents=0;
   pollfds.push_back(pfd);
   fds.push_back(&fd);
-  fd.poll_flags=&pollfds[pollfds.size()-1];
+  fd.poll=this;
+  fd.poll_index=pollfds.size()-1;
   return 0;
 }
 
@@ -48,9 +47,10 @@ int AwPoll::remove(AwFD &fd)
     if( fds[i]==&fd ){
       pollfds.erase(pollfds.begin()+i);
       fds.erase(fds.begin()+i);
-      break;
     }
   }
+  fd.poll=0;
+  fd.poll_index=-1;
   return 0;
 }
 
@@ -70,8 +70,14 @@ int AwPoll::wait(int timeout)
   for (int n = 0; n < nfds; ++n) {
     if( pollfds[n].revents ){
       AwFD *fd = fds[n];
+      if(pollfds[n].revents & POLLOUT) pollfds[n].events &= ~POLLOUT; // Clear the POLLOUT flag.
       fd->notify((short)(pollfds[n].revents)); // Notify client code of event via callback mechanism
     }
   }
   return num_events;
+}
+
+void AwPoll::enableWriteEvent(AwFD *fd)
+{
+  pollfds[fd->poll_index].events |= POLLOUT; // Set the POLLOUT flag
 }

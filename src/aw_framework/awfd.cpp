@@ -19,27 +19,38 @@
 
 #include "awfd.h"
 #include "awfdlistener.h"
+#include "awapp.h"
 
 #include <fcntl.h>
 #include <unistd.h>
 
 using namespace std;
 
-AwFD::AwFD() : fd(-1)
+AwFD::AwFD() : fd(-1), poll(0)
 {
-  
+ 
 }
 
-AwFD::AwFD(int fd) : fd(fd)
+AwFD::AwFD(int fd) : fd(fd), poll(0)
 {
-  
+  AwApp *awapp=AwApp::instance;
+  if(awapp)awapp->add(*this);
 }
 
 AwFD::~AwFD()
 {
+  AwApp *awapp=AwApp::instance;
+  if(awapp)awapp->remove(*this);
   if(fd>=0){ 
     close();
   }
+}
+
+void AwFD::setFD(int fd)
+{
+  this->fd=fd;
+  AwApp *awapp=AwApp::instance;
+  if(awapp)awapp->add(*this);
 }
 
 int AwFD::addListener(AwFDListener &l)
@@ -74,9 +85,9 @@ int AwFD::write( const void *buffer, size_t count)
 {
     int nw=::write( fd, buffer, count);
 
-    // If we can't write it all out then set the POLLOUT flag so that listeners 
+    // If we can't write it all out then enable the write event so that listeners 
     // are notified when more data can be written out.
-    if( nw < count && nw != 0 && poll_flags) poll_flags->events |= POLLOUT;
+    if( nw < count && nw != 0 && poll) poll->enableWriteEvent(this);
     return nw;
 }
 
@@ -99,7 +110,6 @@ void AwFD::notify(short event)
     
     if( (fd > 0) && (event & POLLIN) ) listener->onReadable(*this);
     if( (fd > 0) && (event & POLLOUT) ) {
-      poll_flags->events &= ~POLLOUT; // Clear the POLLOUT flag.
       listener->onWritable(*this);
     }
     if( (fd > 0) && (event & ~( POLLIN | POLLOUT)) ) listener->onEvent( *this, event );

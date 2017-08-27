@@ -58,6 +58,8 @@ class AwPoll
    */
   int remove(AwFD &fd);
 
+  void enableWriteEvent(AwFD *fd);
+
   /**
    * @brief Wait for some IO activity.
    *

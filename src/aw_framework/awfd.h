@@ -90,7 +90,7 @@ class AwFD
     virtual int close();
     void setNonBlocking( bool non_blocking=true );
     virtual void notify(short event);
-    void setFD(int fd){this->fd=fd;}
+    void setFD(int fd);
     int getFD(){return fd;}
 
   protected:
@@ -98,7 +98,8 @@ class AwFD
 
   private:
     std::vector<AwFDListener *>listeners;
-    pollfd* poll_flags;
+    AwPoll *poll;
+    int poll_index;
 };
 
 #endif
