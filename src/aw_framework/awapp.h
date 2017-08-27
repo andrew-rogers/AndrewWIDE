@@ -20,16 +20,21 @@
 #ifndef AWAPP_H
 #define AWAPP_H
 
+#include "aweventloop.h"
+
 #include <vector>
 
 /**
  *  The main application handling class, a real application should
- *   have only one instance of this.
+ *   have only one instance of this. Would usually be instantiated in main
+ *   so that it has access to command line arguments.
  */
 
-class AwApp
+class AwApp : public AwEventLoop
 {
  public:
+
+  static AwApp *instance;
 
   /**
    *  Constructor
@@ -39,6 +44,8 @@ class AwApp
    *
    */
   AwApp( int &argc, char *args[] );
+
+  ~AwApp();
   
   /**
    *  Get the command line arguments as a vector

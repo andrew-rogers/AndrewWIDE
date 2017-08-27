@@ -23,10 +23,18 @@
 
 using namespace std;
 
+AwApp *AwApp::instance = 0;
+
 AwApp::AwApp( int &argc, char *argv[] ) :
 args( argv, argv+argc ) // Uses range constructor
 {
   /// @todo Create std::map of arguments.
+  instance=this;
+}
+
+AwApp::~AwApp()
+{
+  instance=0;
 }
 
 std::vector<const char *> AwApp::getArgs()
