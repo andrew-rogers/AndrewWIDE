@@ -20,7 +20,7 @@
 #ifndef AWAPP_H
 #define AWAPP_H
 
-#include "aweventloop.h"
+#include "awpoll.h"
 
 #include <vector>
 
@@ -30,7 +30,7 @@
  *   so that it has access to command line arguments.
  */
 
-class AwApp : public AwEventLoop
+class AwApp : public AwPoll
 {
  public:
 

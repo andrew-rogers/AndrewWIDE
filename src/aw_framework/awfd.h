@@ -20,12 +20,13 @@
 #ifndef AWFD_H
 #define AWFD_H
 
+#include "awsubject.h"
+
 #include <vector>
 #include <poll.h>
 #include <stdlib.h>
 
 class AwPoll;
-class AwFDListener;
 
 /**
  *  Performs IO operations on file descriptor and calls the registered 
@@ -33,38 +34,14 @@ class AwFDListener;
  *   to be registered with an AwPoll instance to receive IO events.
  */
 
-class AwFD
+class AwFD : public AwSubject
 {
   friend class AwPoll;
 
   public:
     AwFD();
     AwFD(int fd);
-    ~AwFD();
-
-    /**
-     * @brief Register a listener.
-     *
-     * @param l the AwFDListener object that handles the events.
-     *
-     */
-    int addListener(AwFDListener &l);
-
-    /**
-     * @brief Remove a listener
-     *
-     * @param l the AwFDListener to be removed.
-     *
-     */
-    int removeListener(AwFDListener &l);
-
-    /**
-     * @brief Get number of registered listeners
-     *
-     * @return the number of registered listeners
-     *
-     */ 
-    int numListeners();
+    virtual ~AwFD();
 
     /**
      * @brief Read the file descriptor
@@ -89,7 +66,6 @@ class AwFD
     virtual int write( const void *buffer, size_t count);
     virtual int close();
     void setNonBlocking( bool non_blocking=true );
-    virtual void notify(short event);
     void setFD(int fd);
     int getFD(){return fd;}
 
@@ -97,7 +73,6 @@ class AwFD
     int fd;
 
   private:
-    std::vector<AwFDListener *>listeners;
     AwPoll *poll;
     int poll_index;
 };

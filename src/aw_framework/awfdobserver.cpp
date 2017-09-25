@@ -17,33 +17,38 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "awfdlistener.h"
+#include "awfdobserver.h"
+#include "awfd.h"
 
 #include <poll.h>
 
 using namespace std;
 
-AwFDListener::AwFDListener()
+AwFDObserver::AwFDObserver()
 {
   
 }
 
-AwFDListener::~AwFDListener()
+AwFDObserver::~AwFDObserver()
 {
   
 }
 
-int AwFDListener::onReadable(AwFD &fd)
+int AwFDObserver::onEvent(AwSubject &subject, uint32_t events)
 {
-  return onEvent(fd, POLLIN);
+    int retval = 0;
+    AwFD &fd = static_cast<AwFD &>( subject );
+    if( events & POLLIN )
+    {
+        retval = onReadable( fd );
+    }
+
+    if( events & POLLOUT )
+    {
+        retval = onWritable( fd );
+    }
+    return retval;
 }
 
-int AwFDListener::onWritable(AwFD &fd)
-{
-  return onEvent(fd, POLLOUT);
-}
 
-int AwFDListener::onEvent(AwFD &fd, uint32_t event)
-{
-    return 0;
-}
+

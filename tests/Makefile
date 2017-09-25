@@ -1,7 +1,8 @@
 TEST_OBJS= \
  main.o \
  awapp_test.o \
- awprocess_test.o
+ awprocess_test.o \
+ awobserver_test.o
 
 OBJ_DIR=../src/aw_framework
 OBJS= \
@@ -9,7 +10,9 @@ OBJS= \
  $(OBJ_DIR)/awprocess.o \
  $(OBJ_DIR)/awpoll.o \
  $(OBJ_DIR)/awfd.o \
- $(OBJ_DIR)/awfdlistener.o
+ $(OBJ_DIR)/awsubject.o \
+ $(OBJ_DIR)/awobserver.o \
+ $(OBJ_DIR)/awfdobserver.o
 
 CPPUTEST=../src/third_party/cpputest-master
 CPPUTEST_OBJS= \

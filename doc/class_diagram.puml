@@ -1,41 +1,49 @@
 @startuml
-AwFDListener <|-- AwFDConnector
+AwFDObserver <|-- AwFDConnector
+AwSubject <|-- AwFD
+AwSubject o-- AwObserver
 AwFD <|-- AwSocket
 AwFD --* AwProcess
-AwFD o-- AwFDListener
-AwPoll <|-- AwEventLoop
-AwEventLoop <|-- AwApp
+AwPoll <|-- AwApp
 AwPoll o-- AwFD
+AwObserver <|-- AwFDObserver
+AwObserver o-- AwSubject
 
 class AwApp {
- -args : std::vector<const char *>
  +getArgs()
  +getOptionValue( ... )
+ -args : std::vector<const char *>
 }
 
-class AwEventLoop {
+class AwFDObserver {
+ {abstract} +onReadable()
+ {abstract} +onWritable()
 }
 
-class AwFDListener {
- +onReadable()
- +onWritable()
+class AwObserver {
+ -subjects : std::vector<AwSubject *>
+ -addSubject(AwSubject *) : int
+ -removeSubject(AwSubject *) : int
+}
+
+class AwSubject {
+ +addObserver()
+ +notify()
+ -observers : std::vector<AwObserver *>
 }
 
 class AwFD {
- -listeners : std::vector<AwFDListener *>
- #fd : int
  +write()
  +read()
- +addListener()
- +notify()
+ #fd : int
 }
 
 class AwProcess {
- #fd_stdin : AwFD
- #fd_stdout : AwFD
- #fd_stderr : AwFD
  +write()
  +read()
  +readErr()
+ #fd_stdin : AwFD
+ #fd_stdout : AwFD
+ #fd_stderr : AwFD
 }
 @enduml

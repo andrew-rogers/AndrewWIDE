@@ -71,7 +71,7 @@ int AwPoll::wait(int timeout)
     if( pollfds[n].revents ){
       AwFD *fd = fds[n];
       if(pollfds[n].revents & POLLOUT) pollfds[n].events &= ~POLLOUT; // Clear the POLLOUT flag.
-      fd->notify((short)(pollfds[n].revents)); // Notify client code of event via callback mechanism
+      fd->notify((uint32_t)(pollfds[n].revents)); // Notify client code of event via callback mechanism
     }
   }
   return num_events;

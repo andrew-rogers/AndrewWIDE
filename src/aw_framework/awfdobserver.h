@@ -17,55 +17,65 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef AWFDLISTENER_H
-#define AWFDLISTENER_H
+#ifndef AWFDOBSERVER_H
+#define AWFDOBSERVER_H
+
+#include "awobserver.h"
 
 #include <stdint.h>
+#include <vector>
 
 class AwFD;
 
 /**
- *  Listener base class for handling events on file descriptors. Client code
+ *  Observer class for handling events on file descriptors. Client code
  *   interested in file descriptor events should re-implement the virtual
  *   methods.
  */
 
-class AwFDListener
+class AwFDObserver : public AwObserver
 {
+    friend AwFD;
+
   public:
-    AwFDListener();
-    ~AwFDListener();
+    AwFDObserver();
+    ~AwFDObserver();
 
     /**
-     * @brief re-implement this for specialised reading of file descriptor.
+     * @brief implement this for specialised reading of file descriptor.
      *
      * @param fd the file descriptor that has become readable.
      *
      */ 
-    virtual int onReadable(AwFD &fd);
+    virtual int onReadable(AwFD &fd)=0;
 
     /**
-     * @brief re-implement this to be notified that the file descriptor is writable.
+     * @brief implement this to be notified that the file descriptor is
+     *  writable.
+     *  
      *  this method is only called after a partial write, when the descriptor
-     *  becomes writable again. The initial write should be called from outside of this
-     *  method.
+     *  becomes writable again. The initial write should be called from outside
+     *  of this method.
      *
      * @param fd the file descriptor that has become writable.
      *
      */ 
-    virtual int onWritable(AwFD &fd);
+    virtual int onWritable(AwFD &fd)=0;
 
     /**
      * @brief re-implement this to be notified of other events.
      *
-     *  This method is also called if onReadable or onWritable are not
-     *  overridden and a read or write event occurs.
+     *  This method is called when a file descriptor has a pending event.
      *
-     * @param fd the file descriptor that has a pending event.
+     * @param subject the file descriptor that has a pending event.
      *
      * @param events the event bits specifying the event(s) that occurred.
      */
-    virtual int onEvent(AwFD &fd, uint32_t events);
+    virtual int onEvent(AwSubject &subject, uint32_t events);
+
+  private:
+    
 };
 
 #endif
+

@@ -18,7 +18,6 @@
 */
 
 #include "awfd.h"
-#include "awfdlistener.h"
 #include "awapp.h"
 
 #include <fcntl.h>
@@ -53,28 +52,6 @@ void AwFD::setFD(int fd)
   if(awapp)awapp->add(*this);
 }
 
-int AwFD::addListener(AwFDListener &l)
-{
-  listeners.push_back(&l);
-  return listeners.size();
-}
-
-int AwFD::removeListener(AwFDListener &l)
-{
-  for( vector<AwFDListener *>::iterator li=listeners.begin(); li<listeners.end(); li++){
-    if(*li == &l ){
-      listeners.erase(li);
-      break;
-    }
-  }
-  return listeners.size();
-}
-
-int AwFD::numListeners()
-{
-  return listeners.size();
-}
-
 int AwFD::read( void *buffer, size_t count)
 {
     int nr=::read( fd, buffer, count );
@@ -101,19 +78,6 @@ void AwFD::setNonBlocking( bool non_blocking )
     flags &= ~O_NONBLOCK;
   }
   fcntl( fd, F_SETFL, flags );
-}
-
-void AwFD::notify(short event)
-{
-  for( vector<AwFDListener *>::iterator li=listeners.begin(); li<listeners.end(); li++){
-    AwFDListener *listener = *li;
-    
-    if( (fd > 0) && (event & POLLIN) ) listener->onReadable(*this);
-    if( (fd > 0) && (event & POLLOUT) ) {
-      listener->onWritable(*this);
-    }
-    if( (fd > 0) && (event & ~( POLLIN | POLLOUT)) ) listener->onEvent( *this, event );
-  }
 }
 
 int AwFD::close()
