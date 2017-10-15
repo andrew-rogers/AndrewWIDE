@@ -1,0 +1,11 @@
+@startuml
+AwFD --|> AwSubject
+AwFDLinux --|> AwFD
+AwFDMock --|> AwFD
+AwSocket --|> AwFD
+AwSocketLinux --|> AwSocket
+AwSocketLinux --|> AwFDLinux
+AwSocketMock --|> AwSocket
+AwSocketMock --|> AwFDMock
+@enduml
+
