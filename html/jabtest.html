@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+<script src="jsonarraybuffers.js"></script>
+<script>
+window.onload=function(e){
+
+    // Create an object containing ArrayBuffer objects
+    var input=new ArrayBuffer(16);
+    var arr=new Int16Array(input);
+    for( var i=0; i<5; i++) arr[i]=Math.random()*65536-32768;
+    var inner={cmd: "random16", input: input};
+    var obj={cmd: "random16", input: input, innerobj: inner}; // Test the recursion
+    var blob=JsonArrayBuffers.stringify(obj);
+
+    // Use the POST to hex conversion CGI to produce hex dump
+    var xhr = new XMLHttpRequest();
+    var cgi="/cgi-bin/post2hex.cgi";
+    xhr.open("POST", cgi, true);
+    xhr.onload = function (event) {
+        var ta_dump=document.getElementById("dump");
+        ta_dump.value=xhr.responseText;
+    };
+    xhr.send(blob);
+}
+</script>
+</head>
+<body>
+<textarea id="dump" rows="10" cols="80"></textarea>
+
+</body>
+</html>
+
