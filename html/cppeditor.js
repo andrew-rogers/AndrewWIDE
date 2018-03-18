@@ -32,8 +32,9 @@ var CppEditor = function(div) {
         div=document.createElement("div");
         document.body.appendChild(div);
     }
-
+    this.debug=null;
     this.createInDiv(div);
+    this.cgi="/cgi-bin/post2hex.cgi";
 }
 
 CppEditor.prototype.createInDiv = function( div ) {
@@ -71,11 +72,38 @@ CppEditor.prototype.createInDiv = function( div ) {
     // Create, style and append the editing area
     this.ta = document.createElement("textarea");
     this.div.appendChild(this.ta);
-    var editor = CodeMirror.fromTextArea(this.ta, {
+    this.editor = CodeMirror.fromTextArea(this.ta, {
         lineNumbers: true,
         matchBrackets: true,
         mode: "text/x-c++src"
     });
+
+    var that=this;
+    this.btn_save.onclick=function(){that.saveClicked();};
     
+};
+
+CppEditor.prototype.saveClicked = function() {
+    if(this.debug) this.debug.log("Save clicked!");
+    var obj={cmd: "save"};
+    obj["text"]=this.editor.getValue();
+    this.post(obj);
+};
+
+CppEditor.prototype.handleResponse = function(obj) {
+    if(this.debug) this.debug.log("Response");
+};
+
+CppEditor.prototype.post = function(obj) {
+    var blob=JsonArrayBuffers.stringify(obj);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", this.cgi, true);
+    //xhr.responseType = "blob";
+    var that=this;
+    xhr.onload = function (event) {
+        if(that.debug) that.debug.log(xhr.responseText);
+        //that.handleResponse(JsonArrayBuffers.parse(xhr.response));
+    };
+    xhr.send(blob);
 };
 

@@ -23,6 +23,10 @@ window.onload=function(e){
         ta_dump.value=xhr.responseText;
     };
     xhr.send(blob);
+
+    obj=JsonArrayBuffers.parseBlob(blob,function(obj){
+        console.log(obj);
+    });
 }
 </script>
 </head>
