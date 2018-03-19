@@ -29,14 +29,12 @@ var JsonArrayBuffers = function() {
 };
 
 JsonArrayBuffers.stringify = function( obj ) {
-    var headers=[];
     var buffers=[];
-    var ret_obj = JsonArrayBuffers.processObject( obj, headers, buffers );
-    var json=JSON.stringify( ret_obj ) + JSON.stringify( headers );
+    var ret_obj = {};
+    var total_length = JsonArrayBuffers.processObject( obj, 0, ret_obj, buffers );
+    var json=JSON.stringify( ret_obj );
     
-    // Get length required to store all ArrayBuffers and allocate new array.
-    var total_length=0;
-    for( var i=0; i<buffers.length; i++ ) total_length = total_length + buffers[i].byteLength;
+    // Create new array for concatenation of all ArrayBuffers
     var arr = new Uint8Array( total_length );
     
     // Insert all ArrayBuffers into new array.
@@ -47,42 +45,33 @@ JsonArrayBuffers.stringify = function( obj ) {
         offset = offset + buffers[i].byteLength;
     }
     
-    var ret = new Blob([json, arr.buffer])
+    var ret = new Blob([json, "\n", arr.buffer])
     return ret;
 };
 
-JsonArrayBuffers.processObject = function( obj, headers, buffers ) {
-    var ret_obj={};
+JsonArrayBuffers.processObject = function( obj, offset, ret_obj, buffers ) {
     for(var key in obj) {
         if(obj.hasOwnProperty(key)) {
             if(obj[key].constructor === ArrayBuffer)
             {
-                ret_obj["AB#_"+key]=headers.length;
-                JsonArrayBuffers.processArrayBuffer( obj[key], headers, buffers );
+                // Replace value with offset and length into binary section
+                var length=obj[key].byteLength;
+                ret_obj["AB#_"+key]={offset: offset, length: length};
+                offset=offset+length;
+
+                 // Copy ArrayBuffer into buffers array
+                buffers.push(obj[key]);
             }
             else if(obj[key].constructor === Object)
             {
                 // Recursively process objects
-                ret_obj[key]=JsonArrayBuffers.processObject( obj[key], headers, buffers );
+                ret_obj[key]={}; // Create new object in return object.
+                offset=JsonArrayBuffers.processObject( obj[key], offset, ret_obj[key], buffers );
             }
             else ret_obj[key]=obj[key];
         }
     }
-    return ret_obj;
-};
-
-JsonArrayBuffers.processArrayBuffer = function( buffer, headers, buffers ) {
-    var hdr={};
-    var offset=0;
-    if(headers.length>0)
-    {
-        var hdr_last=headers[headers.length-1];
-        offset = hdr_last["offset"]+hdr_last["length"];
-    }
-    hdr["offset"]=offset;
-    hdr["length"]=buffer.byteLength;
-    headers.push(hdr);
-    buffers.push(buffer);
+    return offset;
 };
 
 JsonArrayBuffers.parseBlob = function( blob, callback ) {
@@ -101,46 +90,31 @@ JsonArrayBuffers.parse = function( buffer ) {
     var json_end=0;
     for( var i=0; i<arr.length && json_end==0; i++)
     {
-        if(arr[i]==0x7d) // Find '}'
+        if(arr[i]==10) // Find LF
         {
-            if(i>arr.length-4) json_end=i;
-            else if(arr[i+1]==0x5b && arr[i+2]==0x7b && arr[i+3]==0x22) json_end=i; // Find [{"
+            json_end=i;
         }
     }
-    var obj = JSON.parse(JsonArrayBuffers.textDecode(buffer,0,json_end+1));
+    var obj = JSON.parse(JsonArrayBuffers.textDecode(buffer,0,json_end));
     
-    // Search array for end of JSON array
-    var array_begin=json_end+1;
-    var array_end=0;
-    for( var i=array_begin; i<arr.length && array_end==0; i++)
-    {
-        if(arr[i]==0x5d) // Find ']'
-        {
-            array_end=i;
-        }
-    }
-    var array_headers=[];
-    if( array_end>0 ) array_headers = JSON.parse(JsonArrayBuffers.textDecode(buffer,array_begin,array_end-array_begin+1));
-    
-    return JsonArrayBuffers.parseObject( obj, array_headers, arr, array_end+1);
+    return JsonArrayBuffers.parseObject( obj, arr, json_end+1);
 };
 
-JsonArrayBuffers.parseObject = function( obj, array_headers, arr, arr_offset ) {
+JsonArrayBuffers.parseObject = function( obj, arr, arr_offset ) {
     var ret_obj={};
     for(var key in obj) {
         if(obj.hasOwnProperty(key)) {
             if(key.startsWith("AB#_"))
             {
                 // Set the element back to it's original name and set it value as the indexed ArrayBuffer
-                var ab_index=obj[key];
-                var hdr=array_headers[ab_index];
+                var hdr=obj[key];
                 var start=hdr["offset"]+arr_offset;
                 ret_obj[key.substring(4)]=arr.slice(start,start+hdr["length"]);
             }
             else if(obj[key].constructor === Object)
             {
                 // Recursively parse objects
-                ret_obj[key]=JsonArrayBuffers.parseObject(obj[key], array_headers, arr, arr_offset);
+                ret_obj[key]=JsonArrayBuffers.parseObject(obj[key], arr, arr_offset);
             }
             else ret_obj[key]=obj[key];
         }
@@ -174,7 +148,6 @@ JsonArrayBuffers.textDecode = function( buffer, start, count ) {
         
         // Append code point to string
         str = str + String.fromCharCode(code_point); ///@todo deal with code_point>0xffff
-        
     }
     return str;
 };
