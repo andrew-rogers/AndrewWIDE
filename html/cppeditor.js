@@ -34,7 +34,7 @@ var CppEditor = function(div) {
     }
     this.debug=null;
     this.createInDiv(div);
-    this.cgi="/cgi-bin/post2hex.cgi";
+    this.cgi="/cgi-bin/aw_fs.cgi";
 }
 
 CppEditor.prototype.createInDiv = function( div ) {
@@ -104,6 +104,7 @@ CppEditor.prototype.post = function(obj) {
         if(that.debug) that.debug.log(xhr.responseText);
         //that.handleResponse(JsonArrayBuffers.parse(xhr.response));
     };
+
     xhr.send(blob);
 };
 
