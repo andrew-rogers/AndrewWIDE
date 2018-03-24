@@ -49,7 +49,7 @@ var Editor = function(div) {
     this.div_menu.appendChild(this.div_filelist);
     this.div.appendChild(this.div_menu);
 
-    var fs = new FileSelector(this.div_filelist);
+    var fs = new FileSelector(this.div_filelist, listfiles);
 
     var that = this;
 

@@ -91,48 +91,27 @@ function filewrite(fn, data, callback)
   query_sh(script, data);
 }
 
-function filesystems(callback)
-{
-  query_sh( 'ls -lead "$AW_SRC_DIR" "$AW_DIR"', '', function( err, data ) {
-    data=data.split('\n');
-    var list = [];
-    for( var i=0; i<data.length; i++ ){ 
-      var obj = parse_ls_line( data[i] );
-      if( obj.flags ) list.push( obj );
-    }
-    if( callback ) callback( list );
-  });
-}
-
-function ls(path, callback)
+function listfiles(path, callback)
 {
   if( path[0]!='/' ) path="../../"+path;
-  query_sh('cd "'+path+'" && pwd && ls -lea', "", function(err,data){
+  query_sh('cd "'+path+'" && pwd && listfiles', "", function(err,data){
     data=data.split('\n');
     var dir=data[0];
     var list=[];
     for( var i=2; i<data.length; i++ )
     {
-      var obj = parse_ls_line( data[i] );
+      var obj = parse_listfiles_line( data[i] );
       if( obj.flags ) list.push( obj );
     }
     if( callback )callback({dir: dir, list: list});
   });
 }
 
-function parse_ls_line( line )
+function parse_listfiles_line( line )
 {
   var tok = new Tokeniser(line);
-  return {flags:        tok.readToken(),
-	  links:        tok.readToken(),
-          owner:        tok.readToken(),
-	  group:        tok.readToken(),
-	  size:         tok.readToken(),
-	  day_of_week:  tok.readToken(),
-	  month:        tok.readToken(),
-	  day_of_month: tok.readToken(),
-	  time:         tok.readToken(),
-	  year:         tok.readToken(),
+  return {flags:        tok.readToken(/\t/),
           path:         tok.readRemaining()
   };
 }
+

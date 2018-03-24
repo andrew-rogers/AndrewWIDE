@@ -25,28 +25,23 @@
  *
  */
 
-var FileSelector = function( div )
+var FileSelector = function( div, ls )
 {
   this.div=div;
+  this.ls=ls;
   this.selector=new Menu(div);
-  this.dir="html";
-  this.filesytems='';
-  var that=this;
-  filesystems(function(obj){
-    that.filesystems=obj;
-  });
+  this.dir="";
 };
 
 FileSelector.prototype.show = function( callback )
 {
   this.selector.clear();
   var that=this;
-  ls(this.dir,function(obj) {
+  this.ls(this.dir,function(obj) {
     var list=obj.list;
     that.dir=obj.dir;
     
-    list = list.concat(that.filesystems);
-
+    that.selector.clear();
     for( var i=0; i<list.length; i++ )
     {
       var item=document.createElement('p');
@@ -72,3 +67,4 @@ FileSelector.prototype.show = function( callback )
     });
   });
 };
+
