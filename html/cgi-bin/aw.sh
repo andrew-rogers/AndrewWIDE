@@ -6,8 +6,23 @@
 AW_DIR=$(pwd | sed "s/\/html.*//") # Find "/html" and removed it and everything after it.
 
 listfiles() {
+  // If specified directory is invalid use $AW_DIR
+  if [ -d "$1" ]; then
+    cd "$1"
+  else
+    cd "$AW_DIR"
+  fi
+
+  // First line is full path of current directory
+  pwd
+
+  // List the directories
   find -maxdepth 1 -type d -print0 | xargs -0 -n1 printf "%s\n" | sort | sed "s/^\.\//d\t/"
+
+  // List the files
   find -maxdepth 1 -type f -print0 | xargs -0 -n1 printf "%s\n" | sort | sed "s/^\.\//f\t/"
+
+  // Filesystem shortcuts
   [ -d "/sdcard/Download" ] && printf "d\t/sdcard/Download\n"
   printf "d\t$AW_DIR\n"
 }

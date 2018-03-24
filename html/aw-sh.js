@@ -93,12 +93,12 @@ function filewrite(fn, data, callback)
 
 function listfiles(path, callback)
 {
-  if( path[0]!='/' ) path="../../"+path;
-  query_sh('cd "'+path+'" && pwd && listfiles', "", function(err,data){
+  query_sh('listfiles "'+path+'"', "", function(err,data){
     data=data.split('\n');
     var dir=data[0];
+    data[1]="d\t.." // Replace empty line with ".."
     var list=[];
-    for( var i=2; i<data.length; i++ )
+    for( var i=1; i<data.length; i++ )
     {
       var obj = parse_listfiles_line( data[i] );
       if( obj.flags ) list.push( obj );
@@ -114,4 +114,5 @@ function parse_listfiles_line( line )
           path:         tok.readRemaining()
   };
 }
+
 
