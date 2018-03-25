@@ -55,3 +55,37 @@ Debug.prototype.log = function( str ) {
     this.ta_output.scrollTop = this.ta_output.scrollHeight;
 };
 
+Debug.prototype.hexdump = function( buffer ) {
+    var arr = new Uint8Array( buffer );
+    var hex_str="";
+    var str="";
+
+    for( var i=0; i<arr.length; i++ )
+    {
+        var val=arr[i];
+
+        // Convert to hex, zero pad if less than two hex digits.
+        if( val<16 ) hex_str=hex_str+"0";
+        hex_str=hex_str+val.toString(16)+" ";
+
+        // Print ASCII.
+        if( val>=32 && val<127) str=str+String.fromCharCode(val);
+        else str=str+"."
+
+        // Add extra space after eight bytes.
+        if( (i%16) == 7 ) hex_str=hex_str+" ";
+
+        // After 16 bytes display the hex and ASCII.
+        if( (i%16) == 15 )
+        {
+            this.log(hex_str+" |"+str+"|");
+            hex_str="";
+            str=""
+        }
+    }
+
+    // Display any remaining.
+    while( hex_str.length < 49 ) hex_str=hex_str+" ";
+    this.log(hex_str+" |"+str+"|");
+};
+
