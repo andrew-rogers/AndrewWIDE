@@ -85,7 +85,7 @@ JsonArrayBuffers.parseBlob = function( blob, callback ) {
 
 JsonArrayBuffers.parse = function( buffer ) {
     var arr = new Uint8Array(buffer);
-    
+
     // Search array for end of JSON object
     var json_end=0;
     for( var i=0; i<arr.length && json_end==0; i++)
@@ -96,7 +96,7 @@ JsonArrayBuffers.parse = function( buffer ) {
         }
     }
     var obj = JSON.parse(JsonArrayBuffers.textDecode(buffer,0,json_end));
-    
+
     return JsonArrayBuffers.parseObject( obj, arr, json_end+1);
 };
 
@@ -125,7 +125,7 @@ JsonArrayBuffers.parseObject = function( obj, arr, arr_offset ) {
 JsonArrayBuffers.textDecode = function( buffer, start, count ) {
     var arr = new Uint8Array(buffer);
     var str = "";
-    
+
     var end=start+count;
     if( end > arr.length ) end=arr.length;
     for( var i=start; i<end; i++)
@@ -145,11 +145,23 @@ JsonArrayBuffers.textDecode = function( buffer, start, count ) {
             num_extra--;
             for( var j=0; j<num_extra; j++ ) code_point=(code_point<<6) | (arr[++i] & 0x3f)
         }
-        
+
         // Append code point to string
         str = str + String.fromCharCode(code_point); ///@todo deal with code_point>0xffff
     }
     return str;
 };
 
+JsonArrayBuffers.query = function(url, obj, callback) {
+    var blob=JsonArrayBuffers.stringify(obj);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function (event) {
+        var response_obj=JsonArrayBuffers.parse(xhr.response);
+        if( callback ) callback(response_obj);
+    };
+
+    xhr.send(blob);
+};
 
