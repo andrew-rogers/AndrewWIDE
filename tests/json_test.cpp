@@ -21,3 +21,12 @@ TEST(JsonTestGroup, FirstTest)
   STRCMP_EQUAL("read", cmd.c_str());
 }
 
+TEST(JsonTestGroup, SecondTest)
+{
+  Json json;
+  json["thing"]="the thing's value";
+  ostringstream out;
+  out << json;
+  STRCMP_EQUAL("{\"thing\":\"the thing's value\"}", out.str().c_str());
+}
+

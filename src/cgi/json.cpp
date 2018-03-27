@@ -169,6 +169,20 @@ Json::Json() : m_tokeniser(0), m_type(undefined_type), m_str(0), m_pairs(0), m_v
 {
 }
 
+Json::~Json()
+{
+    if(m_str) delete m_str;
+    if(m_pairs)
+    {
+        for( map<string, Json*>::iterator it = m_pairs->begin(); it != m_pairs->end(); it++ )
+        {
+            delete it->second;
+        }
+        delete m_pairs;
+    }
+    if(m_tokeniser) delete m_tokeniser;
+}
+
 bool Json::parse(istream& in)
 {
     if(m_tokeniser) delete m_tokeniser;   
@@ -420,9 +434,41 @@ char Json::getLastToken()
     return m_lastToken;
 }
 
+std::string Json::str()
+{
+    if(m_str)
+    {
+        return *m_str;
+    }
+    else
+    {
+        return "";
+    }
+}
+
 Json& Json::operator[](const std::string& key)
 {
+    m_type=object_type;
+    if( m_pairs == 0 ) m_pairs = new map<std::string, Json*>;
     // If not found create new element
+    Json* e;
+    if ( (*m_pairs).find(key) == (*m_pairs).end() ) {
+        // Not found, creating new element.
+        e=new Json();
+        (*m_pairs)[key]=e;
+    }
+    else
+    {
+        // Found.
+        e=(*m_pairs)[key];
+    }
+    return *e;
+}
+
+Json& Json::operator=(const std::string& val)
+{
+    m_type=string_type;
+    m_str=new string(val);
 }
 
 istream& operator>>(istream& in, Json& value)

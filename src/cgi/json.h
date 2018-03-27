@@ -44,11 +44,14 @@ class Json
    
 public:
     Json();
+    ~Json();
     bool parse(std::istream& in);
     bool parse(JsonTokeniser& tokeniser);
     void stringify(std::ostream& out);
     char getLastToken();
+    std::string str();
     Json& operator[](const std::string& key);
+    Json& operator=(const std::string& val);
 private:
     enum Type
     {
