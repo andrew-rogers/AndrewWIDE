@@ -2,10 +2,11 @@ TEST_OBJS= \
  main.o \
  awapp_test.o \
  awprocess_test.o \
- awobserver_test.o
+ awobserver_test.o \
+ json_test.o
 
 OBJ_DIR=../src/aw_framework
-OBJS= \
+AWF_OBJS= \
  $(OBJ_DIR)/awapp.o \
  $(OBJ_DIR)/awprocess.o \
  $(OBJ_DIR)/awpoll.o \
@@ -13,6 +14,12 @@ OBJS= \
  $(OBJ_DIR)/awsubject.o \
  $(OBJ_DIR)/awobserver.o \
  $(OBJ_DIR)/awfdobserver.o
+
+CGI_DIR=../src/cgi
+CGI_OBJS= \
+ $(CGI_DIR)/json.o
+
+OBJS=$(AWF_OBJS) $(CGI_OBJS)
 
 CPPUTEST=../src/third_party/cpputest-master
 CPPUTEST_OBJS= \
@@ -34,7 +41,7 @@ CPPUTEST_OBJS= \
  $(CPPUTEST)/src/CppUTest/JUnitTestOutput.o \
  $(CPPUTEST)/src/Platforms/Gcc/UtestPlatform.o
 
-CXXFLAGS=-I$(CPPUTEST)/include -I$(OBJ_DIR)
+CXXFLAGS=-I$(CPPUTEST)/include -I$(OBJ_DIR) -I$(CGI_DIR) -include NewMacros.h
 LDFLAGS=-L$(CPPUTEST)
 
 all:	$(CPPUTEST)/libCppUTest.a tests
