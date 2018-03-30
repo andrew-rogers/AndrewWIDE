@@ -165,29 +165,18 @@ bool JsonTokeniser::parseNull(istream& in)
 {
 }
 
-Json::Json() : m_tokeniser(0), m_type(undefined_type), m_str(0), m_pairs(0), m_values(0)
+Json::Json() : m_type(undefined_type), m_str(0), m_pairs(0), m_values(0)
 {
 }
 
 Json::~Json()
 {
-    if(m_str) delete m_str;
-    if(m_pairs)
-    {
-        for( map<string, Json*>::iterator it = m_pairs->begin(); it != m_pairs->end(); it++ )
-        {
-            delete it->second;
-        }
-        delete m_pairs;
-    }
-    if(m_tokeniser) delete m_tokeniser;
 }
 
 bool Json::parse(istream& in)
 {
-    if(m_tokeniser) delete m_tokeniser;   
-    m_tokeniser=new JsonTokeniser(in);
-    return parse(*m_tokeniser);
+    JsonTokeniser tokeniser(in);
+    return parse(tokeniser);
 }
 
 bool Json::parse(JsonTokeniser& tokeniser)
@@ -211,23 +200,21 @@ bool Json::parse(JsonTokeniser& tokeniser)
                     case '\'':
                     {
                         m_type=string_type;
-                        m_str=new string;
-                        *(m_str)=str;
+                        m_str=make_shared<string>(str);
                         done=true;
                         break;
                     }
                     case '0':
                     {
                         m_type=number_type;
-                        m_str=new string;
-                        *(m_str)=str;
+                        m_str=make_shared<string>(str);
                         done=true;
                         break;
                     }
                     case '{':
                     {
                         m_type=object_type;
-                        m_pairs = new map<std::string, Json*>;
+                        if( m_pairs == 0 ) m_pairs = make_shared<std::map<std::string, Json> >();
                         state=state_key;
                         break;
                     }
@@ -235,16 +222,16 @@ bool Json::parse(JsonTokeniser& tokeniser)
                     case '[':
                     {
                         m_type=array_type;
-                        m_values = new vector<Json*>;
-                        value=new Json();
-                        if( value->parse(tokeniser) )
+                        if( m_values == 0 ) m_values = make_shared<vector<Json> >();
+                        Json value;
+                        if( value.parse(tokeniser) )
                         {
                             m_values->push_back(value);
                             state=state_comma;
                         }
                         else
                         {
-                            if(value->getLastToken() == ']')
+                            if(value.getLastToken() == ']')
                             {
                                 done=true;
                             }
@@ -252,7 +239,6 @@ bool Json::parse(JsonTokeniser& tokeniser)
                             {
                                 error=true;
                             }
-                            delete value;
                         } 
                         break;
                     }
@@ -289,15 +275,14 @@ bool Json::parse(JsonTokeniser& tokeniser)
                     {
                         if( type == ':' )
                         {
-                            value=new Json();
-                            if( value->parse(tokeniser) )
+                            Json value;
+                            if( value.parse(tokeniser) )
                             {
                                 (*(m_pairs))[key]=value;
                                 state=state_comma;
                             }
                             else
                             {
-                                delete value;
                                 error=true;
                             } 
                         }
@@ -339,8 +324,8 @@ bool Json::parse(JsonTokeniser& tokeniser)
                         {
                             case ',':
                             {
-                                value=new Json();
-                                if( value->parse(tokeniser) )
+                                Json value;
+                                if( value.parse(tokeniser) )
                                 {
                                     m_values->push_back(value);
                                     state=state_comma;
@@ -348,7 +333,6 @@ bool Json::parse(JsonTokeniser& tokeniser)
                                 else
                                 {
                                     error=true;
-                                    delete value;
                                 } 
                                 break;
                             }
@@ -400,14 +384,17 @@ void Json::stringify(ostream& out)
         {
             out << "{";
             bool first(true);
-            for(map<string,Json*>::iterator it=m_pairs->begin(); it!=m_pairs->end(); ++it)
+            for(map<string,Json>::iterator it=m_pairs->begin(); it!=m_pairs->end(); ++it)
             {
-                if(!first) cout<<",";
                 string key=it->first;
-                Json* value=it->second;
-                out << "\"" << key << "\":";
-                value->stringify(out);
-                first=false;
+                Json& value=it->second;
+                if( value.m_type != undefined_type )
+                {
+                    if(!first) out<<",";
+                    out << "\"" << key << "\":";
+                    value.stringify(out);
+                    first=false;
+                }
             }   
             out << "}";
             break;
@@ -417,12 +404,12 @@ void Json::stringify(ostream& out)
             out << "[";
             for(int i=0; i<m_values->size()-1; i++)
             {
-                Json* value=(*(m_values))[i];
-                value->stringify(out);
-                cout<<",";
+                Json& value=(*m_values)[i];
+                value.stringify(out);
+                out<<",";
             }
-            Json* value=(*(m_values))[m_values->size()-1];
-            value->stringify(out);   
+            Json& value=(*(m_values))[m_values->size()-1];
+            value.stringify(out);
             out << "]";
             break;
         }
@@ -449,26 +436,64 @@ std::string Json::str()
 Json& Json::operator[](const std::string& key)
 {
     m_type=object_type;
-    if( m_pairs == 0 ) m_pairs = new map<std::string, Json*>;
+    if( m_pairs == 0 ) m_pairs = make_shared<std::map<std::string, Json> >();
+
     // If not found create new element
-    Json* e;
+    Json* value;
+
     if ( (*m_pairs).find(key) == (*m_pairs).end() ) {
-        // Not found, creating new element.
-        e=new Json();
-        (*m_pairs)[key]=e;
+        // Not found, creating new undefined element.
+        Json undef;
+        (*m_pairs)[key]=undef;
+        value=&(*m_pairs)[key];
     }
     else
     {
         // Found.
-        e=(*m_pairs)[key];
+        value=&(*m_pairs)[key];
     }
-    return *e;
+    return *value;
+}
+
+Json& Json::operator[](int index)
+{
+    if( m_type == undefined_type ) m_type = array_type;
+
+    Json* value;
+
+    switch( m_type )
+    {
+        case object_type:
+        {
+            // If object type then convert index to key
+            string key="";
+            key+=index;
+            value=&(*this)[key];
+            break;
+        }
+
+        default:
+        {
+            if( m_values == 0 ) m_values = make_shared<vector<Json> >();
+
+            // If index is greater than array length then extend with undefined values.
+            while( m_values->size() <= index )
+            {
+                Json undef;
+                m_values->push_back(undef);
+            }
+
+            value=&(*m_values)[index];
+        }
+    }
+
+    return *value;
 }
 
 Json& Json::operator=(const std::string& val)
 {
     m_type=string_type;
-    m_str=new string(val);
+    m_str=make_shared<string>(val);
 }
 
 istream& operator>>(istream& in, Json& value)
@@ -482,8 +507,4 @@ ostream& operator<<(ostream& out, Json& value)
     value.stringify(out);
     return out;
 }
-
-
-
-
 

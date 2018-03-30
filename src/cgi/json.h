@@ -20,6 +20,7 @@
 #ifndef JSON_H
 #define JSON_H
 
+#include <memory>
 #include <iostream>
 #include <map>
 #include <vector>
@@ -51,6 +52,7 @@ public:
     char getLastToken();
     std::string str();
     Json& operator[](const std::string& key);
+    Json& operator[](int index);
     Json& operator=(const std::string& val);
 private:
     enum Type
@@ -73,11 +75,10 @@ private:
         state_comma
     };
   
-    JsonTokeniser* m_tokeniser;
     Type m_type;
-    std::string* m_str;
-    std::map<std::string, Json*>* m_pairs;
-    std::vector<Json*>* m_values;
+    std::shared_ptr<std::string> m_str;
+    std::shared_ptr<std::map<std::string, Json> > m_pairs;
+    std::shared_ptr<std::vector<Json> > m_values;
     char m_lastToken;
 };
 std::istream& operator>>(std::istream& in, Json& value);
