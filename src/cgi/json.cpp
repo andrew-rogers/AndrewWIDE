@@ -490,6 +490,12 @@ Json& Json::operator[](int index)
     return *value;
 }
 
+void Json::push_back(Json& value)
+{
+    if( m_values == 0 ) m_values = make_shared<vector<Json> >();
+    m_values->push_back(value);
+}
+
 Json& Json::operator=(const std::string& val)
 {
     m_type=string_type;

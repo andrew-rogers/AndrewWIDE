@@ -34,7 +34,6 @@ var CppEditor = function(div) {
     }
     this.debug=null;
     this.createInDiv(div);
-    this.cgi="/cgi-bin/aw_fs.cgi";
 }
 
 CppEditor.prototype.createInDiv = function( div ) {
@@ -44,6 +43,11 @@ CppEditor.prototype.createInDiv = function( div ) {
     this.div_topbar = document.createElement("div");
     this.div_topbar.setAttribute("class","editor_top");
     this.div.appendChild(this.div_topbar);
+
+    // Create and append file menu list
+    this.div_filelist=document.createElement("div");
+    this.div_topbar.appendChild(this.div_filelist);
+    this.fs = new FileSelector(this.div_filelist, this.listfiles);
 
     // Create, style and append the Load button
     this.btn_load = document.createElement("button");
@@ -79,32 +83,42 @@ CppEditor.prototype.createInDiv = function( div ) {
     });
 
     var that=this;
+    this.btn_load.onclick=function(){that.loadClicked();};
     this.btn_save.onclick=function(){that.saveClicked();};
     
 };
 
+CppEditor.prototype.loadClicked = function() {
+    var that = this;
+    this.fs.show(function(fn){ // Show the file selector
+        that.load(fn);
+        that.input_filename.value=fn;
+    });
+};
+
 CppEditor.prototype.saveClicked = function() {
-    if(this.debug) this.debug.log("Save clicked!");
     var obj={cmd: "save"};
-    obj["text"]=this.editor.getValue();
-    this.post(obj);
+    obj["content"]=this.editor.getValue();
+    obj["path"]=this.input_filename.value;
+    JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
+        ///@todo When a response for save is defined, handle it here.
+    });
 };
 
-CppEditor.prototype.handleResponse = function(obj) {
+/*CppEditor.prototype.handleResponse = function(obj) {
     if(this.debug) this.debug.log("Response");
+};*/
+
+CppEditor.prototype.load = function(filename) {
+    var obj={path: filename, cmd: "load"};
+    var that = this;
+    JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
+        that.editor.setValue(response["content"]);
+    });
 };
 
-CppEditor.prototype.post = function(obj) {
-    var blob=JsonArrayBuffers.stringify(obj);
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", this.cgi, true);
-    //xhr.responseType = "blob";
-    var that=this;
-    xhr.onload = function (event) {
-        if(that.debug) that.debug.log(xhr.responseText);
-        //that.handleResponse(JsonArrayBuffers.parse(xhr.response));
-    };
-
-    xhr.send(blob);
+CppEditor.prototype.listfiles = function(dir, callback) {
+    var obj={path: dir, cmd: "listfiles"};
+    JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, callback);
 };
 

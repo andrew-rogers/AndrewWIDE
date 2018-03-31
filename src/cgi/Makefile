@@ -7,7 +7,7 @@ all: $(CGIS)
 $(CGI_DIR)/post2hex.cgi: post2hex.cpp
 	g++ $^ -o $@
 
-$(CGI_DIR)/aw_fs.cgi: aw_fs_cgi.cpp json.cpp
+$(CGI_DIR)/aw_fs.cgi: aw_fs_cgi.cpp json.cpp filesystem.cpp
 	g++ $^ -o $@
 
 clean:

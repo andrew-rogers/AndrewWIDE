@@ -53,6 +53,7 @@ public:
     std::string str();
     Json& operator[](const std::string& key);
     Json& operator[](int index);
+    void push_back(Json& value);
     Json& operator=(const std::string& val);
 private:
     enum Type

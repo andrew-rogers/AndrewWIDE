@@ -6,6 +6,8 @@
 <link rel="stylesheet" type="text/css" href="cppeditor.css">
 <script src="cppeditor.js"></script>
 <script src="jsonarraybuffers.js"></script>
+<script src="fileselector.js"></script>
+<script src="menu.js"></script>
 <script src="debug.js"></script>
 
 <link rel="stylesheet" href="codemirror-5.35.0/lib/codemirror.css">
@@ -13,9 +15,10 @@
 <script src="codemirror-5.35.0/mode/clike/clike.js"></script>
 
 <script>
+var debug=null;
 window.onload=function(e){
     var edit=new CppEditor();
-    var debug=new Debug();
+    debug=new Debug();
     edit.debug=debug;
 }
 </script>
