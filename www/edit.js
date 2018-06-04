@@ -3,7 +3,7 @@
  * @licstart  The following is the entire license notice for the 
  *  JavaScript code in this page.
  *
- * Copyright (C) 2016  Andrew Rogers
+ * Copyright (C) 2016,2018  Andrew Rogers
  *
  *
  * The JavaScript code in this page is free software: you can
@@ -27,51 +27,50 @@
 
 var Editor = function(div) {
     if(div){
-        this.div=div;
+        div=div;
     } else{
-        this.div=document.createElement("div");
-        document.body.appendChild(this.div);
+        div=document.createElement("div");
+        div.setAttribute("class","editor");
+        document.body.appendChild(div);
     }
 
-    // Add file menu
-    this.div_menu=document.createElement("div");
-    this.btn_load=document.createElement("button");
-    this.btn_load.innerHTML="Load...";
-    this.div_menu.setAttribute("class","menu");
-    this.ta_filename=document.createElement("textarea");
-    this.ta_filename.setAttribute("cols","100");
-    this.div_menu.appendChild(this.btn_load);
-    this.div_menu.appendChild(this.ta_filename);
-    this.btn_save = document.createElement("button");
-    this.btn_save.innerHTML="Save";
-    this.div_menu.appendChild(this.btn_save);
+    this.createInDiv(div);
+};
+
+Editor.prototype.createInDiv = function( div ) {
+    this.div = div;
+
+    // Create, style and append the top file menu bar
+    this.div_topbar = document.createElement("div");
+    this.div_topbar.setAttribute("class","editor_top");
+    this.div.appendChild(this.div_topbar);
+
+    // Create and append file menu list
     this.div_filelist=document.createElement("div");
-    this.div_menu.appendChild(this.div_filelist);
-    this.div.appendChild(this.div_menu);
+    this.div_topbar.appendChild(this.div_filelist);
+    this.fs = new FileSelector(this.div_filelist, listfiles);
 
-    var fs = new FileSelector(this.div_filelist, listfiles);
+    // Create, style and append the Load button
+    this.btn_load = document.createElement("button");
+    this.btn_load.setAttribute("class","editor_top_lr");
+    this.btn_load.innerHTML = "Load...";
+    this.div_topbar.appendChild(this.btn_load);
 
-    var that = this;
+    // Create, style and append the filename input field
+    this.input_filename = document.createElement("input");
+    this.input_filename.setAttribute("type","text");
+    this.input_filename.setAttribute("class","editor_top_centre");
+    this.div_topbar.appendChild(this.input_filename);
 
-    // Handle Load button click
-    this.btn_load.addEventListener('click', function() {
-        fs.show(function(fn){ // Show the file selector
-            that.load(fn);
-            that.ta_filename.value=fn;
-        });
-    }, false);
+    // Create, style and append the Save button
+    this.btn_save = document.createElement("button");
+    this.btn_save.setAttribute("class","editor_top_lr");
+    this.btn_save.innerHTML = "Save";
+    this.div_topbar.appendChild(this.btn_save);
 
-    // Handle Save button click
-    this.btn_save.addEventListener('click', function() {
-        that.save(that.ta_filename.value);
-    }, false);
-
-
-
-    // Add textarea
-    this.ta=document.createElement("textarea");
-    this.ta.setAttribute("rows","30");
-    this.ta.setAttribute("cols","100");
+    // Create, style and append the editing area
+    this.ta = document.createElement("textarea");
+    this.ta.setAttribute("class","editor_top_lr");
     this.ta.onkeydown = function(e) {
         // Detect tab key
         if( e.keyCode == 9 ) {
@@ -89,17 +88,25 @@ var Editor = function(div) {
         }
     }
     this.div.appendChild(this.ta);
+
+    var that=this;
+    this.btn_load.onclick=function(){that.loadClicked();};
+    this.btn_save.onclick=function(){that.saveClicked();};
+    
 };
 
-Editor.prototype.save = function( fn, callback ) {
-    filewrite( fn, this.ta.value );
+Editor.prototype.loadClicked = function() {
+    var that = this;
+    this.fs.show(function(fn){ // Show the file selector
+        fileread(fn, function(err,data){
+            that.ta.value=data;
+        });
+        that.input_filename.value=fn;
+    });
 };
 
-Editor.prototype.load = function( fn, callback ) {
-  var that=this;
-  fileread(fn, function(err,data){
-    that.ta.value=data;
-  });
+Editor.prototype.saveClicked = function() {
+    filewrite( this.input_filename.value, this.ta.value );
 };
 
 Editor.prototype.getText = function() {

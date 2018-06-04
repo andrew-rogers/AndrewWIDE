@@ -1,42 +1,48 @@
-.menu button {
-    background-color: #000020;
-    color: #FFFFFF;
-    border: none;
-    padding: 8px 12px;
-    margin-bottom: 0px;
-    vertical-align: middle;
+* {
+    box-sizing: border-box;
+    margin: 0px;
+    padding: 0px;
 }
 
-.menu textarea {
-    vertical-align: middle;
+html, body {
+    height: 100%;
 }
 
-.menu {
-    position: relative;
-    display: inline-block;
-    min-width: 90%;
+.editor {
+    height: 100%;
 }
 
-.menu div {
+.editor_top { postion: relative; height: 34px; overflow:hidden }
+.editor_top_lr {  float: left; width: 40px; height: 34px; background: #ddd }
+.editor_top_centre {  float: left; width: calc(100% - 80px); height: 34px }
+.editor_top:after { content:' '; clear:both; display:block; height:0; overflow:hidden }
+
+/* Styling for the drop-down file list part of the menu */
+.editor_top div {
     display: none;
     position: absolute;
     color: yellow;
     background-color: rgba(0,32,0,50);
     min-width: 90%;
+    z-index: 10;
 }
 
-.menu div p {
+.editor_top div p { /* Styling for file item */
     display: block;
     color: yellow;
     padding: 12px 16px;
     text-decoration: none;
 }
 
-.menu div .dir_item {
+.editor_top div .dir_item { /* Styling for directory item */
     display: block;
     color: red;
     padding: 12px 16px;
     text-decoration: strong;
 }
 
-
+/* Styling for text editing area */
+textarea { 
+    min-width: 100%;
+    min-height: calc(100% - 34px);
+}

@@ -3,7 +3,7 @@
  * @licstart  The following is the entire license notice for the 
  *  JavaScript code in this page.
  *
- * Copyright (C) 2016,2018  Andrew Rogers
+ * Copyright (C) 2018  Andrew Rogers
  *
  *
  * The JavaScript code in this page is free software: you can
@@ -25,24 +25,35 @@
  *
  */
 
-function query_sh(script,stdin,callback)
+function fileread(fn, callback)
 {
-  var b64=btoa(stdin);
-  var blob = new Blob([script,"\n\n",b64], { type: "text/plain" });
-  var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
-  xmlhttp.onreadystatechange = function() {
-    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-      var rt=xmlhttp.responseText;
-      var i=rt.indexOf("\n");
-      var err=rt.substring(0,i);
-      rt=rt.substring(i+1);
-      i=rt.indexOf("\n");
-      var h2=rt.substring(0,i);
-      rt=rt.substring(i+1);
-      if(callback)callback(err,atob(rt));
+  var script='cat "'+fn+'"';
+  query_sh(script, '', callback);
+}
+
+function filewrite(fn, data, callback)
+{
+  var script='cat > "'+fn+'"';
+  query_sh(script, data, callback);
+}
+
+function listfiles(path, callback)
+{
+  query_sh('listfiles "'+path+'"', "", function(err,data){
+    data=data.split('\n');
+    var dir=data[0];
+    data[1]="d\t.." // Replace empty line with ".."
+    var list=[];
+    for( var i=1; i<data.length; i++ )
+    {
+      var line = data[i];
+      if(line.length>2 && line[1]=="\t")
+      {
+        var obj = { flags: line[0], path: line.substring(2) };
+        list.push( obj );
+      }
     }
-  };
-  xmlhttp.open("POST", "/cgi-bin/aw.sh", true);
-  xmlhttp.send(blob);
+    if( callback )callback({dir: dir, list: list});
+  });
 }
 

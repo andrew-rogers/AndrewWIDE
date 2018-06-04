@@ -9,7 +9,7 @@
 including the above line, this line
 and this one!</textarea><br>
     <textarea rows="15" id="out" style="width: 100%;" placeholder="stdout" readonly></textarea><br>
-    <textarea rows="4" id="script" onkeypress="onScriptChange(event);" style="width: 100%;">printf "Vowels removed:\n"; sed 's/[aeiou]//g'; echo -e "\n\nFiles in $PWD:"; ls -l; echo; echo -e "blah\nmore blah" | mycat</textarea><br>
+    <textarea rows="4" id="script" onkeypress="onScriptChange(event);" style="width: 100%;">printf "Vowels removed:\n"; sed 's/[aeiou]//g'; echo -e "\n\nFiles in $PWD:"; ls -l</textarea><br>
   </body>
   <script>
 function display(err,data)
