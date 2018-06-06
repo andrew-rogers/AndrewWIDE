@@ -51,10 +51,13 @@ public:
     void stringify(std::ostream& out);
     char getLastToken();
     std::string str();
+    double toNumber() const;
     Json& operator[](const std::string& key);
     Json& operator[](int index);
     void push_back(Json& value);
     Json& operator=(const std::string& val);
+    Json& operator=(const double& val);
+    int length() const;
 private:
     enum Type
     {

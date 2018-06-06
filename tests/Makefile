@@ -3,7 +3,8 @@ TEST_OBJS= \
  awapp_test.o \
  awprocess_test.o \
  awobserver_test.o \
- json_test.o
+ json_test.o \
+ awvector_test.o
 
 OBJ_DIR=../src/aw_framework
 AWF_OBJS= \

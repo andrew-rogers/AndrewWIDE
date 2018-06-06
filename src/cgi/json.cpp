@@ -19,6 +19,8 @@
 
 #include "json.h"
 
+#include <sstream>
+
 using namespace std;
 
 JsonTokeniser::JsonTokeniser(istream& in) : in(in)
@@ -380,6 +382,15 @@ void Json::stringify(ostream& out)
             out << "\"";
             break;
         }
+       case number_type:
+        {
+            for( int i=0; i<m_str->length(); i++)
+            {
+                char c=(*m_str)[i];
+                out << c;
+            }
+            break;
+        }
         case object_type:
         {
             out << "{";
@@ -431,6 +442,21 @@ std::string Json::str()
     {
         return "";
     }
+}
+
+double Json::toNumber() const
+{
+    double val(0.0);
+    if(m_str)
+    {
+        istringstream iss(*m_str);
+        iss >> val;
+    }
+    else
+    {
+        val=0.0;
+    }
+    return val;
 }
 
 Json& Json::operator[](const std::string& key)
@@ -500,6 +526,33 @@ Json& Json::operator=(const std::string& val)
 {
     m_type=string_type;
     m_str=make_shared<string>(val);
+}
+
+Json& Json::operator=(const double& val)
+{
+    m_type=number_type;
+    ostringstream oss;
+    oss << val;
+    m_str=make_shared<string>(oss.str());
+}
+
+int Json::length() const
+{
+    int len(0);
+    switch( m_type )
+    {
+        case array_type:
+        {
+            len=m_values->size();
+            break;
+        }
+
+        default:
+        {
+            len=0;
+        }
+    }
+    return len;
 }
 
 istream& operator>>(istream& in, Json& value)
