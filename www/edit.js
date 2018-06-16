@@ -25,7 +25,7 @@
  *
  */
 
-var Editor = function(div) {
+var Editor = function(div, mode, extra_buttons) {
     if(div){
         div=div;
     } else{
@@ -33,6 +33,10 @@ var Editor = function(div) {
         div.setAttribute("class","editor");
         document.body.appendChild(div);
     }
+
+    this.mode=mode || "text/plain";
+    this.extra_buttons=extra_buttons || [];
+
 
     this.createInDiv(div);
 };
@@ -59,7 +63,11 @@ Editor.prototype.createInDiv = function( div ) {
     // Create, style and append the filename input field
     this.input_filename = document.createElement("input");
     this.input_filename.setAttribute("type","text");
-    this.input_filename.setAttribute("class","editor_top_centre");
+    if(this.extra_buttons.length == 0) {
+        this.input_filename.setAttribute("class","editor_top_centre");
+    } else {
+        this.input_filename.setAttribute("class","editor_top_centre2");
+    }
     this.div_topbar.appendChild(this.input_filename);
 
     // Create, style and append the Save button
@@ -68,48 +76,51 @@ Editor.prototype.createInDiv = function( div ) {
     this.btn_save.innerHTML = "Save";
     this.div_topbar.appendChild(this.btn_save);
 
-    // Create, style and append the editing area
-    this.ta = document.createElement("textarea");
-    this.ta.setAttribute("class","editor_top_lr");
-    this.ta.onkeydown = function(e) {
-        // Detect tab key
-        if( e.keyCode == 9 ) {
-            // Prevent browser tabbing to next widget
-            e.preventDefault();
-            
-            // Insert tab char into value
-            var ss = this.selectionStart;
-            this.value = this.value.substring(0, ss)
-                       + '\t'
-                       + this.value.substring(this.selectionEnd);
-                       
-            // Move caret after inserted tab
-            this.selectionEnd = ss+1;
-        }
+    // Create, style and append the extra buttons
+    for(var i=0; i<this.extra_buttons.length; i++) {
+        var btn=document.createElement("button");
+        btn.setAttribute("class","editor_top_lr");
+        btn.innerHTML = this.extra_buttons[i].text;
+        this.div_topbar.appendChild(btn)
+        this.extra_buttons[i].btn=btn;
     }
-    this.div.appendChild(this.ta);
+
+    // Create, style and append the editing area
+    this.div_ta = document.createElement("div");
+    this.div_ta.setAttribute("class","editarea_div");
+    this.div.appendChild(this.div_ta);
+
+    this.ta = document.createElement("textarea");
+    this.div_ta.appendChild(this.ta);
+
+    // Assign the textarea to the editor
+    if (typeof CodeMirror !== 'undefined') {
+        this.editor = CodeMirror.fromTextArea(this.ta, {
+            lineNumbers: true,
+            matchBrackets: true,
+            mode: this.mode
+        });
+    } else {
+        this.editor = new NotCodeMirror(this.ta);
+    }
 
     var that=this;
     this.btn_load.onclick=function(){that.loadClicked();};
     this.btn_save.onclick=function(){that.saveClicked();};
-    
 };
 
 Editor.prototype.loadClicked = function() {
     var that = this;
-    this.fs.show(function(fn){ // Show the file selector
-        fileread(fn, function(err,data){
-            that.ta.value=data;
+    this.fs.show(function(filename){ // Show the file selector
+        fileread(filename, function( err, content ) {
+            that.editor.setValue(content);
         });
-        that.input_filename.value=fn;
+        that.input_filename.value=filename;
     });
 };
 
 Editor.prototype.saveClicked = function() {
-    filewrite( this.input_filename.value, this.ta.value );
+    filewrite( this.input_filename.value, this.editor.getValue() );
 };
 
-Editor.prototype.getText = function() {
-    return this.ta.value;
-};
 
