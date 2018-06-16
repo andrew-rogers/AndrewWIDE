@@ -47,7 +47,7 @@ CppEditor.prototype.createInDiv = function( div ) {
     // Create and append file menu list
     this.div_filelist=document.createElement("div");
     this.div_topbar.appendChild(this.div_filelist);
-    this.fs = new FileSelector(this.div_filelist, this.listfiles);
+    this.fs = new FileSelector(this.div_filelist, listfiles);
 
     // Create, style and append the Load button
     this.btn_load = document.createElement("button");
@@ -90,35 +90,17 @@ CppEditor.prototype.createInDiv = function( div ) {
 
 CppEditor.prototype.loadClicked = function() {
     var that = this;
-    this.fs.show(function(fn){ // Show the file selector
-        that.load(fn);
-        that.input_filename.value=fn;
+    this.fs.show(function(filename){ // Show the file selector
+        fileread(filename, function( err, content ) {
+            that.editor.setValue(content);
+        });
+        that.input_filename.value=filename;
     });
 };
 
 CppEditor.prototype.saveClicked = function() {
-    var obj={cmd: "save"};
-    obj["content"]=this.editor.getValue();
-    obj["path"]=this.input_filename.value;
-    JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
-        ///@todo When a response for save is defined, handle it here.
-    });
+    filewrite(this.input_filename.value, this.editor.getValue());
 };
 
-/*CppEditor.prototype.handleResponse = function(obj) {
-    if(this.debug) this.debug.log("Response");
-};*/
 
-CppEditor.prototype.load = function(filename) {
-    var obj={path: filename, cmd: "load"};
-    var that = this;
-    JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
-        that.editor.setValue(response["content"]);
-    });
-};
-
-CppEditor.prototype.listfiles = function(dir, callback) {
-    var obj={path: dir, cmd: "listfiles"};
-    JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, callback);
-};
 

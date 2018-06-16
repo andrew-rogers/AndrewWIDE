@@ -1,5 +1,5 @@
 
-CGI_DIR=../../html/cgi-bin
+CGI_DIR=../../www/cgi-bin
 CGIS=$(CGI_DIR)/post2hex.cgi $(CGI_DIR)/aw_fs.cgi
 
 all: $(CGIS)
