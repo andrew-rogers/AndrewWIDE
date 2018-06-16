@@ -4,6 +4,15 @@
     padding: 0px;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+.editor {
+    height: 100%;
+}
+
 .editor_top { postion: relative; height: 34px; overflow:hidden }
 .editor_top_lr {  float: left; width: 40px; height: 34px; background: #ddd }
 .editor_top_centre {  float: left; width: calc(100% - 120px); height: 34px }
@@ -33,8 +42,25 @@
     text-decoration: strong;
 }
 
-.CodeMirror {
-  border: 1px solid #eee;
-  height: auto;
+/* Styling for text editing area */
+textarea { 
+    min-width: 100%;
+    min-height: calc(100vh - 34px);
 }
+
+.editarea_div {
+    position: relative;
+    min-width: 100%;
+    max-height: calc(100vh - 34px);
+    overflow: auto;
+}
+
+.CodeMirror {
+  line-height: 1em;
+  font-family: monospace;
+  height: auto;
+  overflow: hidden;
+}
+
+
 

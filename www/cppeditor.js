@@ -74,13 +74,22 @@ CppEditor.prototype.createInDiv = function( div ) {
     this.div_topbar.appendChild(this.btn_run);
 
     // Create, style and append the editing area
+    this.div_ta = document.createElement("div");
+    this.div.appendChild(this.div_ta);
     this.ta = document.createElement("textarea");
-    this.div.appendChild(this.ta);
-    this.editor = CodeMirror.fromTextArea(this.ta, {
-        lineNumbers: true,
-        matchBrackets: true,
-        mode: "text/x-c++src"
-    });
+    this.div_ta.appendChild(this.ta);
+
+    if (typeof CodeMirror !== 'undefined') {
+        this.editor = CodeMirror.fromTextArea(this.ta, {
+            lineNumbers: true,
+            matchBrackets: true,
+            mode: "text/x-c++src"
+        });
+    } else {   
+        this.editor = new NotCodeMirror(this.ta);
+    }
+
+    this.div_ta.setAttribute("class","editarea_div");
 
     var that=this;
     this.btn_load.onclick=function(){that.loadClicked();};
