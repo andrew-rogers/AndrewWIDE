@@ -13,11 +13,12 @@ html, body {
     height: 100%;
 }
 
-.editor_top { postion: relative; height: 34px; overflow:hidden }
-.editor_top_lr {  float: left; width: 40px; height: 34px; background: #ddd }
-.editor_top_centre {  float: left; width: calc(100% - 80px); height: 34px }
-.editor_top_centre2 {  float: left; width: calc(100% - 120px); height: 34px }
-.editor_top:after { content:' '; clear:both; display:block; height:0; overflow:hidden }
+.editor_top { postion: relative; height: 34px; overflow:hidden; }
+.editor_top_l {  float: left; width: 40px; height: 34px; background: #ddd; }
+.editor_top_r {  float: right; width: 40px; height: 34px; background: #ddd; }
+.editor_top span{ display: block; overflow: auto; position: relative;}
+.editor_top input{ width: 100%; height: 34px;}
+.editor_top:after { content:' '; clear:both; display:block; height:0; overflow:hidden; }
 
 /* Styling for the drop-down file list part of the menu */
 .editor_top div {
@@ -46,13 +47,14 @@ html, body {
 /* Styling for text editing area */
 textarea { 
     min-width: 100%;
-    min-height: calc(100vh - 34px);
+    min-height: calc(100vh - 134px);
+    max-height: calc(100vh - 134px);
 }
 
 .editarea_div {
     position: relative;
     min-width: 100%;
-    max-height: calc(100vh - 34px);
+    max-height: calc(100vh - 134px);
     overflow: auto;
 }
 

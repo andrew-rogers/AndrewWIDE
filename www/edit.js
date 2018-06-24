@@ -56,34 +56,31 @@ Editor.prototype.createInDiv = function( div ) {
 
     // Create, style and append the Load button
     this.btn_load = document.createElement("button");
-    this.btn_load.setAttribute("class","editor_top_lr");
+    this.btn_load.setAttribute("class","editor_top_l");
     this.btn_load.innerHTML = "Load...";
     this.div_topbar.appendChild(this.btn_load);
 
-    // Create, style and append the filename input field
-    this.input_filename = document.createElement("input");
-    this.input_filename.setAttribute("type","text");
-    if(this.extra_buttons.length == 0) {
-        this.input_filename.setAttribute("class","editor_top_centre");
-    } else {
-        this.input_filename.setAttribute("class","editor_top_centre2");
-    }
-    this.div_topbar.appendChild(this.input_filename);
-
     // Create, style and append the Save button
     this.btn_save = document.createElement("button");
-    this.btn_save.setAttribute("class","editor_top_lr");
+    this.btn_save.setAttribute("class","editor_top_r");
     this.btn_save.innerHTML = "Save";
     this.div_topbar.appendChild(this.btn_save);
 
     // Create, style and append the extra buttons
     for(var i=0; i<this.extra_buttons.length; i++) {
         var btn=document.createElement("button");
-        btn.setAttribute("class","editor_top_lr");
+        btn.setAttribute("class","editor_top_r");
         btn.innerHTML = this.extra_buttons[i].text;
         this.div_topbar.appendChild(btn)
         this.extra_buttons[i].btn=btn;
     }
+
+    // Create, style and append the filename input field
+    this.span_filename = document.createElement("span");
+    this.div_topbar.appendChild(this.span_filename);
+    this.input_filename = document.createElement("input");
+    this.input_filename.setAttribute("type","text");
+    this.span_filename.appendChild(this.input_filename);
 
     // Create, style and append the editing area
     this.div_ta = document.createElement("div");
