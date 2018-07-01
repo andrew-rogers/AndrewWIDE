@@ -1,0 +1,7 @@
+#!/bin/sh
+
+BRUN_DIR="$AW_DIR/brun"
+OUT="$BRUN_DIR/brun_$$.out"
+
+nohup $* > "$OUT" &
+
