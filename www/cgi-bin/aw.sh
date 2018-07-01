@@ -4,8 +4,10 @@
 #       on a trusted connection.
 
 if [ ! -d "$AW_DIR" ]; then
-    AW_DIR="$PWD"
+    AW_DIR=$(echo "$PWD" | sed 's/\/www.*//')
 fi
+
+export AW_DIR
 
 listfiles() {
   # If specified directory is invalid use $AW_DIR
@@ -44,6 +46,7 @@ fi
 
 SCR=$(echo -n "$POST" | head -n1) # first line
 STDIN=$(echo -n "$POST" | tail -n1) # third line
+cd "$AW_DIR"
 STDOUT=$(echo -n "$STDIN" | base64 -d | eval "$SCR" | base64 | tr -d '\n')
 echo $?
 echo h2
