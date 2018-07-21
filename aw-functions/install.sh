@@ -15,8 +15,9 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-aw_install_jqplot() {
-  local file_name="jquery.jqplot.min.js"
-  local dst_dir="$AW_DIR/www/third-party/jqplot"
-  wget "http://www.jqplot.com/src/$file_name" --no-clobber --directory-prefix=$dst_dir
+aw_install_chartjs() {
+  local dst_dir="$AW_DIR/www/third-party/chartjs"
+  local file_name="Chart.bundle.min.js"
+  wget "https://github.com/chartjs/Chart.js/releases/download/v2.7.2/$file_name" --no-clobber --directory-prefix=$dst_dir
 }
+
