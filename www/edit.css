@@ -27,6 +27,8 @@ html, body {
     color: yellow;
     background-color: rgba(0,32,0,50);
     min-width: 90%;
+    max-height: 90%;
+    overflow: auto;
     z-index: 10;
 }
 
@@ -59,7 +61,7 @@ textarea {
 }
 
 .CodeMirror {
-  line-height: 1em;
+  line-height: 1.5em;
   font-family: monospace;
   height: auto;
   overflow: hidden;
