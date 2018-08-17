@@ -42,7 +42,7 @@ busybox_links() {
 
 fix_cgi_shebang() {
   local sb="#!$(which sh)"
-  for fn in $(find "$AW_DIR/html/cgi-bin/" -type f); do
+  for fn in $(find "$AW_DIR/www/cgi-bin/" -type f); do
     local sbf=$(head -n1 "$fn")
     if [ "$sbf" != "$sb" ]; then
       sed -i "1s|#!.*|$sb|" "$fn"
@@ -56,7 +56,7 @@ case $CMD in
 
   "start" )
     fix_cgi_shebang
-    httpd -p 8080 -h "$AW_DIR/html"
+    httpd -p 8080 -h "$AW_DIR/www"
   ;;
 
   "make_busybox_links" )
