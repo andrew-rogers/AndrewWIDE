@@ -33,7 +33,7 @@ Examples of system generated events are those that are generated on file descrip
 
 ## Class Diagram
 
-![alternative text](http://www.plantuml.com/plantuml/proxy?src=https://github.com/andrew-rogers/AndrewWIDE/raw/master/doc/class_diagram.puml?v=4)
+![alternative text](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/andrew-rogers/AndrewWIDE/master/doc/class_diagram.puml?v=5)
 
 ## Contributors
 
