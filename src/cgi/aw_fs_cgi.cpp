@@ -108,6 +108,14 @@ Json processQuery( Json& query )
     {
         response["error"] = filesystem::writeFile( query["path"].str(), query["content"].str() );
     }
+    else if( cmd == "build" )
+    {
+        response["build_output"] = "make"; // @todo Invoke make, for now just respond with make
+    }
+    else if( cmd == "run" )
+    {
+        response["run_output"] = "make run"; // @todo Invoke make, for now just respond with make run
+    }
 
     return response;
 }

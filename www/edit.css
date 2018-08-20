@@ -61,7 +61,7 @@ textarea {
 }
 
 .CodeMirror {
-  line-height: 1.5em;
+  //line-height: 1.5em;
   font-family: monospace;
   height: auto;
   overflow: hidden;

@@ -25,7 +25,7 @@
  *
  */
 
-var Editor = function(div, mode, extra_buttons) {
+function Editor(div, mode, extra_buttons) {
     if(div){
         div=div;
     } else{
@@ -71,6 +71,7 @@ Editor.prototype.createInDiv = function( div ) {
         var btn=document.createElement("button");
         btn.setAttribute("class","editor_top_r");
         btn.innerHTML = this.extra_buttons[i].text;
+        btn.onclick = this.extra_buttons[i].onclick;
         this.div_topbar.appendChild(btn)
         this.extra_buttons[i].btn=btn;
     }
@@ -118,6 +119,10 @@ Editor.prototype.loadClicked = function() {
 
 Editor.prototype.saveClicked = function() {
     filewrite( this.input_filename.value, this.editor.getValue() );
+};
+
+Editor.prototype.getFilename = function() {
+    return this.input_filename.value;
 };
 
 

@@ -25,7 +25,28 @@
  *
  */
 
-var CppEditor = function(div) {
-    this.editor = new Editor(div, "text/x-c++src", [{text: "Run"}])
+function CppEditor(div) {
+    var that=this;
+	Editor.call(this, div, "text/x-c++src", [{text: "Run", onclick: function(){that.run();}},{text: "Build", onclick: function(){that.build();}}])
 }
 
+CppEditor.prototype = Object.create(Editor.prototype);
+CppEditor.prototype.constructor = CppEditor;
+
+CppEditor.prototype.run = function() {
+	var obj={cmd: "run"};
+	obj["path"]=this.getFilename();
+	JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
+		///@todo Plot response as a graph
+        console.log(response);
+	});
+}
+
+CppEditor.prototype.build = function() {
+	var obj={cmd: "build"};
+	obj["path"]=this.getFilename();
+	JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
+		///@todo Handle build success/fail message and build output
+        console.log(response);
+	});
+}
