@@ -15,6 +15,7 @@
 <script src="codemirror-5.35.0/lib/codemirror.js"></script>
 <script src="codemirror-5.35.0/mode/clike/clike.js"></script>
 <script src="not_codemirror.js"></script>
+<script src="third-party/chartjs/Chart.bundle.min.js"></script>
 
 <script>
 window.onload=function(e){
@@ -23,6 +24,27 @@ window.onload=function(e){
 </script>
 </head>
 <body>
+<div style="position: relative; max-height:200px; max-width:400px"><canvas id="myChart"></canvas></div>
+<script>
+    var data=[];
+    for( var i=0; i<10; i++)
+    {
+        data[i]={x: i, y: Math.random()*2-1};
+    }
+    var scatterChartData = {
+		datasets: [{
+			label: 'Random values',
+			data: data,
+            showLine: true,
+            pointRadius: 0, // Turns off the points
+            fill: false
+		}]
+	};
+    var ctx = document.getElementById("myChart").getContext('2d');
+    var myChart = new Chart.Scatter(ctx, {
+			data: scatterChartData,
+		});
+    </script>
 </body>
 </html>
 
