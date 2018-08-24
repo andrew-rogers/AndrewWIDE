@@ -36,9 +36,14 @@ CppEditor.prototype.constructor = CppEditor;
 CppEditor.prototype.run = function() {
 	var obj={cmd: "run"};
 	obj["path"]=this.getFilename();
-	JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
+	JsonArrayBuffers.query("/cgi-bin/sinewave", obj, function( response ) {
 		///@todo Plot response as a graph
         console.log(response);
+        //updateChart([{x: 1, y: 1},{x:2,y:2},{x:3,y:3}]);
+        var y=response["sin"];
+        var data=[];
+        for(var i=0; i<y.length; i++) data[i]={x: i, y: y[i]};
+        updateChart(data);
 	});
 }
 

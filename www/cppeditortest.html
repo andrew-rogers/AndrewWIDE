@@ -44,6 +44,12 @@ window.onload=function(e){
     var myChart = new Chart.Scatter(ctx, {
 			data: scatterChartData,
 		});
+
+    function updateChart(data)
+    {
+        myChart.data.datasets[0].data = data;
+        myChart.update();
+    }
     </script>
 </body>
 </html>
