@@ -31,6 +31,29 @@ listfiles() {
   printf "d\t$AW_DIR\n"
 }
 
+build()
+{
+  # Get full directory name
+  MK_DIR=$(cd $(dirname "$1") && pwd)
+
+  # Iterate through parent directories looking for Makefile
+  while [ "$MK_DIR" != "$AW_DIR" ]; do
+
+    # Break out if we get to root
+    [ -z "$MK_DIR" ] && break
+    [ "$MK_DIR" == "/" ] && break
+
+    # If there's a Makefile then make
+    if [ -f "$MK_DIR/Makefile" ]; then
+      (cd "$MK_DIR" && make 2>&1)
+      break
+    fi
+
+    # Parent directory
+    MK_DIR=$(dirname "$MK_DIR")
+  done
+}
+
 echo "Content-type: text/plain"
 echo
 

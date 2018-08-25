@@ -48,10 +48,10 @@ CppEditor.prototype.run = function() {
 }
 
 CppEditor.prototype.build = function() {
-	var obj={cmd: "build"};
-	obj["path"]=this.getFilename();
-	JsonArrayBuffers.query("/cgi-bin/aw_fs.cgi", obj, function( response ) {
+	var script="build "+this.getFilename();
+	query_sh(script, "", function( response ) {
 		///@todo Handle build success/fail message and build output
         console.log(response);
 	});
 }
+
