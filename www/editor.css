@@ -1,0 +1,37 @@
+
+
+/* Toolbar styling */
+.toolbar { postion: relative; height: 34px; overflow:hidden; box-sizing: border-box; margin: 0px; padding: 0px;}
+.toolbar_left {  float: left; height: 34px; background: #ddd; }
+.toolbar_right {  float: right; height: 34px; background: #ddd; }
+.toolbar_centre { display: block; overflow: auto; position: relative;}
+.toolbar:after { content:' '; clear:both; display:block; height:0; overflow:hidden; }
+.toolbar button {  height: 34px; background: #ddd; }
+
+/* Styling for the drop-down file list part of the menu */
+.file_menu {
+    display: none;
+    position: absolute;
+    color: yellow;
+    background-color: rgba(0,32,0,50);
+    min-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+    z-index: 10;
+}
+
+/* Styling for file item */
+.file_menu p {
+    display: block;
+    color: yellow;
+    padding: 12px 16px;
+    text-decoration: none;
+}
+
+/* Styling for directory item */
+.file_menu .dir_item {
+    display: block;
+    color: red;
+    padding: 12px 16px;
+    text-decoration: strong;
+}
