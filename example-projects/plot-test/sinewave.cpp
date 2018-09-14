@@ -41,15 +41,18 @@ int main(int argc, char *args[])
 Json processQuery()
 {
     Json response;
+    Json graph;
     AwVector<int> vec;
     const double PI = 3.14159265;
 
     for(int theta=0; theta<32; theta++)
     {
-        vec.push_back(static_cast<int>(sin(theta*PI/8)*127));
+        vec.push_back(static_cast<int>(sin(theta*PI/6)*127));
     }
 
-    response["sin"]=vec.toJsonArray();
+    graph["cmd"]="plot";
+    graph["data"]=vec.toJsonArray();
+    response[0]=graph;
     return response;
 }
 

@@ -40,7 +40,8 @@ CppEditor.prototype.run = function() {
 		///@todo Plot response as a graph
         console.log(response);
         //updateChart([{x: 1, y: 1},{x:2,y:2},{x:3,y:3}]);
-        var y=response["sin"];
+        var g0=response[0];
+        var y=g0["data"];
         var data=[];
         for(var i=0; i<y.length; i++) data[i]={x: i, y: y[i]};
         updateChart(data);
@@ -49,7 +50,7 @@ CppEditor.prototype.run = function() {
 
 CppEditor.prototype.build = function() {
 	var script="build "+this.getFilename();
-	query_sh(script, "", function( response ) {
+	query_sh(script, "", function( exit_code, response ) {
 		///@todo Handle build success/fail message and build output
         console.log(response);
 	});
