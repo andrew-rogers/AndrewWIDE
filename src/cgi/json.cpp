@@ -518,6 +518,9 @@ Json& Json::operator[](int index)
 
 void Json::push_back(Json& value)
 {
+    // If type is not yet defined, assume array
+    if( m_type == undefined_type ) m_type = array_type;
+
     if( m_values == 0 ) m_values = make_shared<vector<Json> >();
     m_values->push_back(value);
 }
