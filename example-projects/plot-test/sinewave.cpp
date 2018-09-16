@@ -27,33 +27,56 @@
 
 using namespace std;
 
-Json processQuery();
+void sinewave0();
+void sinewave1();
+
+Json g_response;
+
+template <typename T> 
+void plot(AwVector<T>& vec)
+{
+    Json graph;
+    graph["cmd"]="plot";
+    graph["data"]=vec.toJsonArray();
+    g_response.push_back(graph);
+}
 
 int main(int argc, char *args[])
 {
-    Json response = processQuery();
+    sinewave0();
+    sinewave1();
+
+    // Produce the response
     cout<<"Content-type: text/plain"<<endl<<endl;
-    cout << response << endl;
+    cout << g_response << endl;
 
     return 0;
 }
 
-Json processQuery()
+void sinewave0()
 {
-    Json response;
-    Json graph;
     AwVector<int> vec;
     const double PI = 3.14159265;
 
     for(int theta=0; theta<32; theta++)
     {
-        vec.push_back(static_cast<int>(sin(theta*PI/6)*127));
+        vec.push_back(static_cast<int>(sin(theta*PI/3)*127));
     }
 
-    graph["cmd"]="plot";
-    graph["data"]=vec.toJsonArray();
-    response[0]=graph;
-    return response;
+    plot(vec);
+}
+
+void sinewave1()
+{
+    AwVector<int> vec;
+    const double PI = 3.14159265;
+
+    for(int theta=0; theta<32; theta++)
+    {
+        vec.push_back(static_cast<int>(sin(theta*PI/4)*127));
+    }
+
+    plot(vec);
 }
 
 
