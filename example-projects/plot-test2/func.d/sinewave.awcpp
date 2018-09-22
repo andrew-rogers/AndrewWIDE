@@ -1,0 +1,9 @@
+AwVector<int> vec;
+const double PI = 3.14159265;
+
+for(int theta=0; theta<32; theta++)
+{
+    vec.push_back(static_cast<int>(sin(theta*PI/5)*127));
+}
+
+plot(vec);

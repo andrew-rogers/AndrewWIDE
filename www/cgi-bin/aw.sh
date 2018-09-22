@@ -33,6 +33,16 @@ listfiles() {
 
 build()
 {
+  EXT=$(echo "$1" | sed "s|.*\.||")
+  if [ "$EXT" == "awcpp" ]; then
+    "$AW_DIR/bin/build_awcpp" "$1"
+  else
+    build1 "$1"
+  fi
+}
+
+build1()
+{
   # Get full directory name
   MK_DIR=$(cd $(dirname "$1") && pwd)
 
