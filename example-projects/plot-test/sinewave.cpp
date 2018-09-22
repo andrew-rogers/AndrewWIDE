@@ -17,38 +17,23 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "json.h"
 #include "awvector.h"
+#include "plot.h"
+#include "cgi_post.h"
 
 #include "math.h"
-
-#include <iostream>
-#include <sstream>
 
 using namespace std;
 
 void sinewave0();
 void sinewave1();
 
-Json g_response;
-
-template <typename T> 
-void plot(AwVector<T>& vec)
-{
-    Json graph;
-    graph["cmd"]="plot";
-    graph["data"]=vec.toJsonArray();
-    g_response.push_back(graph);
-}
-
 int main(int argc, char *args[])
 {
     sinewave0();
     sinewave1();
 
-    // Produce the response
-    cout<<"Content-type: text/plain"<<endl<<endl;
-    cout << g_response << endl;
+    sendResponse();
 
     return 0;
 }
