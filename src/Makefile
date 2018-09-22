@@ -1,6 +1,7 @@
 LIB_OBJS= \
  cgi/json.o \
- cgi/filesystem.o
+ cgi/filesystem.o \
+ cgi/cgi_post.o
 
 all:	libAw.a
 
