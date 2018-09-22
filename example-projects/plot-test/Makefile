@@ -6,12 +6,12 @@ AWSRC_DIR=../../src
 CXXFLAGS=-I$(AWSRC_DIR)/cgi
 LDFLAGS=-L$(AWSRC_DIR)
 
-all:	sinewave
+all:	$(CGI)
 
-sinewave:	$(OBJS)
+$(CGI):	$(OBJS)
 	$(CXX) $^ $(LDFLAGS) -lAw -o $@
 
 clean:
-	rm -f sinewave
+	rm -f $(CGI)
 	rm -f $(OBJS)
 

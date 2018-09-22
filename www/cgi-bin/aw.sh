@@ -45,7 +45,10 @@ build()
 
     # If there's a Makefile then make
     if [ -f "$MK_DIR/Makefile" ]; then
-      (cd "$MK_DIR" && make 2>&1)
+      CGI=$(basename "$MK_DIR")
+      (cd "$MK_DIR" && make CGI="$CGI" 2>&1)
+      (cd "$AW_DIR/www/cgi-bin" && ln -s "$MK_DIR/$CGI") 2>&1
+      echo "JSON{\"cgi\":\"$CGI\"}"
       break
     fi
 
