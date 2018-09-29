@@ -22,7 +22,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <iostream>
+#include <unistd.h>
 
 using namespace std;
 
@@ -34,8 +34,10 @@ AwSocket::AwSocket() : AwFD()
     {
       // Error
     }
-
-    cout<<"AwSocket fd="<<fd<<endl;
+    else
+    {
+        setFD(fd);
+    }
 
     // Socket can re-use port
     int enable = 1;
@@ -53,7 +55,6 @@ AwSocket::AwSocket(int fd) : AwFD(fd)
 
 AwSocket::~AwSocket()
 {
-  cout<<"~AwSocket() fd="<<getFD()<<endl;
     if(getFD()>=0)
     {
         shutdown();
@@ -63,13 +64,11 @@ AwSocket::~AwSocket()
 
 int AwSocket::bind(const string &addr, uint16_t port)
 {
-	
     memset(&addr_local, 0, sizeof(addr_local));
     addr_local.sin_family = AF_INET;
     addr_local.sin_port = htons(port);
     addr_local.sin_addr.s_addr = INADDR_ANY;
     int ret=inet_pton( AF_INET, addr.c_str(), &addr_local.sin_addr.s_addr);
-    printf("0x%08x\n", addr_local.sin_addr.s_addr);
 
     ret=::bind(getFD(), (struct sockaddr*)&addr_local, sizeof(addr_local));
     if( ret != 0 )
@@ -89,11 +88,26 @@ int AwSocket::listen( int backlog )
     return ret;
 }
 
+int AwSocket::connect(const string &addr, uint16_t port)
+{
+    memset(&addr_peer, 0, sizeof(addr_peer));
+    addr_peer.sin_family = AF_INET;
+    addr_peer.sin_port = htons(port);
+    addr_peer.sin_addr.s_addr = inet_addr("127.0.0.1");
+    int ret=inet_pton( AF_INET, addr.c_str(), &addr_peer.sin_addr.s_addr);
+
+    ret=::connect(getFD(), (struct sockaddr*)&addr_peer, sizeof(addr_peer));
+    if( ret != 0 )
+    {
+        // error
+    }
+    return ret;
+}
+
 int AwSocket::shutdown()
 {
     char buffer[1024];
     ::shutdown(getFD(), SHUT_WR);
-    cout<<"Shutdown"<<endl;
     for(;;)
     {
       int res=::read(getFD(), buffer, 1024);
@@ -108,7 +122,6 @@ int AwSocket::shutdown()
 
 int AwSocket::close()
 {
-  cout<<"AwSocket::close() fd="<<getFD()<<" pid="<<getpid()<<endl;
     int ret=AwFD::close();
     return(ret);
 }

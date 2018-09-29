@@ -22,9 +22,9 @@
 
 #include "awsocket.h"
 #include "awapp.h"
-#include "awfdlistener.h"
+#include "awfdobserver.h"
 
-class AwServer : public AwSocket, public AwFDListener
+class AwServer : public AwSocket, public AwFDObserver
 {
   private:
   public:
