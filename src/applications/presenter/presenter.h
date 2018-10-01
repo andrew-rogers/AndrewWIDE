@@ -1,6 +1,6 @@
 /*
-    AndrewWIDE - Application framework
-    Copyright (C) 2017  Andrew Rogers
+    AndrewWIDE - Presentation Controller
+    Copyright (C) 2018  Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,23 +17,25 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef AWSERVER_H
-#define AWSERVER_H
 
-#include "awsocket.h"
-#include "awapp.h"
-#include "awfdobserver.h"
+#ifndef PRESENTER_H
+#define PRESENTER_H
 
-class AwServer : public AwSocket, public AwFDObserver
+#include "awfd.h"
+#include "json.h"
+
+class Presenter
 {
-  private:
-  public:
-    AwServer(const std::string &addr, uint16_t port);
-    virtual int onReadable(AwFD &fd);
-    virtual int onWritable(AwFD &fd);
-    void acceptAndHandle();
-    virtual int onConnection(AwFD &fd)=0;
-    
+
+private:
+    AwFD *screen_fd;
+
+public:
+    Presenter();
+    void message(AwFD& fd, Json& query);
+    void closed(AwFD& fd);
+    void write(AwFD& fd, Json& json);
 };
 
-#endif
+#endif //PRESENTER_H
+

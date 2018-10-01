@@ -32,6 +32,7 @@ AwServer::AwServer( const std::string &addr, uint16_t port) : AwSocket()
     bind(addr, port);
     listen();
     signal(SIGCHLD, SIG_IGN);
+    addObserver(*this);
 }
 
 int AwServer::onReadable(AwFD &fd)
@@ -48,6 +49,10 @@ int AwServer::onReadable(AwFD &fd)
     AwFD *fd=new AwFD(fd_connection);
     onConnection(*fd);  
   }
+}
+
+int AwServer::onWritable(AwFD &fd)
+{
 }
 
 void AwServer::acceptAndHandle()
