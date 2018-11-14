@@ -25,12 +25,37 @@
  *
  */
 
-function my_cb(obj)
-{
-	document.getElementById("target").innerHTML = JSON.stringify(obj);
+function LongPoll(cgi, poll_obj, callback) {
+	this.cgi = cgi
+	this.poll_obj = poll_obj;
+	this.callback = callback;
+	this.cnt = 0; // The second counter, counts down.
+	this.timeout = 20; // After 20 seconds send another poll.
+	var that = this;
+	setInterval(function() { that.tick(); }, 1000); // Call tick() every 1000ms
 }
 
-window.onload=function(e){
-    var lp = new LongPoll("/cgi-bin/presenter.cgi",{screen: "A" },my_cb);
-}
+LongPoll.prototype.tick = function() {
+	if(this.cnt<=0){
+ 		this.send(this.poll_obj);
+		this.cnt=20;
+	}
+	this.cnt=this.cnt-1;
+};
+
+LongPoll.prototype.send = function(obj) {
+	var xmlhttp = new XMLHttpRequest();
+	var that=this;
+	xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+			var rt=xmlhttp.responseText;
+			if(that.callback)that.callback(JSON.parse(rt));
+			that.cnt=0;
+		}        
+	};
+  
+	xmlhttp.open("POST", this.cgi, true);
+	xmlhttp.setRequestHeader("Content-Type", "application/json");
+	xmlhttp.send(JSON.stringify(obj));
+};
 
