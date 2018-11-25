@@ -26,7 +26,7 @@
  */
 
 function CppEditor(div) {
-	this.cgi=""
+	this.bin=""
 	this.func_name=""
 	var that=this;
 	Editor.call(this, div, "text/x-c++src", [{text: "Run", onclick: function(){that.run();}},{text: "Build", onclick: function(){that.build();}}])
@@ -36,11 +36,12 @@ CppEditor.prototype = Object.create(Editor.prototype);
 CppEditor.prototype.constructor = CppEditor;
 
 CppEditor.prototype.run = function() {
+	var sh="CMD=\""+this.bin+"\"\n";
 	var obj={cmd: "run"};
 	obj["path"]=this.getFilename();
 	if( this.func_name != undefined )obj["name"]=this.func_name;
 	var that=this;
-	JsonArrayBuffers.query("/cgi-bin/"+this.cgi, obj, function( response ) {
+	JsonArrayBuffers.querySh(sh, "/cgi-bin/exec_bin.sh", obj, function( response ) {
 		that.handle_run_response(response);
 	});
 }
@@ -70,7 +71,7 @@ CppEditor.prototype.handle_build_response = function(response) {
 		var line=lines[i];
 		if( line.substring(0,5) == "JSON{" ) {
 			var obj=JSON.parse(line.substring(4));
-			this.cgi=obj["cgi"];
+			this.bin=obj["bin"];
             this.func_name=obj["name"];
 		}
 	}

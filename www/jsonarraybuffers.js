@@ -152,16 +152,26 @@ JsonArrayBuffers.textDecode = function( buffer, start, count ) {
     return str;
 };
 
+JsonArrayBuffers.queryBlob = function(url, blob, callback) {
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", url, true);
+	xhr.responseType = "arraybuffer";
+	xhr.onload = function (event) {
+		var response_obj=JsonArrayBuffers.parse(xhr.response);
+		if( callback ) callback(response_obj);
+	};
+
+	xhr.send(blob);
+};
+
 JsonArrayBuffers.query = function(url, obj, callback) {
     var blob=JsonArrayBuffers.stringify(obj);
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", url, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function (event) {
-        var response_obj=JsonArrayBuffers.parse(xhr.response);
-        if( callback ) callback(response_obj);
-    };
+    this.queryBlob(url, blob, callback);
+};
 
-    xhr.send(blob);
+JsonArrayBuffers.querySh = function(sh, url, obj, callback) {
+    var json_blob=JsonArrayBuffers.stringify(obj)
+    var blob=new Blob([sh, "\nBINARY\n", json_blob]);
+    this.queryBlob(url, blob, callback);
 };
 
