@@ -123,7 +123,7 @@ Json processQuery( Json& query )
 string findAWDir()
 {
     string cwd=filesystem::cwd();
-    std::size_t found = cwd.rfind("/html");
+    std::size_t found = cwd.rfind("/www");
     if( found != std::string::npos ) return cwd.substr(0,found);
     return cwd;
 }

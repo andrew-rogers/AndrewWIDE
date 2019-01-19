@@ -37,6 +37,14 @@ Now it is ready to run
 
 It should now be possible to access AndrewWIDE from the browser [here](http://127.0.0.1:8080/)
 
+## Installation on Cygwin
+
+Ensure that the Cygwin gcc-core and gcc-g++ packages are installed and up to date. Check that it is the Cygwin gcc and g++ that is being used, this can be verified with
+
+> $ which g++
+
+which should return **/usr/bin/g++**. The MinGW g++ compiler will not produce a working executable.
+
 ## Notes
 
 The CppUTest source can be downloaded using wget:
