@@ -1,0 +1,31 @@
+#!/bin/sh
+
+PSFILE=$1
+FN_XML=$(basename "$PSFILE" .psdata)_settings.xml
+FN_WAVES=$(basename "$PSFILE" .psdata)_waves.bin
+
+# The version 6 psdata files are mainly composed of GZIPed streams easily
+#  identified by the three-byte GZIP signature 0x1f 0x8b 0x08. the first of
+#  these streams are the waveform buffers. The final GZIP stream is the
+#  settings XML file. GZIP is defined in RFC1952 and XML is an open format used
+#  very widely.
+
+GZ_SIG="1f 8b 08"
+TAIL=10863
+CHUNK=4096
+
+# Locate the first GZIP signature
+#         | Get the first CHUNK    | Convert to hex | Remove LFs | Remove the signature | Get the length   |
+#         | bytes                                                | and following hex    | of remaining hex |
+GZ_FIRST=$(head -c$CHUNK "$PSFILE" | od -An -tx1 -v | tr -d '\n' | sed "s/ $GZ_SIG.*//" | wc -c            )
+GZ_FIRST=$(( $GZ_FIRST / 3 + 1 ))
+tail -c+$GZ_FIRST "$PSFILE" | gunzip > "$FN_WAVES"
+
+# Locate the last GZIP signature
+#        | Get last TAIL bytes   | The first      | Convert to hex | Remove LFs | Remove hex that precedes the   | Get the length   |
+#        |                       | CHUNK bytes    |                |            | GZIP signature                 | of remaining hex |
+GZ_LAST=$(tail -c$TAIL "$PSFILE" |  head -c$CHUNK | od -An -tx1 -v | tr -d '\n' | sed "s/.* $GZ_SIG / $GZ_SIG /" | wc -c            )
+GZ_LAST=$(( $GZ_LAST / 3))
+GZ_LAST=$(( $TAIL + $GZ_LAST - $CHUNK ))
+tail -c$GZ_LAST "$PSFILE" | gunzip > "$FN_XML"
+
