@@ -16,10 +16,14 @@ GZ_SIG="1f 8b 08"
 PNG_SIG="89 50 4e 47"
 
 # Approximate locations of GZIP and PNG chunks
-WAVE_LOC=84
+WAVE_ALOC=84
 PSLEN=$(stat -c%s "$PSFILE")
-XML_LOC=$(( $PSLEN - 9000 ))
-PNG_LOC=$(( $PSLEN - 3000))
+PNG_ALOC=$(( $PSLEN - 3000))
+
+# XML offset at 0x0c in header | Convert to hex | Remove LFs |
+HDR=$(head -c84 "$PSFILE"      | od -An -tx4 -v | tr -d '\n' )
+XML_ALOC=0x$(echo "$HDR" | head -c36 | tail -c8)
+XML_ALOC=$(( $XML_ALOC + 172 ))
 
 # Locate a signature given approximate location
 locate_sig()
@@ -34,8 +38,8 @@ locate_sig()
         start=0;
     fi
 
-    #          | Get the chunk from file                  | Convert to hex | Remove LFs |
-    local hex=$(dd if="$fn" bs=1 skip=$start count=$chunk | od -An -tx1 -v | tr -d '\n' )
+    #          | Get the chunk from file                                 | Convert to hex | Remove LFs |
+    local hex=$( (dd if="$fn" bs=1 skip=$start count=$chunk 2>/dev/null) | od -An -tx1 -v | tr -d '\n' )
 
     # Locate first occurrence
     #                        | Remove the signature  | Get the length   |
@@ -57,13 +61,11 @@ locate_sig()
 }
 
 # Locate the first GZIP - waves
-WAVE_LOC=$( locate_sig "$PSFILE" 10 "$GZ_SIG" | head -n1)
-printf "Waves @ %08x\n"  $WAVE_LOC >&2
+WAVE_LOC=$( locate_sig "$PSFILE" "$WAVE_ALOC" "$GZ_SIG" | head -n1)
 tail -c+$(( $WAVE_LOC +1 )) "$PSFILE" | gunzip > "$FN_WAVES"
 
 # Locate the last GZIP  - settings XML
-XML_LOC=$( locate_sig "$PSFILE" "$XML_LOC" "$GZ_SIG" | tail -n1)
-printf "XML @ %08x\n"  $XML_LOC >&2
+XML_LOC=$( locate_sig "$PSFILE" "$XML_ALOC" "$GZ_SIG" | tail -n1)
 XML=$(tail -c+$(( $XML_LOC + 1)) "$PSFILE" | gunzip | tr -d '\000')
 echo "$XML" > "$FN_XML"
 
@@ -78,12 +80,19 @@ echo "$OFFSETS" | while read OFFSET ; do
     LENGTH=$(echo "$LENGTHS" | tail -n+$ROW | head -n1)
     OFFSET=$(( $OFFSET + 84 ))
     FN=$FN_WAVE_PREFIX$ROW.bin
-    dd if="$PSFILE" bs=1 skip=$OFFSET count=$LENGTH | gunzip > "$FN"
+    (dd if="$PSFILE" bs=1 skip=$OFFSET count=$LENGTH 2> /dev/null) | gunzip > "$FN"
 done
 
 # Locate the PNG image
-PNG_LOC=$(locate_sig "$PSFILE" "$PNG_LOC" "$PNG_SIG" | head -n1)
-printf "PNG @ %08x\n"  $PNG_LOC >&2
-dd if="$PSFILE" bs=1 skip=$PNG_LOC > "$FN_PNG"
+PNG_LOC=$(locate_sig "$PSFILE" "$PNG_ALOC" "$PNG_SIG" | head -n1)
+(dd if="$PSFILE" bs=1 skip=$PNG_LOC 2> /dev/null) > "$FN_PNG"
 
+loc_error()
+{
+    printf " location estimated: %08x   Actual: %08x   Error: %d\n"  $1 $2 $(( $1 - $2))
+}
+
+printf "Waves"; loc_error $WAVE_ALOC $WAVE_LOC >&2
+printf "Settings"; loc_error $XML_ALOC $XML_LOC >&2
+printf "PNG"; loc_error $PNG_ALOC $PNG_LOC >&2
 
