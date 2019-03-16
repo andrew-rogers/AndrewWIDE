@@ -3,29 +3,87 @@
 PSFILE=$1
 FN_XML=$(basename "$PSFILE" .psdata)_settings.xml
 FN_WAVES=$(basename "$PSFILE" .psdata)_waves.bin
+FN_WAVE_PREFIX=$(basename "$PSFILE" .psdata)_w
+FN_PNG=$(basename "$PSFILE" .psdata).png
 
 # The version 6 psdata files are mainly composed of GZIPed streams easily
 #  identified by the three-byte GZIP signature 0x1f 0x8b 0x08. the first of
 #  these streams are the waveform buffers. The final GZIP stream is the
 #  settings XML file. GZIP is defined in RFC1952 and XML is an open format used
-#  very widely.
+#  very widely. The GZipped XML is followed by a PNG image.
 
 GZ_SIG="1f 8b 08"
-TAIL=10863
-CHUNK=4096
+PNG_SIG="89 50 4e 47"
 
-# Locate the first GZIP signature
-#         | Get the first CHUNK    | Convert to hex | Remove LFs | Remove the signature | Get the length   |
-#         | bytes                                                | and following hex    | of remaining hex |
-GZ_FIRST=$(head -c$CHUNK "$PSFILE" | od -An -tx1 -v | tr -d '\n' | sed "s/ $GZ_SIG.*//" | wc -c            )
-GZ_FIRST=$(( $GZ_FIRST / 3 + 1 ))
-tail -c+$GZ_FIRST "$PSFILE" | gunzip > "$FN_WAVES"
+# Approximate locations of GZIP and PNG chunks
+WAVE_LOC=84
+PSLEN=$(stat -c%s "$PSFILE")
+XML_LOC=$(( $PSLEN - 9000 ))
+PNG_LOC=$(( $PSLEN - 3000))
 
-# Locate the last GZIP signature
-#        | Get last TAIL bytes   | The first      | Convert to hex | Remove LFs | Remove hex that precedes the   | Get the length   |
-#        |                       | CHUNK bytes    |                |            | GZIP signature                 | of remaining hex |
-GZ_LAST=$(tail -c$TAIL "$PSFILE" |  head -c$CHUNK | od -An -tx1 -v | tr -d '\n' | sed "s/.* $GZ_SIG / $GZ_SIG /" | wc -c            )
-GZ_LAST=$(( $GZ_LAST / 3))
-GZ_LAST=$(( $TAIL + $GZ_LAST - $CHUNK ))
-tail -c$GZ_LAST "$PSFILE" | gunzip > "$FN_XML"
+# Locate a signature given approximate location
+locate_sig()
+{
+    local fn=$1  # The name of the file to search in
+    local loc=$2 # The approximate location
+    local sig=$3 # The signature, space separated hex bytes, eg. "89 50 4e 47"
+    local chunk=4096
+
+    local start=$(( $loc - $chunk/2))
+    if [ "$start" -lt "0" ]; then
+        start=0;
+    fi
+
+    #          | Get the chunk from file                  | Convert to hex | Remove LFs |
+    local hex=$(dd if="$fn" bs=1 skip=$start count=$chunk | od -An -tx1 -v | tr -d '\n' )
+
+    # Locate first occurrence
+    #                        | Remove the signature  | Get the length   |
+    #                        | and following hex     | of remaining hex |
+    local offset=$(echo $hex | sed -n "s/ $sig.*//p" | wc -c            )
+    if [ "$offset" -gt "0" ]; then
+        echo $(( $start + $offset / 3 ))
+    fi
+
+    # Locate last occurrence
+    #                        | Remove hex that precedes the | Get the length   |
+    #                        | GZIP signature               | of remaining hex |
+    local sigrem=$(echo $hex | sed -n "s/.* $sig / $sig /p" | wc -c            )
+    if [ "$sigrem" -gt "0" ]; then
+        echo $(( $start + $chunk - $sigrem / 3 ))
+    else
+        echo "-1"
+    fi
+}
+
+# Locate the first GZIP - waves
+WAVE_LOC=$( locate_sig "$PSFILE" 10 "$GZ_SIG" | head -n1)
+printf "Waves @ %08x\n"  $WAVE_LOC >&2
+tail -c+$(( $WAVE_LOC +1 )) "$PSFILE" | gunzip > "$FN_WAVES"
+
+# Locate the last GZIP  - settings XML
+XML_LOC=$( locate_sig "$PSFILE" "$XML_LOC" "$GZ_SIG" | tail -n1)
+printf "XML @ %08x\n"  $XML_LOC >&2
+XML=$(tail -c+$(( $XML_LOC + 1)) "$PSFILE" | gunzip | tr -d '\000')
+echo "$XML" > "$FN_XML"
+
+# Get the GZipped wave offsets and lengths from XML
+#                                                      | Remove left of =" | Remove right of " |
+OFFSETS=$(echo "$XML"| grep "<offset value="           | sed "s/.*=\"//"   | sed "s/\".*//"    )
+LENGTHS=$(echo "$XML"| grep "<compressedlength value=" | sed "s/.*=\"//"   | sed "s/\".*//"    )
+
+ROW=0
+echo "$OFFSETS" | while read OFFSET ; do
+    ROW=$(( $ROW + 1))
+    LENGTH=$(echo "$LENGTHS" | tail -n+$ROW | head -n1)
+    OFFSET=$(( $OFFSET + 84 ))
+    FN=$FN_WAVE_PREFIX$ROW.bin
+    dd if="$PSFILE" bs=1 skip=$OFFSET count=$LENGTH | gunzip > "$FN"
+done
+
+# Locate the PNG image
+PNG_LOC=$(locate_sig "$PSFILE" "$PNG_LOC" "$PNG_SIG" | head -n1)
+printf "PNG @ %08x\n"  $PNG_LOC >&2
+dd if="$PSFILE" bs=1 skip=$PNG_LOC > "$FN_PNG"
+
 
