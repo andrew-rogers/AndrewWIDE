@@ -20,10 +20,17 @@ WAVE_ALOC=84
 PSLEN=$(stat -c%s "$PSFILE")
 PNG_ALOC=$(( $PSLEN - 3000))
 
-# XML offset at 0x0c in header | Convert to hex | Remove LFs |
+# XML offset at 0x0c in header
+#                              | Convert to hex | Remove LFs |
 HDR=$(head -c84 "$PSFILE"      | od -An -tx4 -v | tr -d '\n' )
 XML_ALOC=0x$(echo "$HDR" | head -c36 | tail -c8)
 XML_ALOC=$(( $XML_ALOC + 172 ))
+
+# PNG offset given at end of psdata file
+#                        | Convert to hex | Remove LFs |
+HDR=$(tail -c8 "$PSFILE" | od -An -tx4 -v | tr -d '\n' )
+PNG_ALOC=0x$(echo "$HDR" | head -c9 | tail -c8)
+PNG_ALOC=$(( $PNG_ALOC + 4 ))
 
 # Locate a signature given approximate location
 locate_sig()
@@ -92,7 +99,7 @@ loc_error()
     printf " location estimated: %08x   Actual: %08x   Error: %d\n"  $1 $2 $(( $1 - $2))
 }
 
-printf "Waves"; loc_error $WAVE_ALOC $WAVE_LOC >&2
-printf "Settings"; loc_error $XML_ALOC $XML_LOC >&2
-printf "PNG"; loc_error $PNG_ALOC $PNG_LOC >&2
+(printf "Waves"; loc_error $WAVE_ALOC $WAVE_LOC) >&2
+(printf "Settings"; loc_error $XML_ALOC $XML_LOC) >&2
+(printf "PNG"; loc_error $PNG_ALOC $PNG_LOC) >&2
 
