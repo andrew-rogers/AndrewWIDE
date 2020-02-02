@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>SVG Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="Diagram/SvgFigure.js"></script>
+    <script src="Diagram/Geometry.js"></script>
+    <script src="Diagram/Shapes/SignalProcessing.js"></script>
+</head>
+<body>
+
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" id="output">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M9,3 L0,6 L0,0 z" fill="#000" />
+        </marker>
+    </defs>
+</svg>
+    
+<script>
+    var svg = document.getElementById('output');
+    var fig=new SvgFigure(svg);
+
+    //  [Z-1]---->(+)
+    var p_delay = new Point(50,40);
+    var p_adder = new Point(150,40);
+
+    var delay = new Delay(p_delay,50,30,'-1');
+    var adder1= new Adder(p_adder,20);
+
+    var amp = new AmplifierConnector(delay, adder1, 'a0');
+
+    fig.draw(delay);
+    fig.draw(adder1);
+    fig.draw(amp);
+</script>
+</body>
+</html>
+
