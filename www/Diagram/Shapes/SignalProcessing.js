@@ -59,11 +59,14 @@ var Delay = function(cp, w, h, text)
     this.y=cp.y-h/2;
     this.w=w;
     this.h=h;
+    this.text=text;
 };
 
 Delay.prototype.draw = function(fig)
 {
     fig.drawRect(this.x, this.y, this.w, this.h);
+    var font_size=12;
+    fig.drawText(this.x+this.w/2, this.y+this.h/2+font_size/3, 'middle', font_size, this.text);
 };
 
 var Amplifier = function(g, text)
@@ -74,9 +77,9 @@ var Amplifier = function(g, text)
 
 Amplifier.prototype._calcPoints = function(g)
 {
-    var p1=new Point(-0.5,-0.4);
+    var p1=new Point(-0.5,-0.6);
     var p2=new Point(0.5,0); // Output connection
-    var p3=new Point(-0.5,0.4);
+    var p3=new Point(-0.5,0.6);
     var p4=new Point(-0.5,0); // Input connection
     var points=[p1,p2,p3,p4];
     g.transform(points);
@@ -90,9 +93,7 @@ Amplifier.prototype.getConnections = function()
 
 Amplifier.prototype.draw = function(fig)
 {
-    fig.drawLine(new Line(this.points[0],this.points[1]),'-2-');
-    fig.drawLine(new Line(this.points[1],this.points[2]),'-2-');
-    fig.drawLine(new Line(this.points[2],this.points[0]),'-2-');
+    fig.drawPolygon([this.points[0],this.points[1],this.points[2]]);
     /// @todo Draw the text
 };
 
@@ -101,7 +102,7 @@ var AmplifierConnector = function(s1,s2,text)
     /// @todo Draw the lines to connection points of amplifier.
     this.s2=s2;
     var cp=new Point((s1.cp.x+s2.cp.x)/2,(s1.cp.y+s2.cp.y)/2);
-    var g=new Transform(10,0,0,10,cp.x,cp.y);
+    var g=new Transform(7,0,0,7,cp.x,cp.y);
     this.amp = new Amplifier(g,text);
 };
 

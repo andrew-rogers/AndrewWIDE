@@ -89,6 +89,35 @@ SvgFigure.prototype.drawDot = function(cp,r)
     this.svg.appendChild(element);
 };
 
+SvgFigure.prototype.drawPolygon = function(points)
+{
+    var points_str='';
+    for (var i=0; i<points.length; i++)
+    {
+        points_str+=points[i].x+',';
+        points_str+=points[i].y+',';
+    }
+    points_str=points_str.slice(0,-1);
+
+    var element = document.createElementNS(this.ns, 'polygon');
+    element.setAttributeNS(null, 'points', points_str);
+    element.setAttributeNS(null, 'stroke-width', 1);
+    element.setAttributeNS(null, 'stroke', '#000');
+    element.setAttributeNS(null, 'fill', 'none');
+    this.svg.appendChild(element);
+};
+
+SvgFigure.prototype.drawText = function(x,y,anchor,fs,text)
+{
+    var element = document.createElementNS(this.ns, 'text');
+    element.setAttributeNS(null, 'x', x);
+    element.setAttributeNS(null, 'y', y);
+    element.setAttributeNS(null, 'font-size', fs);
+    element.setAttributeNS(null, 'text-anchor', anchor);
+    element.textContent=text;
+    this.svg.appendChild(element);
+};
+
 SvgFigure.prototype.draw = function(shape)
 {
     shape.draw(fig);
