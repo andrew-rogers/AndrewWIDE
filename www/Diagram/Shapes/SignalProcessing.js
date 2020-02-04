@@ -62,11 +62,38 @@ var Delay = function(cp, w, h, text)
     this.text=text;
 };
 
+Delay.prototype.getConnection = function(point)
+{
+    var x=point.x;
+    if(x>this.cp.x+this.w/2) x=this.cp.x+this.w/2;
+    if(x<this.cp.x-this.w/2) x=this.cp.x-this.w/2;
+    var y=point.y;
+    if(y>this.cp.y+this.h/2) y=this.cp.y+this.h/2;
+    if(y<this.cp.y-this.h/2) y=this.cp.y-this.h/2;
+    return new Point(x,y);
+};
+
 Delay.prototype.draw = function(fig)
 {
     fig.drawRect(this.x, this.y, this.w, this.h);
     var font_size=12;
     fig.drawText(this.x+this.w/2, this.y+this.h/2+font_size/3, 'middle', font_size, this.text);
+};
+
+var Node = function(cp, radius)
+{
+    this.cp={...cp};
+    this.radius=radius;
+};
+
+Node.prototype.draw = function(fig)
+{
+    fig.drawDot(this.cp, this.radius);
+};
+
+Node.prototype.getConnection = function()
+{
+    return new Point(this.cp.x,this.cp.y);
 };
 
 var Amplifier = function(g, text)
@@ -97,19 +124,34 @@ Amplifier.prototype.draw = function(fig)
     /// @todo Draw the text
 };
 
-var AmplifierConnector = function(s1,s2,text)
+var AmplifierConnector = function(s1,s2,text,params)
 {
-    /// @todo Draw the lines to connection points of amplifier.
-    this.s2=s2;
-    var cp=new Point((s1.cp.x+s2.cp.x)/2,(s1.cp.y+s2.cp.y)/2);
+    this.points=this._calcPoints(s1,s2);
+    var cp=this.points[1];
     var g=new Transform(7,0,0,7,cp.x,cp.y);
+    g.rotate(this.points[0],this.points[2]);
     this.amp = new Amplifier(g,text);
+    this.params='-->';
+    if(params)this.params = params;
+};
+
+AmplifierConnector.prototype._calcPoints = function(s1,s2)
+{
+    var p1=s1.getConnection(s2.cp);
+    var p2=s2.getConnection(s1.cp);
+    var cp=new Point((p1.x+p2.x)/2,(p1.y+p2.y)/2);
+    var points=[p1,cp,p2];
+    return points;
 };
 
 AmplifierConnector.prototype.draw = function(fig)
 {
     this.amp.draw(fig);
+
+    // Draw lines to connect amplifier to shapes.
     var connections = this.amp.getConnections();
-    var l = new Line(connections.out,this.s2.getConnection(connections.out));
-    fig.drawLine(l,'-->');
+    var l = new Line(connections.out,this.points[2]);
+    fig.drawLine(l,this.params);
+    l = new Line(this.points[0],connections.in);
+    fig.drawLine(l);
 };

@@ -35,13 +35,27 @@ var Transform = function(a,b,c,d,dx,dy)
     this.dy=dy;
 };
 
+Transform.prototype.rotate = function(p1,p2)
+{
+    var angle = Math.atan2(p2.y-p1.y,p2.x-p1.x);
+    var C = Math.cos(angle);
+    var S = Math.sin(angle);
+    var a = this.a*C+this.c*S;
+    var b = this.b*C+this.d*S;
+    this.c = -this.a*S+this.c*C;
+    this.d = -this.b*S+this.d*C;
+    this.a=a;
+    this.b=b;
+};
+
 Transform.prototype.transform = function(points)
 {
     for( var i=0; i<points.length; i++)
     {
         var p=points[i];
-        p.x = this.a *p.x + this.c * p.y + this.dx;
+        var x = this.a *p.x + this.c * p.y + this.dx;
         p.y = this.b *p.x + this.d * p.y + this.dy;
+        p.x = x;
         points[i]=p;
     }
 };
