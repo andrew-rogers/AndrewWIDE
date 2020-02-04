@@ -33,15 +33,10 @@ var SvgFigure = function(svg_el)
 
 SvgFigure.prototype.drawLine = function(line, params)
 {
-    // Slice parameters string, both end params strings are same length and not larger than middle params string.
-    var len_e = Math.floor(params.length/3.0);
-    var len_m = params.length-2*len_e;
-    var params_begin = params.slice(0,len_e);
-    var params_mid = params.slice(len_e,len_e+len_m);
-    var params_end = params.slice(len_e+len_m,len_e+len_m+len_e);
+    params=this._splitLineParams(params);
 
     var stroke_width=1;
-    if( params_mid.match('2') ) stroke_width=2;
+    if( params.mid.match('2') ) stroke_width=2;
 
     var element = document.createElementNS(this.ns, 'line');
     element.setAttributeNS(null, 'x1', line.p1.x);
@@ -50,7 +45,7 @@ SvgFigure.prototype.drawLine = function(line, params)
     element.setAttributeNS(null, 'y2', line.p2.y);
     element.setAttributeNS(null, 'stroke-width', stroke_width);
     element.setAttributeNS(null, 'stroke', '#000');
-    if(params_end.slice(-1)=='>') element.setAttributeNS(null, 'marker-end', 'url(#arrow)');
+    if(params.end.slice(-1)=='>') element.setAttributeNS(null, 'marker-end', 'url(#arrow)');
     this.svg.appendChild(element);
 
 };
@@ -107,6 +102,27 @@ SvgFigure.prototype.drawPolygon = function(points)
     this.svg.appendChild(element);
 };
 
+SvgFigure.prototype.drawPolyLine = function(points, params)
+{
+    var points_str='';
+    for (var i=0; i<points.length; i++)
+    {
+        points_str+=points[i].x+',';
+        points_str+=points[i].y+',';
+    }
+    points_str=points_str.slice(0,-1);
+
+    params=this._splitLineParams(params);
+
+    var element = document.createElementNS(this.ns, 'polyline');
+    element.setAttributeNS(null, 'points', points_str);
+    element.setAttributeNS(null, 'stroke-width', 1);
+    element.setAttributeNS(null, 'stroke', '#000');
+    element.setAttributeNS(null, 'fill', 'none');
+    if(params.end.slice(-1)=='>') element.setAttributeNS(null, 'marker-end', 'url(#arrow)');
+    this.svg.appendChild(element);
+};
+
 SvgFigure.prototype.drawText = function(x,y,anchor,fs,text)
 {
     var element = document.createElementNS(this.ns, 'text');
@@ -121,5 +137,18 @@ SvgFigure.prototype.drawText = function(x,y,anchor,fs,text)
 SvgFigure.prototype.draw = function(shape)
 {
     shape.draw(fig);
+};
+
+SvgFigure.prototype._splitLineParams = function(params)
+{
+    // Slice parameters string, both end params strings are same length and not larger than middle params string.
+    if(!params) params='---';
+    var len_e = Math.floor(params.length/3.0);
+    var len_m = params.length-2*len_e;
+    var param_obj={};
+    param_obj.begin = params.slice(0,len_e);
+    param_obj.mid = params.slice(len_e,len_e+len_m);
+    param_obj.end = params.slice(len_e+len_m,len_e+len_m+len_e);
+    return param_obj;
 };
 
