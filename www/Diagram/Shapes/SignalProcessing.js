@@ -77,7 +77,7 @@ Delay.prototype.draw = function(fig)
 {
     fig.drawRect(this.x, this.y, this.w, this.h);
     var font_size=12;
-    fig.drawText(this.x+this.w/2, this.y+this.h/2+font_size/3, 'middle', font_size, this.text);
+    fig.drawText(this.x+this.w/2, this.y+this.h/2, 'cc', font_size, this.text);
 };
 
 var Node = function(cp, radius)
@@ -108,7 +108,8 @@ Amplifier.prototype._calcPoints = function(g)
     var p2=new Point(0.5,0); // Output connection
     var p3=new Point(-0.5,0.6);
     var p4=new Point(-0.5,0); // Input connection
-    var points=[p1,p2,p3,p4];
+    var p5=new Point(0,-0.5); // Text location
+    var points=[p1,p2,p3,p4,p5];
     g.transform(points);
     return points;
 };
@@ -121,26 +122,47 @@ Amplifier.prototype.getConnections = function()
 Amplifier.prototype.draw = function(fig)
 {
     fig.drawPolygon([this.points[0],this.points[1],this.points[2]]);
-    /// @todo Draw the text
+    var font_size=12;
+    var p_out=this.points[1];
+    var p_in=this.points[3];
+    var angle = 20*Math.atan2(p_out.y-p_in.y,p_out.x-p_in.x)/Math.PI;
+    var pos = 'tc';
+    if(angle>-1 && angle<1) pos='bc';
+    else if(angle>=1 && angle<=9) pos='bl';
+    else if(angle>9 && angle <11) pos='cl';
+    else if(angle>=11 && angle<=19) pos='tl';
+    else if(angle>=-19 && angle<=-11) pos='tr';
+    else if(angle>-11 && angle <-9) pos='cr';
+    else if(angle>=-9 && angle<=-1) pos='br';
+    fig.drawText(this.points[4].x, this.points[4].y, pos, font_size, this.text);
 };
 
-var AmplifierConnector = function(s1,s2,text,params)
+var AmplifierConnector = function(points,text,params,sec,pos)
 {
-    this.points=this._calcPoints(s1,s2);
-    var cp=this.points[1];
-    var g=new Transform(7,0,0,7,cp.x,cp.y);
-    g.rotate(this.points[0],this.points[2]);
-    this.amp = new Amplifier(g,text);
+    this.points=this._calcPoints(points);
     this.params='-->';
     if(params)this.params = params;
+    if(typeof sec === 'undefined')sec=Math.floor(this.points.length/2)-1;
+    this.sec = sec;
+    if(typeof pos === 'undefined')pos=0.5;
+    var p0=this.points[this.sec];
+    var p1=this.points[this.sec+1];
+    var x=pos*p1.x+(1-pos)*p0.x;
+    var y=pos*p1.y+(1-pos)*p0.y;
+    var g=new Transform(7,0,0,7,x,y);
+    g.rotate(p0,p1);
+    this.amp = new Amplifier(g,text);
 };
 
-AmplifierConnector.prototype._calcPoints = function(s1,s2)
+AmplifierConnector.prototype._calcPoints = function(points)
 {
-    var p1=s1.getConnection(s2.cp);
-    var p2=s2.getConnection(s1.cp);
-    var cp=new Point((p1.x+p2.x)/2,(p1.y+p2.y)/2);
-    var points=[p1,cp,p2];
+    var last=points.length-1;
+    var p1=points[1];
+    if(p1.cp) p1=p1.cp;    // Get centre point of shape
+    var pl1=points[last-1];
+    if(pl1.cp) pl1=pl1.cp; // Get centre point of shape
+    if(points[0].getConnection)points[0]=points[0].getConnection(p1);
+    if(points[last].getConnection)points[last]=points[last].getConnection(pl1);
     return points;
 };
 
@@ -150,8 +172,10 @@ AmplifierConnector.prototype.draw = function(fig)
 
     // Draw lines to connect amplifier to shapes.
     var connections = this.amp.getConnections();
-    var l = new Line(connections.out,this.points[2]);
-    fig.drawLine(l,this.params);
-    l = new Line(this.points[0],connections.in);
-    fig.drawLine(l);
+    var points_in = this.points.slice(0,this.sec+1);
+    points_in.push(connections.in);
+    fig.drawPolyLine(points_in,'---');
+    var points_out = this.points.slice(this.sec+1);
+    points_out.unshift(connections.out);
+    fig.drawPolyLine(points_out,this.params);
 };
