@@ -32,6 +32,7 @@ var Plot = function()
     this.gy=10;
     this.gw=540;
     this.gh=340;
+    this.colours=["red", "green", "blue"];
 };
 
 Plot.prototype.addSeries = function(arr)
@@ -98,13 +99,13 @@ Plot.prototype.draw = function(fig)
         fig.drawText(x1-5, step * yscale + yoffset, 'cr' , 10, ystrings[i]);
     }
     if(this.xlabel) fig.drawText(this.gx+this.gw/2, this.gy+this.gh+20, 'tc', 10, this.xlabel);
-    if(this.ylabel) fig.drawTextOptions(this.gx-30, this.gy+this.gh/2, this.ylabel, {rotation: -90, fs: 10, anchor: 'bc'});
+    if(this.ylabel) fig.drawText(this.gx-30, this.gy+this.gh/2, this.ylabel, {rotation: -90, fs: 10, anchor: 'bc'});
     
     // Draw series
     for (var i=0; i<this.series.length; i++) {
         var points = this.series[i].points;
         points = this._scalePoints(points, xscale, xoffset, yscale, yoffset);
-        fig.drawPolyLine(points);
+        fig.drawPolyLine(points, {stroke: this.colours[i%this.colours.length]});
     }
 };
 

@@ -102,8 +102,19 @@ SvgFigure.prototype.drawPolygon = function(points)
     this.svg.appendChild(element);
 };
 
-SvgFigure.prototype.drawPolyLine = function(points, params)
+SvgFigure.prototype.drawPolyLine = function(points, options)
 {
+
+    var params = '---';
+    var stroke = '#000';
+
+    if (typeof options == 'string') {
+        params = options;
+    } else if (typeof options == 'object') {
+        if (options.hasOwnProperty('params')) params = options.params;
+        if (options.hasOwnProperty('stroke')) stroke = options.stroke;
+    }
+
     var points_str='';
     for (var i=0; i<points.length; i++)
     {
@@ -117,18 +128,22 @@ SvgFigure.prototype.drawPolyLine = function(points, params)
     var element = document.createElementNS(this.ns, 'polyline');
     element.setAttributeNS(null, 'points', points_str);
     element.setAttributeNS(null, 'stroke-width', 1);
-    element.setAttributeNS(null, 'stroke', '#000');
+    element.setAttributeNS(null, 'stroke', stroke);
     element.setAttributeNS(null, 'fill', 'none');
     if(params.end.slice(-1)=='>') element.setAttributeNS(null, 'marker-end', 'url(#arrow)');
     this.svg.appendChild(element);
 };
 
-SvgFigure.prototype.drawText = function(x,y,anchor,fs,text)
+SvgFigure.prototype.drawText = function()
 {
-    this.drawTextOptions(x,y,text,{fs: fs, anchor: anchor});
+    if (arguments.length == 5) {
+        this._drawText(arguments[0],arguments[1],arguments[4],{fs: arguments[3], anchor: arguments[2]});
+    } else {
+        this._drawText(arguments[0],arguments[1],arguments[2],arguments[3]);
+    }
 };
 
-SvgFigure.prototype.drawTextOptions = function(x,y,text,options)
+SvgFigure.prototype._drawText = function(x,y,text,options)
 {
     var anchor = null;
     if (options.hasOwnProperty('anchor')) anchor = options.anchor;

@@ -24,14 +24,16 @@
 
         <script>
 
-function plot(arr) {
+function plot() {
     var div_plot = document.getElementById('div_plot');
     div_plot.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" id="svg_plot"></svg>';
     var svg_plot = document.getElementById('svg_plot');
 
     var fig=new SvgFigure(svg_plot);
     var p = new Plot();
-    p.addSeries(arr);
+    for (var i=0; i<arguments.length; i++) {
+        p.addSeries(arguments[i]);
+    }
     p.axisLabels("time (s)", "voltage (V)");
     p.draw(fig);
 
@@ -48,10 +50,12 @@ function sinDemo()
 {
     var ta_script = document.getElementById('ta_script');
     ta_script.value = "var arr=[];\n"
+                    + "var arr1=[];\n"
                     + "for (var theta=0; theta<Math.PI*4; theta+=0.1) {\n"
-                    + "    arr.push(0.0+Math.sin(theta));\n"
+                    + "    arr.push(Math.sin(theta));\n"
+                    + "    arr1.push(Math.sin(theta+0.3));\n"
                     + "}\n"
-                    + "plot(arr);\n";
+                    + "plot(arr, arr1);\n";
 }
 
 function evalJS()
