@@ -35,6 +35,7 @@ function plot() {
         p.addSeries(arguments[i]);
     }
     p.axisLabels("time (s)", "voltage (V)");
+    p.setLegends(["ph1","ph2"]);
     p.draw(fig);
 
     var svg_str=XML.stringify(svg_plot);

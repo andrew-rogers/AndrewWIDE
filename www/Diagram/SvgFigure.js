@@ -31,8 +31,18 @@ var SvgFigure = function(svg_el)
     this.ns='http://www.w3.org/2000/svg';
 };
 
-SvgFigure.prototype.drawLine = function(line, params)
+SvgFigure.prototype.drawLine = function(line, options)
 {
+    var params = '---';
+    var stroke = '#000';
+
+    if (typeof options == 'string') {
+        params = options;
+    } else if (typeof options == 'object') {
+        if (options.hasOwnProperty('params')) params = options.params;
+        if (options.hasOwnProperty('stroke')) stroke = options.stroke;
+    }
+
     params=this._splitLineParams(params);
 
     var stroke_width=1;
@@ -44,7 +54,7 @@ SvgFigure.prototype.drawLine = function(line, params)
     element.setAttributeNS(null, 'x2', line.p2.x);
     element.setAttributeNS(null, 'y2', line.p2.y);
     element.setAttributeNS(null, 'stroke-width', stroke_width);
-    element.setAttributeNS(null, 'stroke', '#000');
+    element.setAttributeNS(null, 'stroke', stroke);
     if(params.end.slice(-1)=='>') element.setAttributeNS(null, 'marker-end', 'url(#arrow)');
     this.svg.appendChild(element);
 

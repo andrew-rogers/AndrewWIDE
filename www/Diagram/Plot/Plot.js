@@ -50,24 +50,28 @@ Plot.prototype.axisLabels = function(xlabel, ylabel)
     this.ylabel=ylabel;
 };
 
+Plot.prototype.setLegends = function(legends)
+{
+    this.legends = legends;
+}
+
 Plot.prototype.draw = function(fig)
 {
-    
     var range = this._getRange();
-    
+
     var xsteps = this._calcAxisSteps(range.xmin, range.xmax, 10);
     var xmin = xsteps[0];
     var xmax = xsteps[xsteps.length-1];
     var ysteps = this._calcAxisSteps(range.ymin, range.ymax, 4);
     var ymin = ysteps[0];
     var ymax = ysteps[ysteps.length-1];
-    
+
     // Calculate scaling and offset
     var xscale = this.gw/(xmax-xmin);
     var xoffset = this.gx-xscale*xmin;
     var yscale = this.gh/(ymin-ymax);
     var yoffset = this.gy+this.gh-yscale*ymin;
-    
+
     // Draw axis
     var x1 = xmin * xscale + xoffset;
     var x2 = xmax * xscale + xoffset;
@@ -100,12 +104,21 @@ Plot.prototype.draw = function(fig)
     }
     if(this.xlabel) fig.drawText(this.gx+this.gw/2, this.gy+this.gh+20, 'tc', 10, this.xlabel);
     if(this.ylabel) fig.drawText(this.gx-30, this.gy+this.gh/2, this.ylabel, {rotation: -90, fs: 10, anchor: 'bc'});
-    
+
     // Draw series
+    var y = this.gy + 10;
     for (var i=0; i<this.series.length; i++) {
         var points = this.series[i].points;
         points = this._scalePoints(points, xscale, xoffset, yscale, yoffset);
-        fig.drawPolyLine(points, {stroke: this.colours[i%this.colours.length]});
+        var line_opts = {stroke: this.colours[i%this.colours.length]};
+        fig.drawPolyLine(points, line_opts);
+
+        if (this.legends[i]) {
+            var x = this.gx + this.gw;
+            fig.drawLine({p1: {x: x-50, y: y}, p2: {x: x-40, y: y}}, line_opts);
+            fig.drawText(x-38, y, this.legends[i], {anchor: 'cl', fs: 10});
+            y+=15;
+        }
     }
 };
 
@@ -144,7 +157,7 @@ Plot.prototype._calcAxisSteps = function(min, max, min_divs)
     var sa = [10,5,2,1];
     var max_step = (max - min) / min_divs;
     var decade = Math.floor(Math.log10(max_step));
-    
+
     var si=0;
     var step_size = sa[si]*Math.pow(10,decade);
     var num_divs = (max-min)/step_size;
@@ -154,7 +167,7 @@ Plot.prototype._calcAxisSteps = function(min, max, min_divs)
         step_size = sa[si]*Math.pow(10,decade);
         num_divs = (max-min)/step_size;
     }
-    
+
     var steps=[]
     for (var step = Math.floor(min/step_size)*step_size; step < (max+step_size); step+=step_size) steps.push(step);   
     return steps;
