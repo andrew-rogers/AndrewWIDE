@@ -83,7 +83,7 @@ Plot.prototype.draw = function(fig)
     var xstrings = this._numbersToStrings(xsteps,3);
     for (var i=0; i<xsteps.length; i++) {
         var step = xsteps[i];
-        fig.drawText(step * xscale + xoffset, y2+5, 'tc' , 8, xstrings[i]);
+        fig.drawText(step * xscale + xoffset, y2+5, 'tc' , 10, xstrings[i]);
     }
     var x1 = this.gx;
     var x2 = this.gx+this.gw;
@@ -95,10 +95,10 @@ Plot.prototype.draw = function(fig)
     var ystrings = this._numbersToStrings(ysteps,3);
     for (var i=0; i<ysteps.length; i++) {
         var step = ysteps[i];
-        fig.drawText(x1-5, step * yscale + yoffset, 'cr' , 8, ystrings[i]);
+        fig.drawText(x1-5, step * yscale + yoffset, 'cr' , 10, ystrings[i]);
     }
-    if(this.xlabel) fig.drawText(this.gx+this.gw/2, this.gy+this.gh+20, 'tc', 8, this.xlabel);
-    if(this.ylabel) fig.drawTextOptions(this.gx-30, this.gy+this.gh/2, this.ylabel, {rotation: -90, fs: 8, anchor: 'bc'});
+    if(this.xlabel) fig.drawText(this.gx+this.gw/2, this.gy+this.gh+20, 'tc', 10, this.xlabel);
+    if(this.ylabel) fig.drawTextOptions(this.gx-30, this.gy+this.gh/2, this.ylabel, {rotation: -90, fs: 10, anchor: 'bc'});
     
     // Draw series
     for (var i=0; i<this.series.length; i++) {

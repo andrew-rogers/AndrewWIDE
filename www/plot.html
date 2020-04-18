@@ -1,56 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Plot Demo</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="Diagram/SvgFigure.js"></script>
-    <script src="Diagram/Plot/Plot.js"></script>
-    <script src="XML.js"></script>
-</head>
-<body>
+    <head>
+        <title>Plot Demo</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="Diagram/SvgFigure.js"></script>
+        <script src="Diagram/Plot/Plot.js"></script>
+        <script src="XML.js"></script>
+    </head>
+    <body>
 
+        <div style="width: 600px" id="div_plot">
+        </div>
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" id="output">
-    <defs>
-        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M9,3 L0,6 L0,0 z" fill="#000" />
-        </marker>
-    </defs>
-</svg>
+        <div>
+            <textarea id="ta_script" rows="15" style="width: 600px">plot([1,2,2,3,1,2]);</textarea>
+            <br>
+            <button onclick="sinDemo()">Sinewave demo</button>
+            <button onclick="evalJS()">Evaluate JS</button>
+        </div>
 
-<div id="div_download"></div>
-    
-<script>
+        <div id="div_download"></div>
 
-var fig=null;
+        <script>
 
 function plot(arr) {
-    if (fig==null) {
-        var svg = document.getElementById('output');
-        fig=new SvgFigure(svg);
-    }
-    
+    var div_plot = document.getElementById('div_plot');
+    div_plot.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" id="svg_plot"></svg>';
+    var svg_plot = document.getElementById('svg_plot');
+
+    var fig=new SvgFigure(svg_plot);
     var p = new Plot();
     p.addSeries(arr);
     p.axisLabels("time (s)", "voltage (V)");
     p.draw(fig);
+
+    var svg_str=XML.stringify(svg_plot);
+
+    var blob=new Blob([svg_str]);
+    var url = URL.createObjectURL(blob);
+    var fn = "plot.svg";
+    var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
+    document.getElementById("div_download").innerHTML=a_download;
 }
 
-var arr=[];
-for (var theta=0; theta<Math.PI*4; theta+=0.1) arr.push(0.0+Math.sin(theta));
-plot(arr);
+function sinDemo()
+{
+    var ta_script = document.getElementById('ta_script');
+    ta_script.value = "var arr=[];\n"
+                    + "for (var theta=0; theta<Math.PI*4; theta+=0.1) {\n"
+                    + "    arr.push(0.0+Math.sin(theta));\n"
+                    + "}\n"
+                    + "plot(arr);\n";
+}
 
-var svg_str=XML.stringify(document.getElementById('output'))
-console.log(svg_str);
+function evalJS()
+{
+    var ta_script = document.getElementById('ta_script');
+    eval(ta_script.value);
+}
 
-var blob=new Blob([svg_str]);
-var url = URL.createObjectURL(blob);
-var fn = "plot.svg";
-var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
-document.getElementById("div_download").innerHTML=a_download;
-
-</script>
-</body>
+        </script>
+    </body>
 </html>
 
