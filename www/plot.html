@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Plot Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="Diagram/SvgFigure.js"></script>
+    <script src="Diagram/Plot/Plot.js"></script>
+</head>
+<body>
+
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" id="output">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M9,3 L0,6 L0,0 z" fill="#000" />
+        </marker>
+    </defs>
+</svg>
+    
+<script>
+
+var fig=null;
+
+function plot(arr) {
+    if (fig==null) {
+        var svg = document.getElementById('output');
+        fig=new SvgFigure(svg);
+    }
+    
+    var p = new Plot();
+    p.addSeries(arr);
+    p.draw(fig);
+}
+
+var arr=[];
+for (var theta=0; theta<Math.PI*4; theta+=0.1) arr.push(0.0+Math.sin(theta));
+plot(arr);
+
+</script>
+</body>
+</html>
+
