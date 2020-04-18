@@ -43,6 +43,12 @@ Plot.prototype.addSeries = function(arr)
     this.series.push(series);
 };
 
+Plot.prototype.axisLabels = function(xlabel, ylabel)
+{
+    this.xlabel=xlabel;
+    this.ylabel=ylabel;
+};
+
 Plot.prototype.draw = function(fig)
 {
     
@@ -91,6 +97,8 @@ Plot.prototype.draw = function(fig)
         var step = ysteps[i];
         fig.drawText(x1-5, step * yscale + yoffset, 'cr' , 8, ystrings[i]);
     }
+    if(this.xlabel) fig.drawText(this.gx+this.gw/2, this.gy+this.gh+20, 'tc', 8, this.xlabel);
+    if(this.ylabel) fig.drawTextOptions(this.gx-30, this.gy+this.gh/2, this.ylabel, {rotation: -90, fs: 8, anchor: 'bc'});
     
     // Draw series
     for (var i=0; i<this.series.length; i++) {

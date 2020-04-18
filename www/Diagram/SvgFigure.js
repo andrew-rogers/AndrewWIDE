@@ -125,22 +125,42 @@ SvgFigure.prototype.drawPolyLine = function(points, params)
 
 SvgFigure.prototype.drawText = function(x,y,anchor,fs,text)
 {
+    this.drawTextOptions(x,y,text,{fs: fs, anchor: anchor});
+};
+
+SvgFigure.prototype.drawTextOptions = function(x,y,text,options)
+{
+    var anchor = null;
+    if (options.hasOwnProperty('anchor')) anchor = options.anchor;
+
+    var fs = null;
+    if (options.hasOwnProperty('fs')) fs = options.fs;
+
+    var rotation = null;
+    if (options.hasOwnProperty('rotation')) rotation = options.rotation;
+
     var element = document.createElementNS(this.ns, 'text');
     element.setAttributeNS(null, 'x', x);
     element.setAttributeNS(null, 'y', y);
-    element.setAttributeNS(null, 'font-size', fs);
+    if (fs) element.setAttributeNS(null, 'font-size', fs);
     element.setAttributeNS(null, 'text-anchor', 'start');
     element.textContent=text;
+
     this.svg.appendChild(element);
-    var bb=element.getBBox();
 
-    if(anchor[0]=='t')element.setAttributeNS(null, 'y', 2*y-bb.y);
-    else if(anchor[0]=='b')element.setAttributeNS(null, 'y', 2*y-(bb.y+bb.height));
-    else element.setAttributeNS(null, 'y', 2*y-(bb.y+bb.height/2));
+    if (anchor) {
+        var bb=element.getBBox();
 
-    if(anchor[1]=='l')element.setAttributeNS(null, 'x', x);
-    else if(anchor[1]=='r')element.setAttributeNS(null, 'x', x-bb.width);
-    else element.setAttributeNS(null, 'x', x-bb.width/2);
+        if(anchor[0]=='t')element.setAttributeNS(null, 'y', 2*y-bb.y);
+        else if(anchor[0]=='b')element.setAttributeNS(null, 'y', 2*y-(bb.y+bb.height));
+        else element.setAttributeNS(null, 'y', 2*y-(bb.y+bb.height/2));
+
+        if(anchor[1]=='l')element.setAttributeNS(null, 'x', x);
+        else if(anchor[1]=='r')element.setAttributeNS(null, 'x', x-bb.width);
+        else element.setAttributeNS(null, 'x', x-bb.width/2);
+    }
+
+    if (rotation) element.setAttributeNS(null, 'transform', 'rotate('+rotation+' '+x+','+y+')');
 };
 
 SvgFigure.prototype.draw = function(shape)

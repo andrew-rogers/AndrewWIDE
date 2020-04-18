@@ -30,6 +30,7 @@ function plot(arr) {
     
     var p = new Plot();
     p.addSeries(arr);
+    p.axisLabels("time (s)", "voltage (V)");
     p.draw(fig);
 }
 
