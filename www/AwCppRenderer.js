@@ -25,41 +25,25 @@
  *
  */
 
-function AwDocRenderer(div) {
-    if(div){
-        div=div;
-    } else{
-        div=document.createElement("div");
-        document.body.appendChild(div);
-    }
-
-    this.div = div;
-    this.renderers = {};
-}
-
-AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
-    this.renderers[name]=renderer;
+var AwCppRenderer = function() {
 };
 
-AwDocRenderer.prototype.render = function( awdoc ) {
-    this.div.innerHTML = awdoc;
-
-    var divs = this.div.getElementsByTagName("div");
-    for (var i = 0; i < divs.length; i++){
-        var div = divs[i];
-        var renderer_name = div.className;
-        if (this.renderers.hasOwnProperty(renderer_name)) {
-            this._render( div, i, this.renderers[renderer_name]);
-        }
-    }
-};
-
-AwDocRenderer.prototype._render = function( div, i, renderer ) {
-    var src = div.innerHTML;
-    div.innerHTML = "";
-    if (div.id=="") div.id = div.className+"_"+i;
-    renderer.render(src, div, function() {
-        console.log(div.className+" "+i+" done!");
-    });
+AwCppRenderer.prototype.render = function(cpp, div, callback) {
+    
+    // Put the C++ source into a textarea
+    var ta = document.createElement("textarea");
+    ta.style.width = "100%";
+    ta.value = cpp;
+    div.appendChild(ta);
+    ta.style.height = (ta.scrollHeight+8)+"px";
+    
+    // Create a div for the execution result
+    var div_result = document.createElement("div");
+    div.appendChild(div_result);
+    
+    // Execute the C++ code on the server
+    //this._execCpp(docname, 
+    
+    callback();
 };
 
