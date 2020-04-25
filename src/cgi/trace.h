@@ -33,7 +33,5 @@
 
 void aw_trace(const std::string& fname, const std::string& name, double val);
 
-#include "trace.cpp"
-
 #endif //TRACE_H
 

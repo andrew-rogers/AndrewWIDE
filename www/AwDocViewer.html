@@ -10,17 +10,19 @@
         <script src="marked.js"></script>
         <script src="MathJax-2.7.8/MathJax.js?config=TeX-AMS-MML_SVG"></script>
         <script src="AwCppRenderer.js"></script>
+        <script src="jsonarraybuffers.js"></script>
     </head>
     <body>
         <script>
         
 var fn = window.location.search;
-var awdr = new AwDocRenderer();
-awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
-awdr.registerRenderer("awcpp", new AwCppRenderer());
 
 if (fn.startsWith("?file=")) {
     var fn = decodeURIComponent(fn.slice(6));
+
+    var awdr = new AwDocRenderer();
+    awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
+    awdr.registerRenderer("awcpp", new AwCppRenderer(fn));
 
     fileread(fn, function( err, content ) {
         awdr.render(content);

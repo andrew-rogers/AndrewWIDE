@@ -41,7 +41,7 @@ CppEditor.prototype.run = function() {
 	obj["path"]=this.getFilename();
 	if( this.func_name != undefined )obj["name"]=this.func_name;
 	var that=this;
-	JsonArrayBuffers.querySh(sh, "/cgi-bin/exec_bin.sh", obj, function( response ) {
+	JsonArrayBuffers.querySh(sh, obj, function( response ) {
 		that.handle_run_response(response);
 	});
 }

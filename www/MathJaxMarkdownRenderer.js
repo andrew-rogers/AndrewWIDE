@@ -25,8 +25,9 @@
  *
  */
  
-// https://github.com/mathjax/MathJax/archive/2.7.8.zip
-// https://github.com/markedjs/marked/raw/master/lib/marked.js
+// Dependencies:
+//   https://github.com/mathjax/MathJax/archive/2.7.8.zip
+//   https://github.com/markedjs/marked/raw/master/lib/marked.js
 
 var MathJaxMarkdownRenderer = function() {
     this.svgarray = new SVGArray();
@@ -45,7 +46,7 @@ var MathJaxMarkdownRenderer = function() {
 
 MathJaxMarkdownRenderer.prototype.render = function(mjmd, div, callback) {
     this.div_html = div;
-    this.div_html.innerHTML=mjmd; // MathJax processes in-place so copy the input mardown into the div.
+    this.div_html.innerHTML=mjmd; // MathJax processes in-place so copy the input markdown into the div.
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,this.div_html]);
     var that=this;
     MathJax.Hub.Queue(function() {

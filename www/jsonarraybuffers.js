@@ -169,7 +169,8 @@ JsonArrayBuffers.query = function(url, obj, callback) {
     this.queryBlob(url, blob, callback);
 };
 
-JsonArrayBuffers.querySh = function(sh, url, obj, callback) {
+JsonArrayBuffers.querySh = function(sh, obj, callback) {
+    var url="/cgi-bin/exec_bin.sh"
     var json_blob=JsonArrayBuffers.stringify(obj)
     var blob=new Blob([sh, "\nBINARY\n", json_blob]);
     this.queryBlob(url, blob, callback);
