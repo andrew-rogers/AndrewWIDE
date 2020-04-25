@@ -15,6 +15,7 @@ cpp_wrapper()
     echo '#include "plot.h"' >> $OUT
     echo '#include "trace.h"' >> $OUT
     echo '#include "math.h"' >> $OUT
+    echo '#include "awmath.h"' >> $OUT
     echo '' >> $OUT
     echo "void $NAME()" >> $OUT
     echo "{" >> $OUT

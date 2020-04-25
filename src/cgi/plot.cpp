@@ -23,7 +23,7 @@
 extern Json g_response;
 
 template <typename T> 
-void plot(AwVector<T>& vec)
+void plot(const AwVector<T>& vec)
 {
     Json graph;
     graph["cmd"]="plot";

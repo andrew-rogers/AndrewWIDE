@@ -1,6 +1,6 @@
 /*
-    AndrewWIDE - Graph plotting
-    Copyright (C) 2018  Andrew Rogers
+    AndrewWIDE - Math utilities
+    Copyright (C) 2020 Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,15 +17,16 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef PLOT_H
-#define PLOT_H
+#ifndef AWMATH_H
+#define AWMATH_H
 
 #include "awvector.h"
 
-template <typename T> 
-void plot(const AwVector<T>& vec);
+static const double PI=3.141592653589793F;
 
-#include "plot.cpp"
+AwVector<double> linspace(double start, double end, int length);
+AwVector<double> sin(const AwVector<double>& angle);
+AwVector<double> operator*(double a, const AwVector<double>& vec);
 
-#endif //PLOT_H
+#endif // AWMATH_H
 

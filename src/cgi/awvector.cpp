@@ -34,7 +34,7 @@ void AwVector<T>::fromJsonArray(Json& json)
 }
 
 template <class T>
-Json AwVector<T>::toJsonArray()
+Json AwVector<T>::toJsonArray() const
 {
     Json json;
     for( int i=0; i<vector<T>::size(); i++ )

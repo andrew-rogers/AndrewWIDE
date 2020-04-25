@@ -2,6 +2,7 @@ LIB_OBJS= \
  cgi/json.o \
  cgi/filesystem.o \
  cgi/cgi_post.o \
+ cgi/awmath.o \
  aw_framework/awapp.o \
  aw_framework/awfd.o \
  aw_framework/awfdobserver.o \

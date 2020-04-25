@@ -29,7 +29,7 @@ class AwVector : public std::vector<T>
 {
 public:
     void fromJsonArray(Json& json);
-    Json toJsonArray();
+    Json toJsonArray() const;
 private:
     
 };
