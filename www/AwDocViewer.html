@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+        <script src="AwDocRenderer.js"></script>
+        <script src="aw-sh.js"></script>
+        <script src="file.js"></script>
+        <script src="MathJaxMarkdownRenderer.js"></script>
+        <script src="svgarray.js"></script>
+        <script src="marked.js"></script>
+        <script src="MathJax-2.7.8/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+    </head>
+    <body>
+        <script>
+        
+var fn = window.location.search;
+var awdr = new AwDocRenderer();
+
+if (fn.startsWith("?file=")) {
+    var fn = decodeURIComponent(fn.slice(6));
+
+    fileread(fn, function( err, content ) {
+        awdr.render(content);
+    });
+}
+
+        </script>
+    </body>
+</html>
+
