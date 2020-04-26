@@ -28,6 +28,7 @@
 // Dependencies:
 //   Diagram/Plot/Plot.js
 //   Diagram/SvgFigure.js
+//   XML.js
 
 var PlotRenderer = function() {
     
@@ -58,9 +59,26 @@ PlotRenderer.prototype.render = function(json, div, callback) {
 PlotRenderer.prototype._createSvgFigureInDiv = function(div) {
     div.style.width = "600px";
     div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"></svg>';
+    var that = this;
+    div.onclick=function(e) {
+        that._clicked(div);
+    };
     var svg_plot = div.childNodes[0];
     var fig=new SvgFigure(svg_plot);
     return fig;
+};
+
+PlotRenderer.prototype._clicked = function(div) {
+    if (div.childNodes.length < 2) {
+        var div_download = document.createElement("div");
+        var svg_str=XML.stringify(div.childNodes[0]);
+        var blob=new Blob([svg_str]);
+        var url = URL.createObjectURL(blob);
+        var fn = "plot.svg";
+        var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
+        div_download.innerHTML = a_download
+        div.appendChild(div_download);
+    }
 };
 
 var JsonRenderer = function() {
