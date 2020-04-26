@@ -81,14 +81,17 @@ AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) 
 };
 
 AwCppRenderer.prototype._handle_build_response = function(response, div_result, callback) {
-	// TODO Handle build success/fail message and build output
-	console.log(response);
+	this._viewTextInDiv(response, div_result);
 	var lines = response.split("\n");
 	for( var i=0; i<lines.length; i++) {
 		var line=lines[i];
 		if( line.substring(0,5) == "JSON{" ) {
 			var obj=JSON.parse(line.substring(4));
-			this._run( obj["bin"], obj["name"], div_result, callback );
+			if (obj["error"]==0) {
+			    this._run( obj["bin"], obj["name"], div_result, callback );
+			} else {
+			    this._tryNext();
+			}
 		}
 	}
 };
@@ -106,5 +109,15 @@ AwCppRenderer.prototype._handle_run_response = function(response, div_result, ca
     console.log(response);
     this.json_renderer.render( response, div_result, callback );
     this._tryNext();
+};
+
+AwCppRenderer.prototype._viewTextInDiv = function(text, div) {
+    div.innerHTML="";
+    var ta = document.createElement("textarea");
+    ta.style.width = "100%";
+    ta.value = text;
+    ta.readOnly = true;
+    div.appendChild(ta);
+    ta.style.height = (ta.scrollHeight+8)+"px";
 };
 

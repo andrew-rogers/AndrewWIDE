@@ -18,6 +18,7 @@
 */
 
 #include "awmath.h"
+#include <cmath>
 
 AwVector<double> linspace(double start, double end, int length)
 {

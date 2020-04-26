@@ -1,6 +1,6 @@
 /*
     AndrewWIDE - Graph plotting
-    Copyright (C) 2018  Andrew Rogers
+    Copyright (C) 2020  Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,17 +17,19 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "json.h"
 #include "plot.h"
 
-extern Json g_response;
+using namespace std;
 
-template <typename T> 
-void plot(const AwVector<T>& vec)
+void xlabel(const string label)
 {
-    Json graph;
-    graph["cmd"]="plot";
-    graph["data"]=vec.toJsonArray();
-    g_response.push_back(graph);
+    Json graph = g_response[g_response.length()-1];
+    graph["xlabel"] = label;
+}
+
+void ylabel(const string label)
+{
+    Json graph = g_response[g_response.length()-1];
+    graph["ylabel"] = label;
 }
 

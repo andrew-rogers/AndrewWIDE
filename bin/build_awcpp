@@ -82,5 +82,5 @@ EOF
 cpp_wrapper
 cpp_main
 (cd "$DIR" && make CGI="$CGI" -f "$AW_DIR/lib/awcpp.makefile") 2>&1
-echo "JSON{\"bin\":\"$DIR/$CGI\",\"name\":\"$NAME\"}"
+echo "JSON{\"bin\":\"$DIR/$CGI\",\"name\":\"$NAME\",\"error\":\"$?\"}"
 

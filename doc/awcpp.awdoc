@@ -19,6 +19,8 @@ We can see that the execution of the above code resulted in a plot of a sinewave
     
     // Plot
     plot(rms*sqrt(2)*sin(2*PI*f*t));
+    xlabel("sample (n)");
+    ylabel("voltage (V)");
 </div>
 <div class="mjmd">
 Again a plot is generated. Both functions are executed from the same main C++ function. The wrapped functions and the generated main function are produced by the AndrewWIDE C++ preprocessor.

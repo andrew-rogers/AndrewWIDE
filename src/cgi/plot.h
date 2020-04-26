@@ -21,11 +21,23 @@
 #define PLOT_H
 
 #include "awvector.h"
+#include "json.h"
 
-template <typename T> 
-void plot(const AwVector<T>& vec);
+#include <string>
 
-#include "plot.cpp"
+extern Json g_response;
+
+template <typename T>
+void plot(const AwVector<T>& vec)
+{
+    Json graph;
+    graph["cmd"]="plot";
+    graph["data"]=vec.toJsonArray();
+    g_response.push_back(graph);
+}
+
+void xlabel(const std::string label);
+void ylabel(const std::string label);
 
 #endif //PLOT_H
 

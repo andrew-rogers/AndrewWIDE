@@ -34,11 +34,14 @@ var PlotRenderer = function() {
 };
 
 PlotRenderer.prototype.render = function(json, div, callback) {
-    console.log("Here 2");
     var fig = this._createSvgFigureInDiv( div );
     var p = new Plot();
     p.addSeries(json.data);
-    p.axisLabels("sample (n)", "voltage (V)"); // TODO get axis labels from json
+    var xlabel = ""
+    if (json["xlabel"]) xlabel = json.xlabel;
+    var ylabel = ""
+    if (json["ylabel"]) ylabel = json.ylabel;
+    p.axisLabels(xlabel, ylabel);
     p.draw(fig);
     if( callback ) callback();
 };
@@ -56,7 +59,6 @@ var JsonRenderer = function() {
 };
 
 JsonRenderer.prototype.render = function(json, div, callback) {
-    console.log("Here 1");
     var cmd=json[0]; // TODO process all the commands
     if (cmd["cmd"] ) this.cmds[cmd.cmd].render( cmd, div, callback );
 };

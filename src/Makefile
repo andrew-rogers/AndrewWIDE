@@ -3,6 +3,7 @@ LIB_OBJS= \
  cgi/filesystem.o \
  cgi/cgi_post.o \
  cgi/awmath.o \
+ cgi/plot.o \
  cgi/trace.o \
  aw_framework/awapp.o \
  aw_framework/awfd.o \
