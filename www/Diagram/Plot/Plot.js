@@ -28,6 +28,7 @@
 var Plot = function()
 {
     this.series=[];
+    this.legends=[];
     this.gx=50;
     this.gy=10;
     this.gw=540;

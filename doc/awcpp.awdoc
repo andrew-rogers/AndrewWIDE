@@ -15,7 +15,7 @@ We can see that the execution of the above code resulted in a plot of a sinewave
     double rms=230;
     
     // Time axis
-    auto t = linspace(0,50,1000);
+    auto t = linspace(0,0.2,1000);
     
     // Plot
     plot(rms*sqrt(2)*sin(2*PI*f*t));
@@ -23,11 +23,11 @@ We can see that the execution of the above code resulted in a plot of a sinewave
 <div class="mjmd">
 Again a plot is generated. Both functions are executed from the same main C++ function. The wrapped functions and the generated main function are produced by the AndrewWIDE C++ preprocessor.
 
-| File             | Description                                           |
-|------------------|-------------------------------------------------------|
-| awcpp.awdoc      | This AwDoc document                                   |
-| awcpp_func.d     | Directory holding the generated C++ functions         |
-| awcpp_awmain.cpp | The C++ source file with the main function definition |
-| awcpp            | The executable compiled from the aboce C++ sources    | 
+| File                   | Description                                           |
+|------------------------|-------------------------------------------------------|
+| awcpp.awdoc            | This AwDoc document                                   |
+| awcpp/func.d           | Directory holding the generated C++ functions         |
+| awcpp/awcpp_awmain.cpp | The C++ source file with the main function definition |
+| awcpp/awcpp            | The executable compiled from the above C++ sources    |
 
 </div>

@@ -28,9 +28,11 @@
 // Dependencies:
 //   jsonarraybuffers.js
 //   aw-sh.js
+//   JsonRenderer.js
 
-var AwCppRenderer = function(docname) {
+var AwCppRenderer = function(docname, json_renderer) {
     this.docname = docname;
+    this.json_renderer = json_renderer;
     this.queue = [];
     this.build_done=true;
 };
@@ -49,7 +51,7 @@ AwCppRenderer.prototype.render = function(cpp, div, callback) {
     div.appendChild(div_result);
 
     // Queue the C++ code for building on the server
-    this.queue.push([cpp, div.id, callback]);
+    this.queue.push([cpp, div.id, div_result, callback]);
     this._tryNext()
 };
 
@@ -57,12 +59,12 @@ AwCppRenderer.prototype._tryNext = function() {
     if (this.build_done) {
         if (this.queue.length>0) {
             var build_args = this.queue.shift();
-            if (build_args) this._build(build_args[0], build_args[1], build_args[2]);
+            if (build_args) this._build(build_args[0], build_args[1], build_args[2], build_args[3]);
         }
     }
 }
 
-AwCppRenderer.prototype._build = function(cpp, func_name, callback) {
+AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) {
     var fn=this.docname;
     if (fn.endsWith(".awdoc")) {
         var dir=fn.slice(0,-6)+"/func.d/";
@@ -72,11 +74,37 @@ AwCppRenderer.prototype._build = function(cpp, func_name, callback) {
 	    this.build_done=false;
 	    var that=this;
 	    query_sh(script, cpp, function( exit_code, response ) {
-		    // TODO: run the function, produce the output and call the callback
-		    console.log( response );
 		    that.build_done=true;
-		    that._tryNext();
+		    that._handle_build_response(response, div_result, callback);
 	    });
 	}
+};
+
+AwCppRenderer.prototype._handle_build_response = function(response, div_result, callback) {
+	// TODO Handle build success/fail message and build output
+	console.log(response);
+	var lines = response.split("\n");
+	for( var i=0; i<lines.length; i++) {
+		var line=lines[i];
+		if( line.substring(0,5) == "JSON{" ) {
+			var obj=JSON.parse(line.substring(4));
+			this._run( obj["bin"], obj["name"], div_result, callback );
+		}
+	}
+};
+
+AwCppRenderer.prototype._run = function(bin, func_name, div_result, callback) {
+	var sh="CMD=\""+bin+"\"\n";
+	var obj={cmd: "run", name: func_name};
+	var that=this;
+	JsonArrayBuffers.querySh(sh, obj, function( response ) {
+		that._handle_run_response(response, div_result, callback);
+	});
+};
+
+AwCppRenderer.prototype._handle_run_response = function(response, div_result, callback) {
+    console.log(response);
+    this.json_renderer.render( response, div_result, callback );
+    this._tryNext();
 };
 
