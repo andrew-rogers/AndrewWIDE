@@ -43,7 +43,7 @@ AwVector<T> fir(const AwVector<T>& x, const AwVector<T>& coeffs)
     for( int n=0; n<x.size(); n++ )
     {
         T sum=x[n]*coeffs[0];
-        for( int k=1; k<coeffs.size() && k<n; k++ )
+        for( int k=1; k<coeffs.size() && k<=n; k++ )
         {
             sum+=x[n-k]*coeffs[k];
         }
