@@ -18,8 +18,8 @@ We can see that the execution of the above code resulted in a plot of a sinewave
     auto t = linspace(0,0.2,1000);
     
     // Plot
-    plot(rms*sqrt(2)*sin(2*PI*f*t));
-    xlabel("sample (n)");
+    plot(1000*t, rms*sqrt(2)*sin(2*PI*f*t));
+    xlabel("time (ms)");
     ylabel("voltage (V)");
 </div>
 <div class="mjmd">

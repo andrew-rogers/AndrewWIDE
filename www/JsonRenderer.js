@@ -36,12 +36,21 @@ var PlotRenderer = function() {
 PlotRenderer.prototype.render = function(json, div, callback) {
     var fig = this._createSvgFigureInDiv( div );
     var p = new Plot();
-    p.addSeries(json.data);
+
+    // Get the series
+    if (json["data"]) {
+        p.addSeries(json.data);
+    } else if (json["x"]) {
+        p.addSeries(json.x, json.y);
+    }
+
+    // Get the labels
     var xlabel = ""
     if (json["xlabel"]) xlabel = json.xlabel;
     var ylabel = ""
     if (json["ylabel"]) ylabel = json.ylabel;
     p.axisLabels(xlabel, ylabel);
+
     p.draw(fig);
     if( callback ) callback();
 };

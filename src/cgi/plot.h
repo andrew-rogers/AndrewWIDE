@@ -36,6 +36,16 @@ void plot(const AwVector<T>& vec)
     g_response.push_back(graph);
 }
 
+template <typename T>
+void plot(const AwVector<T>& vec_x, const AwVector<T>& vec_y)
+{
+    Json graph;
+    graph["cmd"]="plot";
+    graph["x"]=vec_x.toJsonArray();
+    graph["y"]=vec_y.toJsonArray();
+    g_response.push_back(graph);
+}
+
 void xlabel(const std::string label);
 void ylabel(const std::string label);
 

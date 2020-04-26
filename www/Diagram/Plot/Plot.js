@@ -36,11 +36,22 @@ var Plot = function()
     this.colours=["red", "green", "blue"];
 };
 
-Plot.prototype.addSeries = function(arr)
+Plot.prototype.addSeries = function()
 {
     var series={}
     var points=[];
-    for (var x=0; x<arr.length; x++) points[x]={x: x, y: arr[x]};
+
+    if (arguments.length == 1) {
+        var arr = arguments[0];
+        for (var x=0; x<arr.length; x++) points[x]={x: x, y: arr[x]};
+    }
+
+    if (arguments.length == 2) {
+        var arr_x = arguments[0];
+        var arr_y = arguments[1];
+        for (var n=0; n<arr_x.length; n++) points[n]={x: arr_x[n], y: arr_y[n]};
+    }
+
     series.points=points;
     this.series.push(series);
 };
@@ -60,7 +71,7 @@ Plot.prototype.draw = function(fig)
 {
     var range = this._getRange();
 
-    var xsteps = this._calcAxisSteps(range.xmin, range.xmax, 10);
+    var xsteps = this._calcAxisSteps(range.xmin, range.xmax, 6);
     var xmin = xsteps[0];
     var xmax = xsteps[xsteps.length-1];
     var ysteps = this._calcAxisSteps(range.ymin, range.ymax, 4);
