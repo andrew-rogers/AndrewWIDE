@@ -5,14 +5,15 @@ OBJS= \
 FUNC_OBJS=$(patsubst %.cpp,%.o,$(wildcard func.d/*_aw.cpp))
 
 AWSRC_DIR=../../src
+SIGNAL_DIR=../../lib/signal
 
-CXXFLAGS=-I$(AWSRC_DIR)/cgi
-LDFLAGS=-L$(AWSRC_DIR)
+CXXFLAGS=-I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
+LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
 
 all:	$(CGI)
 
 $(CGI):	$(OBJS) $(FUNC_OBJS)
-	$(CXX) $^ $(LDFLAGS) -lAw -o $@
+	$(CXX) $^ $(LDFLAGS) -lAw -lSignal -o $@
 
 clean:
 	rm -f $(DIR)/$(CGI)
