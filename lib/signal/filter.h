@@ -23,6 +23,9 @@
 #include "awvector.h"
 
 template <typename T>
+AwVector<T> conv(const AwVector<T>& x, const AwVector<T>& h);
+
+template <typename T>
 AwVector<T> fir(const AwVector<T>& x, const AwVector<T>& coeffs);
 
 #endif // FILTER_H

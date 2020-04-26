@@ -20,7 +20,39 @@
 #include "filter.h"
 
 template <typename T>
+AwVector<T> conv(const AwVector<T>& x, const AwVector<T>& h)
+{
+    AwVector<T> ret;
+    ret.reserve(x.size() + h.size() - 1);
+    for( int n=0; n<(x.size() + h.size() -1); n++ ) ret.push_back(0);
+    for( int n=0; n<x.size(); n++ )
+    {
+        for( int k=0; k<h.size(); k++ )
+        {
+            ret[n+k]+=x[n]*h[k];
+        }
+    }
+    return ret;
+}
+
+template <typename T>
 AwVector<T> fir(const AwVector<T>& x, const AwVector<T>& coeffs)
 {
+    AwVector<T> ret;
+    ret.reserve(x.size());
+    for( int n=0; n<x.size(); n++ )
+    {
+        T sum=x[n]*coeffs[0];
+        for( int k=1; k<coeffs.size() && k<n; k++ )
+        {
+            sum+=x[n-k]*coeffs[k];
+        }
+        ret.push_back(sum);
+    }
+    return ret;
 }
+
+// Compile instantiations of template functions for double
+template AwVector<double> conv(const AwVector<double>&, const AwVector<double>&);
+template AwVector<double> fir(const AwVector<double>&, const AwVector<double>&);
 
