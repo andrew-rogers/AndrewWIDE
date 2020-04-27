@@ -80,7 +80,11 @@ SVGArray.prototype.getImageIncDefs = function(index) {
     return svgstr;
 };
 
-SVGArray.prototype.xml2str = function(xml, indent)
+SVGArray.prototype.xml2str = function(xml, indent) {
+    return XML.stringify(xml, indent);
+};
+
+SVGArray.prototype.xml2str_old = function(xml, indent)
 {
   var str=indent;
   str+='<'+xml.nodeName;
@@ -107,8 +111,10 @@ SVGArray.prototype.xml2str = function(xml, indent)
   return str;
 }
 
+
 SVGArray.prototype.clear = function ()
 {
     this.map_defs={};
     this.images=[];
 }
+

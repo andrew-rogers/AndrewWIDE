@@ -30,9 +30,10 @@ var XML = function()
     
 };
 
-XML.stringify = function(xml)
+XML.stringify = function(xml, indent)
 {
-    return XML._stringify(xml, '  ');
+    if (arguments.length<2) indent = '  ';
+    return XML._stringify(xml, indent);
 };
 
 XML._stringify = function(xml, indent)
