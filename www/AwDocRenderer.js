@@ -55,7 +55,7 @@ AwDocRenderer.prototype.render = function( awdoc ) {
 };
 
 AwDocRenderer.prototype._render = function( div, i, renderer ) {
-    var src = div.innerHTML;
+    var src=div.childNodes[0].data;
     div.innerHTML = "";
     if (div.id=="") div.id = div.className+"_"+i;
     renderer.render(src, div, function() {

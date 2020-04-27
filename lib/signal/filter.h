@@ -28,5 +28,8 @@ AwVector<T> conv(const AwVector<T>& x, const AwVector<T>& h);
 template <typename T>
 AwVector<T> fir(const AwVector<T>& x, const AwVector<T>& coeffs);
 
+template <typename T>
+AwVector<T> iir(const AwVector<T>& x, const AwVector<T>& b, const AwVector<T>& a);
+
 #endif // FILTER_H
 

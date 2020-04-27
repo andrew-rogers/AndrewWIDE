@@ -24,15 +24,12 @@
  * for the JavaScript code in this page.
  *
  */
- 
+
 // Dependencies:
 //   https://github.com/mathjax/MathJax/archive/2.7.8.zip
 //   https://github.com/markedjs/marked/raw/master/lib/marked.js
 
 var MathJaxMarkdownRenderer = function() {
-    this.svgarray = new SVGArray();
-
-    this.div_html=null; // Stores the div for the output
 
     MathJax.Hub.Config({
         tex2jax: {
@@ -41,26 +38,25 @@ var MathJaxMarkdownRenderer = function() {
         },
         jax: ["input/TeX","output/SVG"]
     });
-    
+
 };
 
 MathJaxMarkdownRenderer.prototype.render = function(mjmd, div, callback) {
-    this.div_html = div;
-    this.div_html.innerHTML=mjmd; // MathJax processes in-place so copy the input markdown into the div.
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub,this.div_html]);
+    div.innerHTML=mjmd; // MathJax processes in-place so copy the input markdown into the div.
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
     var that=this;
     MathJax.Hub.Queue(function() {
-        that._mathjaxDoneHandler(callback);
+        that._mathjaxDoneHandler(div, callback);
     });
 };
 
-MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(callback) {
+MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(div, callback) {
 
     // --- Handle code sections without '>' displaying as '&gt;' ---
     // https://github.com/chjj/marked/issues/160#issuecomment-18611040
 
     // Let marked do its normal token generation.
-    var tokens = marked.lexer( this.div_html.innerHTML );
+    var tokens = marked.lexer( div.innerHTML );
 
     // Mark all code blocks as already being escaped.
     // This prevents the parser from encoding anything inside code blocks
@@ -71,45 +67,57 @@ MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(callback) {
     });
 
     // Let marked do its normal parsing, but without encoding the code blocks
-    this.div_html.innerHTML = marked.parser( tokens );
+    div.innerHTML = marked.parser( tokens );
     // -------------------------------------------------------------
 
-    
-
-    this._processMathJaxOutput();
+    this._processMathJaxOutput(div);
 
     callback();
 };
 
-MathJaxMarkdownRenderer.prototype._processMathJaxOutput = function() {
-    // Get the SVG path definitions
-    var defs=document.getElementById("MathJax_SVG_glyphs");
-    this.svgarray.clear();
-    if(defs)this.svgarray.addDefs(defs);
+MathJaxMarkdownRenderer.prototype._processMathJaxOutput = function(div) {
 
     // Remove MathML stuff
-    var mjs=this.div_html.getElementsByClassName("MathJax_SVG");
+    var mjs=div.getElementsByClassName("MathJax_SVG");
     for(var i=0; i<mjs.length; i++){
-        this._addClickHandler(mjs, i);
-        var svg = mjs[i].getElementsByTagName("svg")[0];
-        this.svgarray.addImage(svg);
+        this._addClickHandler(div, mjs, i);
         var span = mjs[i].getElementsByTagName("math")[0].parentNode;
         span.parentNode.removeChild(span);
     }
 };
 
-MathJaxMarkdownRenderer.prototype._addClickHandler = function(elems, index){
+MathJaxMarkdownRenderer.prototype._addClickHandler = function(div, elems, index){
     var that=this;
     elems[index].addEventListener("click", function(e) {
         for(var i=0; i<elems.length; i++) elems[i].style.backgroundColor="";
         elems[index].style.backgroundColor="#ccccff"
 
-	var blob=new Blob([that.svgarray.getImageIncDefs(index)]);
+        var svg_str = that._createSVG(elems[index]);
+        var blob = new Blob([svg_str]);
         var url = URL.createObjectURL(blob);
         var fn = "equation.svg"
-	var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
-  
-        document.getElementById("div_downloadeqn").innerHTML=a_download;
+        var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
+
+        if (!div.div_download) {
+            // Create a child div and add its javascript object ref to the parent object as an element
+            div.div_download = document.createElement("div");
+            div.appendChild(div.div_download);
+        }
+        div.div_download.innerHTML = a_download
     });
+};
+
+MathJaxMarkdownRenderer.prototype._createSVG = function( mjs ) {
+
+    // Get the SVG path definitions
+    var defs=document.getElementById("MathJax_SVG_glyphs");
+    var svgarray = new SVGArray();
+    if(defs)svgarray.addDefs(defs);
+
+    // Get the equation SVG
+    var svg = mjs.getElementsByTagName("svg")[0];
+    svgarray.addImage(svg);
+
+    return svgarray.getImageIncDefs(0)
 };
 

@@ -52,7 +52,26 @@ AwVector<T> fir(const AwVector<T>& x, const AwVector<T>& coeffs)
     return ret;
 }
 
+template <typename T>
+AwVector<T> iir(const AwVector<T>& x, const AwVector<T>& b, const AwVector<T>& a)
+{
+    AwVector<T> y;
+    y.reserve(x.size());
+    for( int n=0; n<x.size(); n++ )
+    {
+        T sum=x[n]*b[0];
+        for( int k=1; k<b.size() && k<=n; k++ )
+        {
+            sum+=x[n-k]*b[k];
+            sum-=y[n-k]*a[k];
+        }
+        y.push_back(sum);
+    }
+    return y;
+}
+
 // Compile instantiations of template functions for double
 template AwVector<double> conv(const AwVector<double>&, const AwVector<double>&);
 template AwVector<double> fir(const AwVector<double>&, const AwVector<double>&);
+template AwVector<double> iir(const AwVector<double>&, const AwVector<double>&, const AwVector<double>&);
 
