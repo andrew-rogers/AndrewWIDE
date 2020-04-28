@@ -75,3 +75,8 @@ template AwVector<double> conv(const AwVector<double>&, const AwVector<double>&)
 template AwVector<double> fir(const AwVector<double>&, const AwVector<double>&);
 template AwVector<double> iir(const AwVector<double>&, const AwVector<double>&, const AwVector<double>&);
 
+// Compile instantiations of template functions for 64-bit integer
+template AwVector<int64_t> conv(const AwVector<int64_t>&, const AwVector<int64_t>&);
+template AwVector<int64_t> fir(const AwVector<int64_t>&, const AwVector<int64_t>&);
+template AwVector<int64_t> iir(const AwVector<int64_t>&, const AwVector<int64_t>&, const AwVector<int64_t>&);
+

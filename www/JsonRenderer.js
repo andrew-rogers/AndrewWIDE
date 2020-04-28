@@ -35,6 +35,7 @@ var PlotRenderer = function() {
 };
 
 PlotRenderer.prototype.render = function(json, div, callback) {
+    div.src_json = json;
     var fig = this._createSvgFigureInDiv( div );
     var p = new Plot();
 
@@ -70,13 +71,19 @@ PlotRenderer.prototype._createSvgFigureInDiv = function(div) {
 
 PlotRenderer.prototype._clicked = function(div) {
     if (div.childNodes.length < 2) {
-        var div_download = document.createElement("div");
         var svg_str=XML.stringify(div.childNodes[0]);
         var blob=new Blob([svg_str]);
         var url = URL.createObjectURL(blob);
         var fn = "plot.svg";
         var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
-        div_download.innerHTML = a_download
+
+        var div_download = document.createElement("div");
+        var ta=document.createElement("textarea");
+        ta.value = JSON.stringify(div.src_json);
+        ta.style.width = "100%";
+        div.appendChild(ta);
+        ta.style.height = (ta.scrollHeight+8)+"px";
+        div_download.innerHTML += a_download
         div.appendChild(div_download);
     }
 };
