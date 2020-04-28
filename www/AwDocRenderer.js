@@ -42,24 +42,49 @@ AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
 };
 
 AwDocRenderer.prototype.render = function( awdoc ) {
-    this.div.innerHTML = awdoc;
+    var lines = awdoc.split('\n');
+    var src = "";
+    var obj={};
+    var cnt = 0;
+    for (var i = 0; i<lines.length; i++) {
+        var line = lines[i];
 
-    var divs = this.div.getElementsByTagName("div");
-    for (var i = 0; i < divs.length; i++){
-        var div = divs[i];
-        var renderer_name = div.className;
-        if (this.renderers.hasOwnProperty(renderer_name)) {
-            this._render( div, i, this.renderers[renderer_name]);
+        // Check if line is AW tag
+        if (line.startsWith("AW{") && line.endsWith("}")) {
+
+            // Render the previous section
+            this._render( obj, src, cnt );
+
+            // Get attributes of this new section
+            obj = JSON.parse(line.slice(2));
+
+            src = "";
+            cnt++;
+        } else {
+            src=src+line+"\n";
         }
     }
+
+    // Render remaining content
+    this._render( obj, src, cnt );
 };
 
-AwDocRenderer.prototype._render = function( div, i, renderer ) {
-    var src=div.childNodes[0].data;
-    div.innerHTML = "";
-    if (div.id=="") div.id = div.className+"_"+i;
-    renderer.render(src, div, function() {
-        console.log(div.className+" "+i+" done!");
-    });
+AwDocRenderer.prototype._render = function( obj, src, cnt ) {
+
+    // Create a default ID if one is not given
+    if (obj.hasOwnProperty("id") == false) obj.id = obj.type+"_"+cnt;
+
+    // Create a div for the rendered output.
+    var div = document.createElement("div");
+    div.id = obj.id;
+    this.div.appendChild(div);
+
+    // Invoke the relevant renderer.
+    var renderer_name = obj.type;
+    if (this.renderers.hasOwnProperty(renderer_name)) {
+        this.renderers[renderer_name].render( src, div, function() {
+            console.log(renderer_name+" "+obj.id+" done!");
+        });
+    }
 };
 

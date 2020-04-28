@@ -32,7 +32,7 @@ var XML = function()
 
 XML.stringify = function(xml, indent)
 {
-    if (arguments.length<2) indent = '  ';
+    indent = (typeof indent !== 'undefined') ? indent : '  ';
     return XML._stringify(xml, indent);
 };
 
