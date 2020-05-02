@@ -29,6 +29,7 @@
 //   jsonarraybuffers.js
 //   aw-sh.js
 //   JsonRenderer.js
+//   NavBar.js
 
 var AwCppRenderer = function(docname, json_renderer) {
     this.docname = docname;
@@ -39,10 +40,19 @@ var AwCppRenderer = function(docname, json_renderer) {
 
 AwCppRenderer.prototype.render = function(cpp, div, callback) {
 
+    // Create controls
+    var controls = new NavBar();
+    var butt_run = document.createElement("button");
+    butt_run.innerHTML="Run";
+    controls.addRight(butt_run);
+    controls.elem.hidden = true;
+    div.appendChild(controls.elem);
+
     // Put the C++ source into a textarea
     var ta = document.createElement("textarea");
     ta.style.width = "100%";
     ta.value = cpp;
+    ta.oninput = function() {controls.elem.hidden = false;};
     div.appendChild(ta);
     ta.style.height = (ta.scrollHeight+8)+"px";
 
@@ -52,7 +62,14 @@ AwCppRenderer.prototype.render = function(cpp, div, callback) {
 
     // Queue the C++ code for building on the server
     this.queue.push([cpp, div.id, div_result, callback]);
-    this._tryNext()
+    this._tryNext();
+
+    var that = this;
+    butt_run.onclick = function() {
+        // Queue the C++ code for building on the server
+        that.queue.push([ta.value, div.id, div_result, callback]);
+        that._tryNext();
+    }
 };
 
 AwCppRenderer.prototype._tryNext = function() {
