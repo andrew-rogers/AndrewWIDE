@@ -141,10 +141,10 @@ MathJaxMarkdownEditor.prototype.addClickHandler = function(elems, index){
         for(var i=0; i<elems.length; i++) elems[i].style.backgroundColor="";
         elems[index].style.backgroundColor="#ccccff"
 
-	var blob=new Blob([that.svgarray.getImageIncDefs(index)]);
+        var blob=new Blob([that.svgarray.getImageIncDefs(index)]);
         var url = URL.createObjectURL(blob);
         var fn = "equation.svg"
-	var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
+        var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
   
         //document.getElementById("div_downloadeqn").innerHTML=a_download;
         that.div_downloadeqn.innerHTML = a_download;

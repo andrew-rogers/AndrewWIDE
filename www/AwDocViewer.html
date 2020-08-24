@@ -3,6 +3,7 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
         <script src="AwDocRenderer.js"></script>
+        <script src="DiagramRenderer.js"></script>
         <script src="aw-sh.js"></script>
         <script src="file.js"></script>
         <script src="MathJaxMarkdownRenderer.js"></script>
@@ -12,7 +13,9 @@
         <script src="AwCppRenderer.js"></script>
         <script src="jsonarraybuffers.js"></script>
         <script src="JsonRenderer.js"></script>
+        <script src="Diagram/Geometry.js"></script>
         <script src="Diagram/Plot/Plot.js"></script>
+        <script src="Diagram/Shapes/SignalProcessing.js"></script>
         <script src="Diagram/SvgFigure.js"></script>
         <script src="XML.js"></script>
         <script src="NavBar.js"></script>
@@ -28,6 +31,7 @@ if (fn.startsWith("?file=")) {
     var awdr = new AwDocRenderer();
     awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
     awdr.registerRenderer("awcpp", new AwCppRenderer(fn, new JsonRenderer()));
+    awdr.registerRenderer("diagram", new DiagramRenderer());
 
     fileread(fn, function( err, content ) {
         awdr.render(content);

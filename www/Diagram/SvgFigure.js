@@ -190,7 +190,7 @@ SvgFigure.prototype._drawText = function(x,y,text,options)
 
 SvgFigure.prototype.draw = function(shape)
 {
-    shape.draw(fig);
+    shape.draw(this);
 };
 
 SvgFigure.prototype._splitLineParams = function(params)

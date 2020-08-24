@@ -37,7 +37,8 @@ var Transform = function(a,b,c,d,dx,dy)
 
 Transform.prototype.rotate = function(p1,p2)
 {
-    var angle = Math.atan2(p2.y-p1.y,p2.x-p1.x);
+    var angle = p1;
+    if( typeof p2 !== 'undefined') angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
     var C = Math.cos(angle);
     var S = Math.sin(angle);
     var a = this.a*C+this.c*S;
@@ -60,11 +61,55 @@ Transform.prototype.transform = function(points)
     }
 };
 
+var Triangle = function(pA,pB,pC)
+{
+    this.pA = pA;
+    this.pB = pB;
+    this.pC = pC;
+}
+
+// Given point A, length c, length a and point C 
+Triangle.prototype.fromPLLP = function (pA,lc,la,pC)
+{
+    this.pA = pA;
+    this.pC = pC;
+
+    // lb is distance between pA and pC
+    var lb=pA.distance(pC);
+
+    // Cosine rule to find angle A
+    var A=-Math.acos((lb*lb+lc*lc-la*la)/(2*lb*lc));
+
+    // Get point B
+    this.pB = pA.addPolar(lc,A+pA.angle(pC));
+}
+
 var Point = function(x, y)
 {
     this.x=x;
     this.y=y;
 };
+
+Point.prototype.addPolar = function(radius, angle)
+{
+    var x=this.x+radius*Math.cos(angle);
+    var y=this.y+radius*Math.sin(angle);
+    return new Point(x,y);
+}
+
+Point.prototype.angle = function (p)
+{
+    var dx=p.x-this.x;
+    var dy=p.y-this.y;
+    return Math.atan2(dy,dx);
+}
+
+Point.prototype.distance = function (p)
+{
+    var dx=p.x-this.x;
+    var dy=p.y-this.y;
+    return Math.sqrt(dx*dx+dy*dy);
+}
 
 var Line = function(p1, p2)
 {
