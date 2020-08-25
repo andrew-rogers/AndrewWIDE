@@ -43,7 +43,14 @@ DiagramRenderer.prototype.render = function(diag_script, div, callback) {
 
 DiagramRenderer.prototype._createSvgFigureInDiv = function(div) {
     div.style.width = "600px";
-    div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"></svg>';
+    var svg_str ='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">\n';
+    svg_str    +='    <defs>\n';
+    svg_str    +='        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">\n';
+    svg_str    +='            <path d="M9,3 L0,6 L0,0 z" fill="#000" />\n';
+    svg_str    +='        </marker>\n';
+    svg_str    +='    </defs>\n';
+    svg_str    +='</svg>';
+    div.innerHTML=svg_str;
     var that = this;
     div.onclick=function(e) {
         that._clicked(div);
