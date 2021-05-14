@@ -31,6 +31,14 @@
 
 var svg = null;
 
+function genPoints(x,y,xi,yi) {
+    var points=[]
+    for (var i=0; i<xi.length; i=i+1) {
+        points.push({x: x[xi[i]], y: y[yi[i]]});
+    }
+    return points;
+}
+
 function SvgEditor(div) {
     if(div){
         div=div;
@@ -41,13 +49,12 @@ function SvgEditor(div) {
     }
 
     this._createEditor(div);
-    svg = this.svg;
 }
 
 SvgEditor.prototype._createEditor = function(div) {
     // Create a text area for JavaScript
     this.ta_src = document.createElement("textarea");
-    this.ta_src.value = "svg.drawPolyLine([{x:20,y:20},{x:40,y:20},{x:40,y:40}]);";
+    this.ta_src.value = "x=[20,40];\ny=[35,60];\npoints=genPoints(x,y,[0,1,1],[0,0,1]);\nsvg.drawPolyLine(points);";
     this.ta_src.style.width = "100%";
     div.appendChild(this.ta_src);
 
@@ -61,12 +68,14 @@ SvgEditor.prototype._createEditor = function(div) {
     div.appendChild(btn);
 
     // Create SVG div
-    var div_svg = document.createElement("div");
-    this.svg = this._createSvgFigureInDiv(div_svg);
-    div.appendChild(div_svg);
+    this.div_svg = document.createElement("div");
+
+    div.appendChild(this.div_svg);
 };
 
 SvgEditor.prototype._render = function() {
+    this.svg = this._createSvgFigureInDiv(this.div_svg);
+    svg = this.svg;
     var src = this.ta_src.value;
     eval(src);
 };
