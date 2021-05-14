@@ -29,6 +29,8 @@
 //   Diagram/SvgFigure.js
 //   XML.js
 
+var svg = null;
+
 function SvgEditor(div) {
     if(div){
         div=div;
@@ -38,41 +40,40 @@ function SvgEditor(div) {
         document.body.appendChild(div);
     }
 
-    this.ta_src = this._createEditor(div);
-    this.svg = this._createSvgFigureInDiv(div);
+    this._createEditor(div);
+    svg = this.svg;
 }
 
 SvgEditor.prototype._createEditor = function(div) {
     // Create a text area for JavaScript
+    this.ta_src = document.createElement("textarea");
+    this.ta_src.value = "svg.drawPolyLine([{x:20,y:20},{x:40,y:20},{x:40,y:40}]);";
+    this.ta_src.style.width = "100%";
+    div.appendChild(this.ta_src);
+
     // Create an execute button
+    var btn=document.createElement("button");
+    btn.innerHTML = "Run";
+    var that = this;
+    btn.onclick = function() {
+        that._render();
+    };
+    div.appendChild(btn);
+
+    // Create SVG div
+    var div_svg = document.createElement("div");
+    this.svg = this._createSvgFigureInDiv(div_svg);
+    div.appendChild(div_svg);
 };
 
-SvgEditor.prototype.render = function(json, div, callback) {
-    div.src_json = json;
-    var fig = this._createSvgFigureInDiv( div );
-    var p = new Plot();
-
-    // Get the series
-    if (json["data"]) {
-        p.addSeries(json.data);
-    } else if (json["x"]) {
-        p.addSeries(json.x, json.y);
-    }
-
-    // Get the labels
-    var xlabel = ""
-    if (json["xlabel"]) xlabel = json.xlabel;
-    var ylabel = ""
-    if (json["ylabel"]) ylabel = json.ylabel;
-    p.axisLabels(xlabel, ylabel);
-
-    p.draw(fig);
-    if( callback ) callback();
+SvgEditor.prototype._render = function() {
+    var src = this.ta_src.value;
+    eval(src);
 };
 
 SvgEditor.prototype._createSvgFigureInDiv = function(div) {
     div.style.width = "600px";
-    div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"></svg>';
+    div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="600px" height="400px" viewBox="0 0 600 400"></svg>';
     var that = this;
     div.onclick=function(e) {
         that._clicked(div);
@@ -91,11 +92,6 @@ SvgEditor.prototype._clicked = function(div) {
         var a_download = '<a href="' + url + '" download="' + fn + '">Download "' + fn + '"</a>';
 
         var div_download = document.createElement("div");
-        var ta=document.createElement("textarea");
-        ta.value = JSON.stringify(div.src_json);
-        ta.style.width = "100%";
-        div.appendChild(ta);
-        ta.style.height = (ta.scrollHeight+8)+"px";
         div_download.innerHTML += a_download
         div.appendChild(div_download);
     }
