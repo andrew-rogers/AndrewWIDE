@@ -3,7 +3,7 @@
  * @licstart  The following is the entire license notice for the 
  *  JavaScript code in this page.
  *
- * Copyright (C) 2020  Andrew Rogers
+ * Copyright (C) 2021  Andrew Rogers
  *
  *
  * The JavaScript code in this page is free software: you can
@@ -26,15 +26,28 @@
  */
 
 // Dependencies:
-//   Diagram/Plot/Plot.js
 //   Diagram/SvgFigure.js
 //   XML.js
 
-var PlotRenderer = function() {
-    
+function SvgEditor(div) {
+    if(div){
+        div=div;
+    } else{
+        div=document.createElement("div");
+        div.setAttribute("class","editor");
+        document.body.appendChild(div);
+    }
+
+    this.ta_src = this._createEditor(div);
+    this.svg = this._createSvgFigureInDiv(div);
+}
+
+SvgEditor.prototype._createEditor = function(div) {
+    // Create a text area for JavaScript
+    // Create an execute button
 };
 
-PlotRenderer.prototype.render = function(json, div, callback) {
+SvgEditor.prototype.render = function(json, div, callback) {
     div.src_json = json;
     var fig = this._createSvgFigureInDiv( div );
     var p = new Plot();
@@ -57,7 +70,7 @@ PlotRenderer.prototype.render = function(json, div, callback) {
     if( callback ) callback();
 };
 
-PlotRenderer.prototype._createSvgFigureInDiv = function(div) {
+SvgEditor.prototype._createSvgFigureInDiv = function(div) {
     div.style.width = "600px";
     div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"></svg>';
     var that = this;
@@ -69,7 +82,7 @@ PlotRenderer.prototype._createSvgFigureInDiv = function(div) {
     return fig;
 };
 
-PlotRenderer.prototype._clicked = function(div) {
+SvgEditor.prototype._clicked = function(div) {
     if (div.childNodes.length < 2) {
         var svg_str=XML.stringify(div.childNodes[0]);
         var blob=new Blob([svg_str]);
@@ -86,14 +99,5 @@ PlotRenderer.prototype._clicked = function(div) {
         div_download.innerHTML += a_download
         div.appendChild(div_download);
     }
-};
-
-var JsonRenderer = function() {
-    this.cmds = {plot: new PlotRenderer()};
-};
-
-JsonRenderer.prototype.render = function(json, div, callback) {
-    var cmd=json[0]; // TODO process all the commands
-    if (cmd["cmd"] ) this.cmds[cmd.cmd].render( cmd, div, callback );
 };
 
