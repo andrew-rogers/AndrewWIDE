@@ -53,7 +53,7 @@ function SvgEditor(div) {
 SvgEditor.prototype._createEditor = function(div) {
     // Create a text area for JavaScript
     this.ta_src = document.createElement("textarea");
-    this.ta_src.value = "grid.set([20,40],[35,60]);\npoints=grid.getPoints([0,0, 1,0, 1,1]);\nfig.drawPolyLine(points);";
+    this.ta_src.value = "grid.set([20,40],[35,60]);\ngrid.draw();\ndpl([0,0, 1,0, 1,1]);";
     this.ta_src.style.width = "100%";
     this.ta_src.rows=10;
     div.appendChild(this.ta_src);
@@ -80,6 +80,7 @@ SvgEditor.prototype._createEditor = function(div) {
 
 SvgEditor.prototype._render = function() {
     this.fig = this._createSvgFigureInDiv(this.div_svg);
+    grid.setFigure(this.fig);
     fig = this.fig;
     var src = this.ta_src.value;
     eval(src);
@@ -90,8 +91,6 @@ SvgEditor.prototype._render = function() {
     this.str_points="";
     this.str_indices="";
 
-    // Draw the guide lines
-    grid.draw(this.fig);
 };
 
 SvgEditor.prototype._createSvgFigureInDiv = function(div) {
@@ -144,6 +143,10 @@ Grid.prototype.set = function(x, y) {
     this.y = y;
 };
 
+Grid.prototype.setFigure = function(fig) {
+    this.fig = fig;
+};
+
 Grid.prototype.getPoints = function(indices) {
     var points=[]
     for (var i=0; i<indices.length; i=i+2) {
@@ -152,12 +155,12 @@ Grid.prototype.getPoints = function(indices) {
     return points;
 };
 
-Grid.prototype.draw = function(fig) {
+Grid.prototype.draw = function() {
     for (var i=0; i<this.x.length; i++) {
-        fig.drawVGuide(this.x[i]);
+        this.fig.drawVGuide(this.x[i]);
     }
     for (var i=0; i<this.y.length; i++) {
-        fig.drawHGuide(this.y[i]);
+        this.fig.drawHGuide(this.y[i]);
     }
 };
 
