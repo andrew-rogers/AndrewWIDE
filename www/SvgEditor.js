@@ -32,6 +32,10 @@
 var fig = null;
 var grid= null;
 
+function dpl(indices) {
+    return fig.drawPolyLine(grid.getPoints(indices));
+}
+
 function SvgEditor(div) {
     if(div){
         div=div;
@@ -115,7 +119,7 @@ SvgEditor.prototype._clickedPoint = function(p) {
     this.str_indices += grid.getClosestX(p.x)+',';
     this.str_indices += grid.getClosestY(p.y)+', ';
     this.ta_points.value = this.str_points + '\n'
-                         + this.str_indices;
+                         + '[ '+this.str_indices.slice(0,-2) + ' ]';
 };
 
 SvgEditor.prototype._clicked = function(div) {

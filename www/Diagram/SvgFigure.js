@@ -165,13 +165,15 @@ SvgFigure.prototype.drawPolyLine = function(points, options)
 
     params=this._splitLineParams(params);
 
-    var element = document.createElementNS(this.ns, 'polyline');
+    var element = this._createElement('polyline');
     element.setAttributeNS(null, 'points', points_str);
     element.setAttributeNS(null, 'stroke-width', 1);
     element.setAttributeNS(null, 'stroke', stroke);
     element.setAttributeNS(null, 'fill', 'none');
     if(params.end.slice(-1)=='>') element.setAttributeNS(null, 'marker-end', 'url(#arrow)');
     this.svg.appendChild(element);
+
+    return element;
 };
 
 SvgFigure.prototype.drawText = function()
@@ -234,5 +236,17 @@ SvgFigure.prototype._splitLineParams = function(params)
     param_obj.mid = params.slice(len_e,len_e+len_m);
     param_obj.end = params.slice(len_e+len_m,len_e+len_m+len_e);
     return param_obj;
+};
+
+SvgFigure.prototype._createElement = function(type)
+{
+    var element = document.createElementNS(this.ns, type);
+
+    element.setStyle = function(style) {
+        this.setAttributeNS(null, 'style', style);
+        return this;
+    };
+
+    return element;
 };
 
