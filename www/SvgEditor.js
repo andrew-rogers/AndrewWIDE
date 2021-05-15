@@ -57,6 +57,7 @@ SvgEditor.prototype._createEditor = function(div) {
     this.ta_src = document.createElement("textarea");
     this.ta_src.value = "grid.x=[20,40];\ngrid.y=[35,60];\npoints=genPoints(grid.x,grid.y,[0,1,1],[0,0,1]);\nsvg.drawPolyLine(points);";
     this.ta_src.style.width = "100%";
+    this.ta_src.rows=10;
     div.appendChild(this.ta_src);
 
     // Create an execute button
@@ -75,6 +76,7 @@ SvgEditor.prototype._createEditor = function(div) {
     // Create points text area
     this.ta_points = document.createElement("textarea");
     this.ta_points.style.width = "100%";
+    this.ta_points.rows=5;
     div.appendChild(this.ta_points);
 };
 
@@ -86,7 +88,10 @@ SvgEditor.prototype._render = function() {
 
     // Clear the points array
     this.points=[];
-    this.ta_points.value="";
+    this.indices=[];
+    this.str_points="";
+    this.str_xi="";
+    this.str_yi="";
 
     // Draw the guide lines
     for (var i=0; i<grid.x.length; i=i+1) {
@@ -118,7 +123,12 @@ SvgEditor.prototype._createSvgFigureInDiv = function(div) {
 
 SvgEditor.prototype._clickedPoint = function(p) {
     this.points.push(p);
-    this.ta_points.value+=p.x+','+p.y+', ';
+    this.str_points += p.x+','+p.y+', ';
+    this.str_xi += this._calcClosestIndex(grid.x, p.x)+',';
+    this.str_yi += this._calcClosestIndex(grid.y, p.y)+',';
+    this.ta_points.value = this.str_points + '\n'
+                         + this.str_xi + '\n'
+                         + this.str_yi;
 };
 
 SvgEditor.prototype._clicked = function(div) {
@@ -133,5 +143,19 @@ SvgEditor.prototype._clicked = function(div) {
         div_download.innerHTML += a_download
         div.appendChild(div_download);
     }
+};
+
+SvgEditor.prototype._calcClosestIndex = function(arr, val) {
+    var min = 100000;
+    var index = 0;
+    for (var i=0; i<arr.length; i++) {
+        dist = arr[i] - val;
+        if (dist < 0) dist=-dist;
+        if (dist < min) {
+            min = dist
+            index = i;
+        }
+    }
+    return index;
 };
 
