@@ -29,16 +29,8 @@
 //   Diagram/SvgFigure.js
 //   XML.js
 
-var svg = null;
-var grid={};
-
-function genPoints(x,y,xi,yi) {
-    var points=[]
-    for (var i=0; i<xi.length; i=i+1) {
-        points.push({x: x[xi[i]], y: y[yi[i]]});
-    }
-    return points;
-}
+var fig = null;
+var grid= null;
 
 function SvgEditor(div) {
     if(div){
@@ -49,13 +41,15 @@ function SvgEditor(div) {
         document.body.appendChild(div);
     }
 
+    grid = new Grid();
+
     this._createEditor(div);
 }
 
 SvgEditor.prototype._createEditor = function(div) {
     // Create a text area for JavaScript
     this.ta_src = document.createElement("textarea");
-    this.ta_src.value = "grid.x=[20,40];\ngrid.y=[35,60];\npoints=genPoints(grid.x,grid.y,[0,1,1],[0,0,1]);\nsvg.drawPolyLine(points);";
+    this.ta_src.value = "grid.set([20,40],[35,60]);\npoints=grid.getPoints([0,0, 1,0, 1,1]);\nfig.drawPolyLine(points);";
     this.ta_src.style.width = "100%";
     this.ta_src.rows=10;
     div.appendChild(this.ta_src);
@@ -81,8 +75,8 @@ SvgEditor.prototype._createEditor = function(div) {
 };
 
 SvgEditor.prototype._render = function() {
-    this.svg = this._createSvgFigureInDiv(this.div_svg);
-    svg = this.svg;
+    this.fig = this._createSvgFigureInDiv(this.div_svg);
+    fig = this.fig;
     var src = this.ta_src.value;
     eval(src);
 
@@ -90,16 +84,10 @@ SvgEditor.prototype._render = function() {
     this.points=[];
     this.indices=[];
     this.str_points="";
-    this.str_xi="";
-    this.str_yi="";
+    this.str_indices="";
 
     // Draw the guide lines
-    for (var i=0; i<grid.x.length; i=i+1) {
-        this.svg.drawVGuide(grid.x[i]);
-    }
-    for (var i=0; i<grid.y.length; i=i+1) {
-        this.svg.drawHGuide(grid.y[i]);
-    }
+    grid.draw(this.fig);
 };
 
 SvgEditor.prototype._createSvgFigureInDiv = function(div) {
@@ -124,11 +112,10 @@ SvgEditor.prototype._createSvgFigureInDiv = function(div) {
 SvgEditor.prototype._clickedPoint = function(p) {
     this.points.push(p);
     this.str_points += p.x+','+p.y+', ';
-    this.str_xi += this._calcClosestIndex(grid.x, p.x)+',';
-    this.str_yi += this._calcClosestIndex(grid.y, p.y)+',';
+    this.str_indices += grid.getClosestX(p.x)+',';
+    this.str_indices += grid.getClosestY(p.y)+', ';
     this.ta_points.value = this.str_points + '\n'
-                         + this.str_xi + '\n'
-                         + this.str_yi;
+                         + this.str_indices;
 };
 
 SvgEditor.prototype._clicked = function(div) {
@@ -145,7 +132,40 @@ SvgEditor.prototype._clicked = function(div) {
     }
 };
 
-SvgEditor.prototype._calcClosestIndex = function(arr, val) {
+function Grid() {
+}
+
+Grid.prototype.set = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+Grid.prototype.getPoints = function(indices) {
+    var points=[]
+    for (var i=0; i<indices.length; i=i+2) {
+        points.push({x: this.x[indices[i]], y: this.y[indices[i+1]]});
+    }
+    return points;
+};
+
+Grid.prototype.draw = function(fig) {
+    for (var i=0; i<this.x.length; i++) {
+        fig.drawVGuide(this.x[i]);
+    }
+    for (var i=0; i<this.y.length; i++) {
+        fig.drawHGuide(this.y[i]);
+    }
+};
+
+Grid.prototype.getClosestX = function(x) {
+    return this._calcClosestIndex( this.x, x );
+};
+
+Grid.prototype.getClosestY = function(y) {
+    return this._calcClosestIndex( this.y, y );
+};
+
+Grid.prototype._calcClosestIndex = function(arr, val) {
     var min = 100000;
     var index = 0;
     for (var i=0; i<arr.length; i++) {
