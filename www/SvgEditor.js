@@ -30,6 +30,7 @@
 //   XML.js
 
 var svg = null;
+var grid={};
 
 function genPoints(x,y,xi,yi) {
     var points=[]
@@ -54,7 +55,7 @@ function SvgEditor(div) {
 SvgEditor.prototype._createEditor = function(div) {
     // Create a text area for JavaScript
     this.ta_src = document.createElement("textarea");
-    this.ta_src.value = "x=[20,40];\ny=[35,60];\npoints=genPoints(x,y,[0,1,1],[0,0,1]);\nsvg.drawPolyLine(points);";
+    this.ta_src.value = "grid.x=[20,40];\ngrid.y=[35,60];\npoints=genPoints(grid.x,grid.y,[0,1,1],[0,0,1]);\nsvg.drawPolyLine(points);";
     this.ta_src.style.width = "100%";
     div.appendChild(this.ta_src);
 
@@ -78,6 +79,14 @@ SvgEditor.prototype._render = function() {
     svg = this.svg;
     var src = this.ta_src.value;
     eval(src);
+
+    // Draw the guide lines
+    for (var i=0; i<grid.x.length; i=i+1) {
+        this.svg.drawVGuide(grid.x[i]);
+    }
+    for (var i=0; i<grid.y.length; i=i+1) {
+        this.svg.drawHGuide(grid.y[i]);
+    }
 };
 
 SvgEditor.prototype._createSvgFigureInDiv = function(div) {
@@ -88,8 +97,19 @@ SvgEditor.prototype._createSvgFigureInDiv = function(div) {
         that._clicked(div);
     };
     var svg_plot = div.childNodes[0];
+    svg_plot.onclick = function(e) {
+        var p = svg_plot.createSVGPoint();
+        p.x = e.clientX;
+        p.y = e.clientY;
+        var p =  p.matrixTransform(svg_plot.getScreenCTM().inverse());
+        console.log(p);
+        that._clickedPoint(p);
+    };
     var fig=new SvgFigure(svg_plot);
     return fig;
+};
+
+SvgEditor.prototype._clickedPoint = function(p) {
 };
 
 SvgEditor.prototype._clicked = function(div) {

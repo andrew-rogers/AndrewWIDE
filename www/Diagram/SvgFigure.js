@@ -60,6 +60,36 @@ SvgFigure.prototype.drawLine = function(line, options)
 
 };
 
+SvgFigure.prototype.drawVGuide = function(x)
+{
+    var vb=this.svg.viewBox.baseVal;
+    var w=5;
+
+    var element = document.createElementNS(this.ns, 'rect');
+    element.setAttributeNS(null, 'x', x-w/2);
+    element.setAttributeNS(null, 'y', vb.y);
+    element.setAttributeNS(null, 'width', w);
+    element.setAttributeNS(null, 'height', vb.height);
+    element.setAttributeNS(null, 'fill', '#f77');
+    element.setAttributeNS(null, 'fill-opacity', 0.25);
+    this.svg.appendChild(element);
+};
+
+SvgFigure.prototype.drawHGuide = function(y)
+{
+    var vb=this.svg.viewBox.baseVal;
+    var h=5;
+
+    var element = document.createElementNS(this.ns, 'rect');
+    element.setAttributeNS(null, 'x', vb.x);
+    element.setAttributeNS(null, 'y', y-h/2);
+    element.setAttributeNS(null, 'width', vb.width);
+    element.setAttributeNS(null, 'height', h);
+    element.setAttributeNS(null, 'fill', '#77f');
+    element.setAttributeNS(null, 'fill-opacity', 0.25);
+    this.svg.appendChild(element);
+};
+
 SvgFigure.prototype.drawRect = function(x, y, w, h)
 {
     var element = document.createElementNS(this.ns, 'rect');
