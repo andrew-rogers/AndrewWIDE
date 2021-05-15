@@ -70,8 +70,12 @@ SvgEditor.prototype._createEditor = function(div) {
 
     // Create SVG div
     this.div_svg = document.createElement("div");
-
     div.appendChild(this.div_svg);
+
+    // Create points text area
+    this.ta_points = document.createElement("textarea");
+    this.ta_points.style.width = "100%";
+    div.appendChild(this.ta_points);
 };
 
 SvgEditor.prototype._render = function() {
@@ -79,6 +83,10 @@ SvgEditor.prototype._render = function() {
     svg = this.svg;
     var src = this.ta_src.value;
     eval(src);
+
+    // Clear the points array
+    this.points=[];
+    this.ta_points.value="";
 
     // Draw the guide lines
     for (var i=0; i<grid.x.length; i=i+1) {
@@ -102,7 +110,6 @@ SvgEditor.prototype._createSvgFigureInDiv = function(div) {
         p.x = e.clientX;
         p.y = e.clientY;
         var p =  p.matrixTransform(svg_plot.getScreenCTM().inverse());
-        console.log(p);
         that._clickedPoint(p);
     };
     var fig=new SvgFigure(svg_plot);
@@ -110,6 +117,8 @@ SvgEditor.prototype._createSvgFigureInDiv = function(div) {
 };
 
 SvgEditor.prototype._clickedPoint = function(p) {
+    this.points.push(p);
+    this.ta_points.value+=p.x+','+p.y+', ';
 };
 
 SvgEditor.prototype._clicked = function(div) {
