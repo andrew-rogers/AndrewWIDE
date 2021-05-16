@@ -29,13 +29,6 @@
 //   Diagram/SvgFigure.js
 //   XML.js
 
-var fig = null;
-var grid= null;
-
-function dpl(indices) {
-    return fig.drawPolyLine(grid.getPoints(indices));
-}
-
 function SvgEditor(div) {
     if(div){
         div=div;
@@ -44,8 +37,6 @@ function SvgEditor(div) {
         div.setAttribute("class","editor");
         document.body.appendChild(div);
     }
-
-    grid = new Grid();
 
     this._createEditor(div);
 }
@@ -79,10 +70,20 @@ SvgEditor.prototype._createEditor = function(div) {
 };
 
 SvgEditor.prototype._render = function() {
-    this.fig = this._createSvgFigureInDiv(this.div_svg);
-    grid.setFigure(this.fig);
-    fig = this.fig;
+    var grid = new Grid();
+    var fig = this._createSvgFigureInDiv(this.div_svg, grid);
     var src = this.ta_src.value;
+
+    // Functions provided for user script
+    var dpl = function(indices) {
+        return fig.drawPolyLine(grid.getPoints(indices));
+    };
+
+    // Variables provided for user script
+    //   grid - defined above
+    //   fig  - defined above
+
+    // Evaluate the user script
     eval(src);
 
     // Clear the points array
@@ -90,10 +91,10 @@ SvgEditor.prototype._render = function() {
     this.indices=[];
     this.str_points="";
     this.str_indices="";
-
+    this.ta_points.value="";
 };
 
-SvgEditor.prototype._createSvgFigureInDiv = function(div) {
+SvgEditor.prototype._createSvgFigureInDiv = function(div, grid) {
     div.style.width = "600px";
     div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="600px" height="400px" viewBox="0 0 600 400"></svg>';
     var that = this;
@@ -106,13 +107,14 @@ SvgEditor.prototype._createSvgFigureInDiv = function(div) {
         p.x = e.clientX;
         p.y = e.clientY;
         var p =  p.matrixTransform(svg_plot.getScreenCTM().inverse());
-        that._clickedPoint(p);
+        that._clickedPoint(grid, p);
     };
     var fig=new SvgFigure(svg_plot);
+    grid.setFigure(fig);
     return fig;
 };
 
-SvgEditor.prototype._clickedPoint = function(p) {
+SvgEditor.prototype._clickedPoint = function(grid, p) {
     this.points.push(p);
     this.str_points += p.x+','+p.y+', ';
     this.str_indices += grid.getClosestX(p.x)+',';
