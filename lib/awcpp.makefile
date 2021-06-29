@@ -10,10 +10,12 @@ SIGNAL_DIR=../../lib/signal
 CXXFLAGS=-I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
 LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
 
+-include ../$(CGI).mk
+
 all:	$(CGI)
 
 $(CGI):	$(OBJS) $(FUNC_OBJS)
-	$(CXX) $^ $(LDFLAGS) -lAw -lSignal -o $@
+	$(CXX) $^ $(LDFLAGS) -lAw -o $@
 
 clean:
 	rm -f $(DIR)/$(CGI)

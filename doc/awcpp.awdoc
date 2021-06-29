@@ -3,10 +3,10 @@ An example of AndrewWIDE C++ code is presented below:
 AW{"type":"awcpp"}
     plot(sin(linspace(0,4*PI,600)));
 AW{"type":"mjmd"}
-We can see that the execution of the above code resulted in a plot of a sinewave. Each chunk of C++ code found in the page is wrapped in its own function. To enable AndrewWIDE to individually execute the functions a C++ map is made allowing theses functions to be referenced by a string passed to the main function as a command line argument. Another chunk of C++ code is given below:
+We can see that the execution of the above code resulted in a plot of a sinewave. Each chunk of C++ code found in the page is wrapped in its own function. To enable AndrewWIDE to individually execute the functions a C++ map is made allowing these functions to be referenced by a string passed to the main function as a command line argument. Another chunk of C++ code is given below:
 AW{"type":"awcpp"}
     // UK mains frequency
-    double f=50;
+    double f=UK_MAINS_FREQ;
     
     // UK mains voltage
     double rms=230;
