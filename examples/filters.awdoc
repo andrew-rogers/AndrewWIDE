@@ -1,0 +1,21 @@
+AW{"type":"mjmd"}
+Band-pass filter with poles at $0.95\cdot e^{\pm i \frac{\pi}{10}}$ on the z-plane. The code below plots the impulse response.
+AW{"type":"awcpp"}
+
+    AwVector<double> b,a,x;
+    
+    b.push_back(1);
+    b.push_back(0);
+    b.push_back(-1);
+    
+    a.push_back(1);
+    a.push_back(-1.807);
+    a.push_back(0.9025);
+
+    for (int i=0; i<500; i++)
+    {
+        x.push_back(0);
+    }
+    x[100]=1.0;
+    
+    plot(iir(x,b,a));
