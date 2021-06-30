@@ -10,7 +10,7 @@ SIGNAL_DIR=../../lib/signal
 CXXFLAGS=-I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
 LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
 
--include ../$(CGI).mk
+-include includes.mk
 
 all:	$(CGI)
 

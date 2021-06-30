@@ -1,5 +1,12 @@
+AW{"type":"awcpp","id":"globals"}
+#include "filter.h"
+
+AW{"type":"awcpp","id":"mk"}
+LDFLAGS += -lSignal
+
 AW{"type":"mjmd"}
 Band-pass filter with poles at $0.95\cdot e^{\pm i \frac{\pi}{10}}$ on the z-plane. The code below plots the impulse response.
+
 AW{"type":"awcpp"}
 
     AwVector<double> b,a,x;
