@@ -1,5 +1,7 @@
 AW{"type":"mjmd"}
 An example of AndrewWIDE C++ code is presented below:
+AW{"type":"awcpp","id":"globals"}
+const double UK_MAINS_FREQ=50.0;
 AW{"type":"awcpp"}
     plot(sin(linspace(0,4*PI,600)));
 AW{"type":"mjmd"}
