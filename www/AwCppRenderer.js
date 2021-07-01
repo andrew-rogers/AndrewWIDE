@@ -29,6 +29,7 @@
 //   jsonarraybuffers.js
 //   aw-sh.js
 //   JsonRenderer.js
+//   JsonQuery.js
 //   NavBar.js
 
 var AwCppRenderer = function(docname, json_renderer) {
@@ -76,10 +77,50 @@ AwCppRenderer.prototype._tryNext = function() {
     if (this.build_done) {
         if (this.queue.length>0) {
             var build_args = this.queue.shift();
-            if (build_args) this._build(build_args[0], build_args[1], build_args[2], build_args[3]);
+            if (build_args) this._buildNew(build_args[0], build_args[1], build_args[2], build_args[3]);
         }
     }
 }
+
+AwCppRenderer.prototype._buildNew = function(cpp, func_name, div_result, callback) {
+    var fn=this.docname;
+    if (fn.endsWith(".awdoc")) {
+        var dir=fn.slice(0,-6);
+        if (func_name=="globals") {
+            var obj={"cmd":"build", "func":"globals", "cpp":cpp};
+	        var that=this;
+	        JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
+	            that.build_done=true;
+		        if( callback ) callback();
+		        that._tryNext();
+	        });
+        }
+        else if (func_name=="mk") {
+            fn=dir+"/includes.mk";
+            var script="mkdir -p '"+dir+"' && cat > '"+fn+"'";
+
+	        this.build_done=false;
+	        var that=this;
+	        query_sh(script, cpp, function( exit_code, response ) {
+		        that.build_done=true;
+		        if( callback ) callback();
+		        that._tryNext();
+	        });
+        }
+        else {
+            dir=dir+"/func.d/";
+            fn=dir+func_name+".awcpp";
+            var script="mkdir -p '"+dir+"' && cat > '"+fn+"' && build '"+fn+"'";
+
+	        this.build_done=false;
+	        var that=this;
+	        query_sh(script, cpp, function( exit_code, response ) {
+		        that.build_done=true;
+		        that._handle_build_response(response, div_result, callback);
+	        });
+	    }
+	}
+};
 
 AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) {
     var fn=this.docname;
