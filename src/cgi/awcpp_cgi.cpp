@@ -18,6 +18,7 @@
 */
 
 #include "cgi_post.h"
+#include "filesystem.h"
 
 #include <fstream>
 
@@ -37,11 +38,12 @@ int main(int argc, char *args[])
     return 0;
 }
 
-void writeFile( const std::string& filename, const std::string& str )
+std::string findAWDir()
 {
-    std::ofstream file(filename);
-    file << str;
-    file.close();
+    std::string cwd=filesystem::cwd();
+    std::size_t found = cwd.rfind("/www");
+    if( found != std::string::npos ) return cwd.substr(0,found);
+    return cwd;
 }
 
 void processQuery( Json& query )
@@ -50,8 +52,10 @@ void processQuery( Json& query )
 
     if( cmd == "build" )
     {
-        writeFile("globals.h", g_query["cpp"].str());
-        g_response["build_output"] = "make"; // @todo Invoke make, for now just respond with make
+        //filesystem::writeFile("globals.h", g_query["cpp"].str());
+        //g_response["build_output"] = "make"; // @todo Invoke make, for now just respond with make
+        g_response["AWDir"]=findAWDir();
+        g_response["BuildDir"]=g_query["dir"].str();
     }
     else if( cmd == "run" )
     {

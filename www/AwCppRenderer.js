@@ -77,7 +77,7 @@ AwCppRenderer.prototype._tryNext = function() {
     if (this.build_done) {
         if (this.queue.length>0) {
             var build_args = this.queue.shift();
-            if (build_args) this._buildNew(build_args[0], build_args[1], build_args[2], build_args[3]);
+            if (build_args) this._build(build_args[0], build_args[1], build_args[2], build_args[3]);
         }
     }
 }
@@ -87,7 +87,7 @@ AwCppRenderer.prototype._buildNew = function(cpp, func_name, div_result, callbac
     if (fn.endsWith(".awdoc")) {
         var dir=fn.slice(0,-6);
         if (func_name=="globals") {
-            var obj={"cmd":"build", "func":"globals", "cpp":cpp};
+            var obj={"cmd":"build", "func":"globals", "cpp":cpp, "dir":dir};
 	        var that=this;
 	        JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
 	            that.build_done=true;
