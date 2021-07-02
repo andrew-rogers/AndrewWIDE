@@ -6,6 +6,7 @@
         <script src="DiagramRenderer.js"></script>
         <script src="aw-sh.js"></script>
         <script src="JsonQuery.js"></script>
+        <script src="FileSystem.js"></script>
         <script src="file.js"></script>
         <script src="MathJaxMarkdownRenderer.js"></script>
         <script src="svgarray.js"></script>
@@ -34,8 +35,20 @@ if (fn.startsWith("?file=")) {
     awdr.registerRenderer("awcpp", new AwCppRenderer(fn, new JsonRenderer()));
     awdr.registerRenderer("diagram", new DiagramRenderer());
 
-    fileread(fn, function( err, content ) {
+    /*fileread(fn, function( err, content ) {
         awdr.render(content);
+    });*/
+
+    FileSystem.readFile(fn, function( err, content ) {
+        awdr.render(content);
+    });
+
+    FileSystem.writeFile("doc/testTEST.cpp", "// Just an empty test file!", function( err ) {
+        console.log(err);
+    });
+
+    FileSystem.list("www", function( obj ) {
+        console.log(obj);
     });
 }
 

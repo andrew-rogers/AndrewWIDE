@@ -1,5 +1,5 @@
 /*
-    AndrewWIDE - AWCPP operations CGI
+    AndrewWIDE - File system operations CGI
     Copyright (C) 2021  Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ void processQuery( Json& query );
 int main(int argc, char *args[])
 {
     getQuery();
-    
+
     // Process the query
     processQuery( g_query );
 
@@ -42,26 +42,38 @@ void processQuery( Json& query )
 {
     string cmd=query["cmd"].str();
 
-    if( cmd == "build" )
+    if( cmd == "load" )
     {
-        auto fn = filesystem::absPath(query["awdoc"].str());
-        auto dir = filesystem::stripExtension(fn);
-        auto func = query["func"].str();
-        auto cpp = query["cpp"].str();
-        if( func.compare("globals") == 0 )
-        {
-            auto err = filesystem::mkdir(dir);
-            g_response["err"]=filesystem::writeFile(dir+"/globals.h", cpp);
-        }
-        else
-        {
-            auto err = filesystem::mkdir(dir+"/func.d");
-        }
+        std::string content;
+        auto fn=filesystem::absPath(query["fn"].str());
+        g_response["err"]=filesystem::readFile(fn, content);
+        g_response["content"]=content;
     }
-    else if( cmd == "run" )
+    else if( cmd == "save" )
     {
-        g_response["run_output"] = "make run"; // @todo Invoke make, for now just respond with make run
+        auto content=query["content"].str();
+        auto fn=filesystem::absPath(query["fn"].str());
+        g_response["err"]=filesystem::writeFile(fn, content);
     }
+    else if( cmd == "list" )
+    {
 
+        // Get the directory path from the query.
+        auto dir=filesystem::absPath(query["dir"].str());
+
+        // Create file/dir list
+        Json list;
+        filesystem::listFiles(dir, list);
+
+        // Add a shortcut to the AndrewWIDE directory.
+        Json awd;
+        awd["path"]=filesystem::findAWDir();
+        awd["flags"]="d";
+        list.push_back(awd);
+
+        // Produce the response.
+        g_response["dir"]=dir;
+        g_response["list"]=list;
+    }
 }
 

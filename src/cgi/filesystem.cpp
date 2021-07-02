@@ -32,12 +32,42 @@ extern const char KEY_TYPE[]="flags";
 
 std::string cwd()
 {
-    char buf[PATH_MAX];
-    if( getcwd(buf, PATH_MAX) )
+    char* str = getcwd(NULL, 0);
+    if( str!=NULL )
     {
-        return buf;
+        std::string ret(str);
+        free(str);
+        return unixPath(ret);
     }
     return "";
+}
+
+std::string fixPath( const std::string& path )
+{
+#ifdef WINDOWS
+    std::string ret(path);
+    for( size_t i=0; i<ret.size(); i++ )
+    {
+        if( ret[i]=='/' ) ret[i]='\\';
+    }
+    return ret;
+#else
+    return path;
+#endif
+}
+
+std::string unixPath( const std::string& path )
+{
+#ifdef WINDOWS
+    std::string ret(path);
+    for( size_t i=0; i<ret.size(); i++ )
+    {
+        if( ret[i]=='\\' ) ret[i]='/';
+    }
+    return ret;
+#else
+    return path;
+#endif
 }
 
 bool isDir( const std::string& path )
@@ -51,6 +81,40 @@ bool isDir( const std::string& path )
         }
     }
     return false;
+}
+
+bool isRelative( const std::string& path )
+{
+#ifdef WINDOWS
+    if( path[1]==':' ) return false;
+#endif
+    if( path[0]=='/' ) return false;
+    return true;
+}
+
+std::string findAWDir()
+{
+    std::string str_cwd=cwd();
+    std::size_t found = str_cwd.rfind("/www");
+    if( found != std::string::npos ) return str_cwd.substr(0,found);
+    return str_cwd;
+}
+
+std::string absPath( const std::string& path )
+{
+    std::string ret(path);
+    if( filesystem::isRelative(ret) )
+    {
+        ret=filesystem::findAWDir()+'/'+ret;
+    }
+    return ret;
+}
+
+std::string stripExtension( const std::string& path )
+{
+    std::size_t found = path.rfind(".");
+    if( found != std::string::npos ) return path.substr(0,found);
+    return path;
 }
 
 int listFiles( const std::string& path, Json& list )
@@ -114,7 +178,7 @@ int listFiles( const std::string& path, Json& list )
 
 std::string readFile( const std::string& path, std::string& content )
 {
-    std::ifstream in(path, std::ios::in | std::ios::binary);
+    std::ifstream in(fixPath(path), std::ios::in | std::ios::binary);
     if( in )
     {
         in.seekg( 0, std::ios::end );
@@ -129,7 +193,7 @@ std::string readFile( const std::string& path, std::string& content )
 
 std::string writeFile( const std::string& path, const std::string& content )
 {
-    std::ofstream out(path, std::ios::out | std::ios::binary);
+    std::ofstream out(fixPath(path), std::ios::out | std::ios::binary);
     if( out )
     {
         out << content;
@@ -137,6 +201,17 @@ std::string writeFile( const std::string& path, const std::string& content )
         return( "" );
     }
     return "Can't write file: "+path;
+}
+
+std::string mkdir( const std::string& path )
+{
+#ifdef WINDOWS
+    int ret = _mkdir(fixPath(path));
+#else
+    int ret = ::mkdir(path.c_str(), 0700);
+#endif
+    if( ret==0 )return "";
+    return "Can't create directory: "+path;
 }
 
 } // namespace filesystem
