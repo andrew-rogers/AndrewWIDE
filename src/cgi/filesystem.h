@@ -30,12 +30,14 @@ extern const char KEY_NAME[];
 extern const char KEY_TYPE[];
 
 std::string cwd();
+std::string cwd( const std::string& path );
 std::string fixPath( const std::string& path );
 std::string unixPath( const std::string& path );
 bool isDir( const std::string& path );
 bool isRelative( const std::string& path );
 std::string findAWDir();
 std::string absPath( const std::string& path );
+std::string basename( const std::string& path );
 std::string stripExtension( const std::string& path );
 int listFiles( const std::string& path, Json& list );
 std::string readFile( const std::string& path, std::string& content );

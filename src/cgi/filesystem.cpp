@@ -42,6 +42,15 @@ std::string cwd()
     return "";
 }
 
+std::string cwd( const std::string& path )
+{
+    if( chdir( fixPath(path).c_str() ) == 0 )
+    {
+        return "";
+    }
+    return "Can't change to directory: "+path;
+}
+
 std::string fixPath( const std::string& path )
 {
 #ifdef WINDOWS
@@ -108,6 +117,13 @@ std::string absPath( const std::string& path )
         ret=filesystem::findAWDir()+'/'+ret;
     }
     return ret;
+}
+
+std::string basename( const std::string& path )
+{
+    std::size_t found = path.rfind("/");
+    if( found != std::string::npos ) return path.substr(found+1);
+    return path;
 }
 
 std::string stripExtension( const std::string& path )
@@ -206,7 +222,7 @@ std::string writeFile( const std::string& path, const std::string& content )
 std::string mkdir( const std::string& path )
 {
 #ifdef WINDOWS
-    int ret = _mkdir(fixPath(path));
+    int ret = _mkdir(fixPath(path).c_str());
 #else
     int ret = ::mkdir(path.c_str(), 0700);
 #endif

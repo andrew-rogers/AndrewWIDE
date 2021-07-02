@@ -77,7 +77,7 @@ AwCppRenderer.prototype._tryNext = function() {
     if (this.build_done) {
         if (this.queue.length>0) {
             var build_args = this.queue.shift();
-            if (build_args) this._buildNew(build_args[0], build_args[1], build_args[2], build_args[3]);
+            if (build_args) this._build(build_args[0], build_args[1], build_args[2], build_args[3]);
         }
     }
 }
