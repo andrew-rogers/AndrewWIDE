@@ -82,7 +82,7 @@ AwCppRenderer.prototype._tryNext = function() {
     }
 }
 
-AwCppRenderer.prototype._buildNew = function(cpp, func_name, div_result, callback) {
+AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) {
     var fn=this.docname;
     if (fn.endsWith(".awdoc")) {
         var obj = { "cmd":"build", "awdoc":fn, "func":func_name, "cpp":cpp };
@@ -96,7 +96,7 @@ AwCppRenderer.prototype._buildNew = function(cpp, func_name, div_result, callbac
 	}
 };
 
-AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) {
+AwCppRenderer.prototype._buildOld = function(cpp, func_name, div_result, callback) {
     var fn=this.docname;
     if (fn.endsWith(".awdoc")) {
         var dir=fn.slice(0,-6);
