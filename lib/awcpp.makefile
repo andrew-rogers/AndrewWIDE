@@ -9,9 +9,6 @@ else
     FixPath = $1
 endif
 
-OBJS= \
- $(CGI)_awmain.o
-
 # Find all the *_aw.cpp files in func.d and produce *.o names
 FUNC_OBJS=$(patsubst %.cpp,%.o,$(wildcard func.d/*_aw.cpp))
 
@@ -25,7 +22,7 @@ LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
 
 all:	$(CGI)
 
-$(CGI):	$(OBJS) $(FUNC_OBJS)
+$(CGI):	$(FUNC_OBJS)
 	$(CXX) -shared -fPIC $^ $(LDFLAGS) -lAw -o $@.so
 
 clean:
