@@ -91,7 +91,7 @@ AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) 
         JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
             that.build_done=true;
             if (response.bin) {
-                that._runNew(response["bin"], response["name"], div_result, callback);
+                that._run(response["bin"], response["name"], div_result, callback);
             }
             else {
 	            if( callback ) callback();
@@ -101,81 +101,13 @@ AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) 
 	}
 };
 
-AwCppRenderer.prototype._buildOld = function(cpp, func_name, div_result, callback) {
-    var fn=this.docname;
-    if (fn.endsWith(".awdoc")) {
-        var dir=fn.slice(0,-6);
-        if (func_name=="globals") {
-            fn=dir+"/globals.h";
-            var script="mkdir -p '"+dir+"' && cat > '"+fn+"'";
-
-	        this.build_done=false;
-	        var that=this;
-	        query_sh(script, cpp, function( exit_code, response ) {
-		        that.build_done=true;
-		        if( callback ) callback();
-		        that._tryNext();
-	        });
-        }
-        else if (func_name=="mk") {
-            fn=dir+"/includes.mk";
-            var script="mkdir -p '"+dir+"' && cat > '"+fn+"'";
-
-	        this.build_done=false;
-	        var that=this;
-	        query_sh(script, cpp, function( exit_code, response ) {
-		        that.build_done=true;
-		        if( callback ) callback();
-		        that._tryNext();
-	        });
-        }
-        else {
-            dir=dir+"/func.d/";
-            fn=dir+func_name+".awcpp";
-            var script="mkdir -p '"+dir+"' && cat > '"+fn+"' && build '"+fn+"'";
-
-	        this.build_done=false;
-	        var that=this;
-	        query_sh(script, cpp, function( exit_code, response ) {
-		        that.build_done=true;
-		        that._handle_build_response(response, div_result, callback);
-	        });
-	    }
-	}
-};
-
-AwCppRenderer.prototype._handle_build_response = function(response, div_result, callback) {
-	this._viewTextInDiv(response, div_result);
-	var lines = response.split("\n");
-	for( var i=0; i<lines.length; i++) {
-		var line=lines[i];
-		if( line.substring(0,5) == "JSON{" ) {
-			var obj=JSON.parse(line.substring(4));
-			if (obj["error"]==0) {
-			    this._run( obj["bin"], obj["name"], div_result, callback );
-			} else {
-			    this._tryNext();
-			}
-		}
-	}
-};
-
-AwCppRenderer.prototype._runNew = function(bin, func_name, div_result, callback) {
+AwCppRenderer.prototype._run = function(bin, func_name, div_result, callback) {
 	var obj = { "cmd":"run", "bin":bin, "func":func_name };
     var that=this;
     JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
         var resp = response["resp"];
         that._handle_run_response(resp, div_result, callback);
     });
-};
-
-AwCppRenderer.prototype._run = function(bin, func_name, div_result, callback) {
-	var sh="CMD=\""+bin+"\"\n";
-	var obj={cmd: "run", name: func_name};
-	var that=this;
-	JsonArrayBuffers.querySh(sh, obj, function( response ) {
-		that._handle_run_response(response, div_result, callback);
-	});
 };
 
 AwCppRenderer.prototype._handle_run_response = function(response, div_result, callback) {

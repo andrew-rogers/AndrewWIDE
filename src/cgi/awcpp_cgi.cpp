@@ -101,12 +101,21 @@ void processQuery( Json& query )
         void* dlh = dlopen(bin.c_str(), RTLD_LAZY);
         if( dlh != NULL )
         {
-            /// @todo give external function access to g_query.
-            Json* resp = (Json*)dlsym(dlh, "g_response");
+            // Setup the function arguments
+            Json* func_query = (Json*)dlsym(dlh, "g_query");
+            if( func_query != NULL ) (*func_query)["args"] = query["args"];
+            else err += "Can't access query JSON.\n";
+
+            // Locate and call the function
             void (*func_call)(void) = (void (*)(void))dlsym(dlh, func.c_str());
             if( func_call != NULL ) func_call();
-            else err = "Can't locate function: "+func;
-            g_response["resp"]=*resp;
+            else err += "Can't locate function: "+func+"\n";
+
+            // Get the function response
+            Json* func_resp = (Json*)dlsym(dlh, "g_response");
+            if( func_resp != NULL ) g_response["resp"]=*func_resp;
+            else err += "Can't access response JSON.\n";
+
             dlclose(dlh);
         }
         else
