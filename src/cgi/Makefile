@@ -8,6 +8,7 @@ ifeq '$(findstring ;,$(PATH))' ';'
 else
     RM = rm -f
     FixPath = $1
+    LDFLAGS += -ldl
 endif
 
 
@@ -23,7 +24,7 @@ $(CGI_DIR)/aw_fs.cgi: aw_fs_cgi.cpp json.cpp filesystem.cpp
 	g++ $(CXXFLAGS) $^ -o $@
 
 $(CGI_DIR)/awcpp.cgi: awcpp_cgi.cpp json.cpp filesystem.cpp cgi_post.cpp
-	g++ $(CXXFLAGS) $^ -ldl -o $@
+	g++ $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 $(CGI_DIR)/filesystem.cgi: filesystem_cgi.cpp json.cpp filesystem.cpp cgi_post.cpp
 	g++ $(CXXFLAGS) $^ -o $@

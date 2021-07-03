@@ -17,7 +17,9 @@ LIB_OBJS= \
  cgi/cgi_post.o \
  cgi/awmath.o \
  cgi/plot.o \
- cgi/trace.o \
+ cgi/trace.o
+
+AWF_OBJS= \
  aw_framework/awapp.o \
  aw_framework/awfd.o \
  aw_framework/awfdobserver.o \
