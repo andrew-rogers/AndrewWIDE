@@ -90,8 +90,13 @@ AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) 
         var that=this;
         JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
             that.build_done=true;
-	        if( callback ) callback();
-	        that._tryNext();
+            if (response.bin) {
+                that._runNew(response["bin"], response["name"], div_result, callback);
+            }
+            else {
+	            if( callback ) callback();
+	            that._tryNext();
+	        }
         });
 	}
 };
@@ -153,6 +158,15 @@ AwCppRenderer.prototype._handle_build_response = function(response, div_result, 
 			}
 		}
 	}
+};
+
+AwCppRenderer.prototype._runNew = function(bin, func_name, div_result, callback) {
+	var obj = { "cmd":"run", "bin":bin, "func":func_name };
+    var that=this;
+    JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
+        var resp = response["resp"];
+        that._handle_run_response(resp, div_result, callback);
+    });
 };
 
 AwCppRenderer.prototype._run = function(bin, func_name, div_result, callback) {

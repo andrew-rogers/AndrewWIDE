@@ -1,3 +1,16 @@
+# https://stackoverflow.com/questions/4058840/makefile-that-distincts-between-windows-and-unix-like-systems
+# https://stackoverflow.com/questions/714100/os-detecting-makefile
+ifeq '$(findstring ;,$(PATH))' ';'
+    CXXFLAGS += -D WINDOWS
+    RM = del /Q
+    FixPath = $(subst /,\,$1)
+else
+    RM = rm -f
+    FixPath = $1
+endif
+
+CXXFLAGS += -fPIC
+
 LIB_OBJS= \
  cgi/json.o \
  cgi/filesystem.o \
@@ -20,6 +33,6 @@ libAw.a: $(LIB_OBJS)
 	$(AR) rvs $@ $^
 
 clean:
-	rm -f libAw.a
-	rm -f $(LIB_OBJS)
+	$(RM) $(call FixPath,libAw.a)
+	$(RM) $(call FixPath,$(LIB_OBJS))
 

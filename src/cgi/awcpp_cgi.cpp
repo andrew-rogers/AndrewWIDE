@@ -21,6 +21,7 @@
 #include "filesystem.h"
 
 #include <fstream>
+#include <dlfcn.h>
 
 using namespace std;
 
@@ -88,11 +89,32 @@ void processQuery( Json& query )
             err += filesystem::readFile("build.log", build_log);
             g_response["build_log"]=build_log;
             g_response["err"]=err;
+            g_response["bin"]=dir+"/"+cgi;
+            g_response["name"]=func;
         }
     }
     else if( cmd == "run" )
     {
-        g_response["run_output"] = "make run"; // @todo Invoke make, for now just respond with make run
+        std::string err;
+        auto bin = query["bin"].str()+".so";
+        auto func = query["func"].str();
+        void* dlh = dlopen(bin.c_str(), RTLD_LAZY);
+        if( dlh != NULL )
+        {
+            /// @todo give external function access to g_query.
+            Json* resp = (Json*)dlsym(dlh, "g_response");
+            void (*func_call)(void) = (void (*)(void))dlsym(dlh, func.c_str());
+            if( func_call != NULL ) func_call();
+            else err = "Can't locate function: "+func;
+            g_response["resp"]=*resp;
+            dlclose(dlh);
+        }
+        else
+        {
+            err = "Can't load module: "+bin;
+        }
+
+        g_response["err"] = err;
     }
 
 }
@@ -117,7 +139,7 @@ std::string cppFunc( const std::string& dir, const std::string& func, const std:
         out += "#include \"../globals.h\"\n";
     }
     out += "\n";
-    out += "void "+func+"()\n";
+    out += "extern \"C\" void "+func+"()\n";
     out += "{\n";
     out += cpp;
     out += "}\n";
@@ -134,7 +156,7 @@ std::string cppFuncHdr( const std::string& dir, const std::string& func )
     out += "#ifndef "+guard+"\n";
     out += "#define "+guard+"\n";
     out += "\n";
-    out += "void "+func+"();\n";
+    out += "extern \"C\" void "+func+"();\n";
     out += "\n";
     out += "#endif //"+guard+"\n";
 
