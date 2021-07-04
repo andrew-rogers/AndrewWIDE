@@ -32,7 +32,24 @@ Binary CGI for building C++ shared objects now working.
 
 ### Android
 
-Instructions to follow. Most likely will depend on [Termux](https://termux.com/) for its C++ support. The webserver might possibly be the busybox httpd applet or based on ttyd rather than rely on Python http.server module.
+Instructions for building AndrewWIDE in [Termux](https://termux.com/) (assumes make, wget, python3 and g++ are already installed):
+
+```
+$ wget https://github.com/andrew-rogers/AndrewWIDE/archive/master.zip
+$ unzip master.zip
+$ mv AndrewWIDE-master AndrewWIDE
+$ cd AndrewWIDE/src && make
+$ cd cgi && make
+$ cd ../..
+```
+
+Runs using the Python HTTP server module using the included **python3_httpd.sh** file.
+
+```
+$ ./python3_httpd.sh
+```
+
+A light weight server compiled from C or C++ would remove the Python3 dependency. This could be the busybox httpd applet or something based on [ttyd](https://github.com/tsl0922/ttyd) or [libwebsockets](https://libwebsockets.org/).
 
 ### Linux
 
@@ -41,7 +58,7 @@ Instructions to follow. Most likely will depend on [Termux](https://termux.com/)
 [andrew@M3400 src]$ make
 [andrew@M3400 src]$ cd cgi
 [andrew@M3400 cgi]$ make
-[andrew@M3400 cgi]$ cd ../../
+[andrew@M3400 cgi]$ cd ../..
 [andrew@M3400 AndrewWIDE]$
 ```
 

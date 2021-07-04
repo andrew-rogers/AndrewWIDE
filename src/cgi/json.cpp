@@ -529,6 +529,7 @@ Json& Json::operator=(const std::string& val)
 {
     m_type=string_type;
     m_str=make_shared<string>(val);
+    return (*this);
 }
 
 Json& Json::operator=(const double& val)
@@ -537,6 +538,7 @@ Json& Json::operator=(const double& val)
     ostringstream oss;
     oss << val;
     m_str=make_shared<string>(oss.str());
+    return (*this);
 }
 
 int Json::length() const
