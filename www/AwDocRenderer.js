@@ -35,6 +35,18 @@ function AwDocRenderer(div) {
 
     this.div = div;
     this.renderers = {};
+    this.queue = [];
+    this.running = false;
+}
+
+AwDocRenderer.prototype.start = function () {
+    this.running = true;
+    this._dispatch();
+}
+
+AwDocRenderer.prototype.post = function ( obj ) {
+    this.queue.push( obj );
+    if( this.running ) this._dispatch();
 }
 
 AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
@@ -67,6 +79,20 @@ AwDocRenderer.prototype.render = function( awdoc ) {
 
     // Render remaining content
     this._render( obj, src, cnt );
+};
+
+AwDocRenderer.prototype._dispatch = function() {
+    while( this.queue.length > 0 ) {
+        obj = this.queue.shift();
+
+        // Invoke the relevant renderer.
+        var renderer_name = obj.type;
+        if (this.renderers.hasOwnProperty(renderer_name)) {
+            this.renderers[renderer_name].renderObj( obj, function() {
+                console.log(renderer_name+" "+obj.id+" done!");
+            });
+        }
+    }
 };
 
 AwDocRenderer.prototype._render = function( obj, src, cnt ) {

@@ -31,11 +31,12 @@ if (fn.startsWith("?file=")) {
 
     var awdr = new AwDocRenderer();
     awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
-    awdr.registerRenderer("awcpp", new AwCppRenderer(fn, new JsonRenderer()));
+    awdr.registerRenderer("awcpp", new AwCppRenderer(fn, new JsonRenderer(), awdr));
     awdr.registerRenderer("diagram", new DiagramRenderer());
 
     FileSystem.readFile(fn, function( err, content ) {
         awdr.render(content);
+        awdr.start();
     });
 
 }

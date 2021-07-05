@@ -32,11 +32,29 @@
 //   JsonQuery.js
 //   NavBar.js
 
-var AwCppRenderer = function(docname, json_renderer) {
+var MonoRenderer = function() {
+};
+
+MonoRenderer.prototype.renderObj = function( obj, callback ) {
+    // Put the content into a textarea
+    var ta = document.createElement("textarea");
+    ta.style.width = "100%";
+    ta.value = obj.content;
+    obj.div.innerHTML="";
+    obj.div.appendChild(ta);
+    obj.div.style.width = "100%";
+    ta.style.height = (ta.scrollHeight+8)+"px";
+    if( callback ) callback();
+};
+
+var AwCppRenderer = function(docname, json_renderer, awdoc_renderer) {
     this.docname = docname;
     this.json_renderer = json_renderer;
+    this.awdoc_renderer = awdoc_renderer;
     this.queue = [];
-    this.build_done=true;
+    this.build_done = true;
+    this.cnt = 0;
+    awdoc_renderer.registerRenderer("mono", new MonoRenderer());
 };
 
 AwCppRenderer.prototype.render = function(cpp, div, callback) {
@@ -90,10 +108,13 @@ AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) 
         var that=this;
         JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
             that.build_done=true;
-            if (response.bin) {
+            if (response.error == "0" && response.bin) {
                 that._run(response["bin"], response["name"], div_result, callback);
             }
             else {
+                obj = { "type":"mono", "id":"awcpp_"+that.cnt, "content":response["build_log"], "div":div_result };
+                that.cnt = that.cnt + 1;
+                that.awdoc_renderer.post( obj );
 	            if( callback ) callback();
 	            that._tryNext();
 	        }

@@ -21,6 +21,7 @@
 #include "filesystem.h"
 
 #include <fstream>
+#include <sstream>
 #include <dlfcn.h>
 
 using namespace std;
@@ -77,11 +78,13 @@ void processQuery( Json& query )
             // Change directory and invoke make
             auto makefile = filesystem::findAWDir()+"/lib/awcpp.makefile";
             err += filesystem::cwd(dir);
-            make(makefile, cgi);
+            ostringstream error;
+            error << make(makefile, cgi);
 
             // Get the build log
             std::string build_log;
             err += filesystem::readFile("build.log", build_log);
+            g_response["error"]=error.str();
             g_response["build_log"]=build_log;
             g_response["err"]=err;
             g_response["bin"]=dir+"/"+cgi;
