@@ -9,6 +9,9 @@ else
     FixPath = $1
 endif
 
+# Set OBJS if globals.cpp exists.
+OBJS=$(patsubst %.cpp,%.o,$(wildcard globals.cpp))
+
 # Find all the *_aw.cpp files in func.d and produce *.o names
 FUNC_OBJS=$(patsubst %.cpp,%.o,$(wildcard func.d/*_aw.cpp))
 
@@ -22,7 +25,7 @@ LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
 
 all:	$(CGI)
 
-$(CGI):	$(FUNC_OBJS)
+$(CGI):	$(OBJS) $(FUNC_OBJS)
 	$(CXX) -shared -fPIC $^ $(LDFLAGS) -lAw -o $@.so
 
 clean:

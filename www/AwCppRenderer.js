@@ -111,10 +111,14 @@ AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) 
             if (response.error == "0" && response.bin) {
                 that._run(response["bin"], response["name"], div_result, callback);
             }
-            else {
+            else if (response.error != "0" && response.build_log) {
                 obj = { "type":"mono", "id":"awcpp_"+that.cnt, "content":response["build_log"], "div":div_result };
                 that.cnt = that.cnt + 1;
                 that.awdoc_renderer.post( obj );
+	            if( callback ) callback();
+	            that._tryNext();
+	        }
+	        else {
 	            if( callback ) callback();
 	            that._tryNext();
 	        }

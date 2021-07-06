@@ -59,6 +59,11 @@ void processQuery( Json& query )
             auto err = filesystem::mkdir(dir); /// @todo Check for errors
             g_response["err"]=filesystem::writeFile(dir+"/globals.h", cpp);
         }
+        else if( func.compare("global_defs") == 0 )
+        {
+            auto err = filesystem::mkdir(dir); /// @todo Check for errors
+            g_response["err"]=filesystem::writeFile(dir+"/globals.cpp", cpp);
+        }
         else if( func.compare("mk") == 0 )
         {
             auto err = filesystem::mkdir(dir); /// @todo Check for errors
