@@ -88,9 +88,7 @@ AwDocRenderer.prototype._dispatch = function() {
         // Invoke the relevant renderer.
         var renderer_name = obj.type;
         if (this.renderers.hasOwnProperty(renderer_name)) {
-            this.renderers[renderer_name].renderObj( obj, function() {
-                console.log(renderer_name+" "+obj.id+" done!");
-            });
+            this.renderers[renderer_name].renderObj( obj );
         }
     }
 };

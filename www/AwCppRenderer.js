@@ -35,7 +35,7 @@
 var MonoRenderer = function() {
 };
 
-MonoRenderer.prototype.renderObj = function( obj, callback ) {
+MonoRenderer.prototype.renderObj = function( obj ) {
     // Put the content into a textarea
     var ta = document.createElement("textarea");
     ta.style.width = "100%";
@@ -44,12 +44,11 @@ MonoRenderer.prototype.renderObj = function( obj, callback ) {
     obj.div.appendChild(ta);
     obj.div.style.width = "100%";
     ta.style.height = (ta.scrollHeight+8)+"px";
-    if( callback ) callback();
+    if( obj.callback ) obj.callback();
 };
 
-var AwCppRenderer = function(docname, json_renderer, awdoc_renderer) {
+var AwCppRenderer = function(docname, awdoc_renderer) {
     this.docname = docname;
-    this.json_renderer = json_renderer;
     this.awdoc_renderer = awdoc_renderer;
     this.queue = [];
     this.build_done = true;
@@ -137,7 +136,11 @@ AwCppRenderer.prototype._run = function(bin, func_name, div_result, callback) {
 
 AwCppRenderer.prototype._handle_run_response = function(response, div_result, callback) {
     console.log(response);
-    this.json_renderer.render( response, div_result, callback );
+    var obj=response[0];
+    obj.type = obj.cmd;
+    obj.div = div_result;
+    obj.callback = callback;
+    this.awdoc_renderer.post( obj );
     this._tryNext();
 };
 

@@ -34,6 +34,10 @@ var PlotRenderer = function() {
     
 };
 
+PlotRenderer.prototype.renderObj = function( obj ) {
+    this.render( obj, obj.div, obj.callback );
+};
+
 PlotRenderer.prototype.render = function(json, div, callback) {
     div.src_json = json;
     var fig = this._createSvgFigureInDiv( div );
