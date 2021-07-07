@@ -28,7 +28,7 @@
 // Dependencies:
 //   jsonarraybuffers.js
 //   aw-sh.js
-//   JsonRenderer.js
+//   PlotRenderer.js
 //   JsonQuery.js
 //   NavBar.js
 

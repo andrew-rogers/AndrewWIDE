@@ -92,12 +92,3 @@ PlotRenderer.prototype._clicked = function(div) {
     }
 };
 
-var JsonRenderer = function() {
-    this.cmds = {plot: new PlotRenderer()};
-};
-
-JsonRenderer.prototype.render = function(json, div, callback) {
-    var cmd=json[0]; // TODO process all the commands
-    if (cmd["cmd"] ) this.cmds[cmd.cmd].render( cmd, div, callback );
-};
-
