@@ -54,9 +54,20 @@ var AwCppRenderer = function(docname, awdoc_renderer) {
     this.build_done = true;
     this.cnt = 0;
     awdoc_renderer.registerRenderer("mono", new MonoRenderer());
+    awdoc_renderer.registerRenderer("bin", this);
 };
 
-AwCppRenderer.prototype.render = function(cpp, div, callback) {
+AwCppRenderer.prototype.renderObj = function( obj ) {
+    var type = obj.type;
+    if (type == "awcpp") {
+        this._render( obj.content, obj.id, obj.div, obj.callback );
+    }
+    else if (type == "bin") {
+        this._run( obj.bin, obj.func, obj.div, obj.callback );
+    }
+};
+
+AwCppRenderer.prototype._render = function(cpp, func_name, div, callback) {
 
     // Create controls
     var controls = new NavBar();
@@ -79,13 +90,13 @@ AwCppRenderer.prototype.render = function(cpp, div, callback) {
     div.appendChild(div_result);
 
     // Queue the C++ code for building on the server
-    this.queue.push([cpp, div.id, div_result, callback]);
+    this.queue.push([cpp, func_name, div_result, callback]);
     this._tryNext();
 
     var that = this;
     butt_run.onclick = function() {
         // Queue the C++ code for building on the server
-        that.queue.push([ta.value, div.id, div_result, callback]);
+        that.queue.push([ta.value, func_name, div_result, callback]);
         that._tryNext();
     }
 };
@@ -108,13 +119,13 @@ AwCppRenderer.prototype._build = function(cpp, func_name, div_result, callback) 
         JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
             that.build_done=true;
             if (response.error == "0" && response.bin) {
-                that._run(response["bin"], response["name"], div_result, callback);
+                var obj = { "type":"bin", "bin":response.bin, "func":response.name, "div":div_result, "callback":callback };
+                that.awdoc_renderer.post( obj );
             }
             else if (response.error != "0" && response.build_log) {
-                obj = { "type":"mono", "id":"awcpp_"+that.cnt, "content":response["build_log"], "div":div_result };
+                obj = { "type":"mono", "id":"awcpp_"+that.cnt, "content":response["build_log"], "div":div_result, "callback":callback };
                 that.cnt = that.cnt + 1;
                 that.awdoc_renderer.post( obj );
-	            if( callback ) callback();
 	            that._tryNext();
 	        }
 	        else {
@@ -130,18 +141,13 @@ AwCppRenderer.prototype._run = function(bin, func_name, div_result, callback) {
     var that=this;
     JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
         var resp = response["resp"];
-        that._handle_run_response(resp, div_result, callback);
+        var obj=resp[0];
+        obj.type = obj.cmd;
+        obj.div = div_result;
+        obj.callback = callback;
+        that.awdoc_renderer.post( obj );
+        that._tryNext();
     });
-};
-
-AwCppRenderer.prototype._handle_run_response = function(response, div_result, callback) {
-    console.log(response);
-    var obj=response[0];
-    obj.type = obj.cmd;
-    obj.div = div_result;
-    obj.callback = callback;
-    this.awdoc_renderer.post( obj );
-    this._tryNext();
 };
 
 AwCppRenderer.prototype._viewTextInDiv = function(text, div) {

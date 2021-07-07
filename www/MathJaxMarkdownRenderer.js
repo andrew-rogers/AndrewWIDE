@@ -41,6 +41,10 @@ var MathJaxMarkdownRenderer = function() {
 
 };
 
+MathJaxMarkdownRenderer.prototype.renderObj = function( obj ) {
+    this.render( obj.content, obj.div, obj.callback );
+};
+
 MathJaxMarkdownRenderer.prototype.render = function(mjmd, div, callback) {
     div.innerHTML=mjmd; // MathJax processes in-place so copy the input markdown into the div.
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);

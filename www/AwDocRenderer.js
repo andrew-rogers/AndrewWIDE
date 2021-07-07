@@ -100,15 +100,14 @@ AwDocRenderer.prototype._render = function( obj, src, cnt ) {
 
     // Create a div for the rendered output.
     var div = document.createElement("div");
-    div.id = obj.id;
     this.div.appendChild(div);
 
-    // Invoke the relevant renderer.
-    var renderer_name = obj.type;
-    if (this.renderers.hasOwnProperty(renderer_name)) {
-        this.renderers[renderer_name].render( src, div, function() {
-            console.log(renderer_name+" "+obj.id+" done!");
-        });
-    }
+    obj.content = src;
+    obj.div = div;
+    obj.callback = function() {
+        console.log(obj.type+" "+obj.id+" done!");
+    };
+
+    this.post( obj );
 };
 
