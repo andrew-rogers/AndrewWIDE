@@ -48,7 +48,7 @@ void processQuery( Json& query )
 {
     string cmd=query["cmd"].str();
 
-    if( cmd == "build" )
+    if( cmd == "src" )
     {
         auto fn = filesystem::absPath(query["awdoc"].str());
         auto dir = filesystem::stripExtension(fn);
