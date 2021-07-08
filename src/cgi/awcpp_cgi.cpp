@@ -27,6 +27,7 @@
 using namespace std;
 
 void processQuery( Json& query );
+void build();
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp );
 std::string cppFuncHdr( const std::string& dir, const std::string& func );
 int make( const std::string& makefile, const std::string& cgi );
@@ -80,28 +81,22 @@ void processQuery( Json& query )
             out = cppFuncHdr(dir, func);
             err += filesystem::writeFile(dir+"/func.d/"+func+"_aw.h", out);
 
-            // Change directory and invoke make
-            auto makefile = filesystem::findAWDir()+"/lib/awcpp.makefile";
-            err += filesystem::cwd(dir);
-            ostringstream error;
-            error << make(makefile, cgi);
-
-            // Get the build log
-            std::string build_log;
-            err += filesystem::readFile("build.log", build_log);
-            g_response["error"]=error.str();
-            g_response["build_log"]=build_log;
-            g_response["err"]=err;
-            g_response["bin"]=dir+"/"+cgi;
-            g_response["name"]=func;
+            g_response["func"]=func;
         }
     }
     else if( cmd == "run" )
     {
-        std::string err;
-        auto bin = query["bin"].str()+".so";
+        auto fn = filesystem::absPath(g_query["awdoc"].str());
+
+        build();
+
+        //std::string err;
+        auto err = g_response["err"].str();
+        auto dir = filesystem::stripExtension(fn);
+        auto cgi = filesystem::basename(dir);
+        auto so_file = dir+"/"+cgi+".so";
         auto func = query["func"].str();
-        void* dlh = dlopen(bin.c_str(), RTLD_LAZY);
+        void* dlh = dlopen(so_file.c_str(), RTLD_LAZY);
         if( dlh != NULL )
         {
             // Setup the function arguments
@@ -123,12 +118,34 @@ void processQuery( Json& query )
         }
         else
         {
-            err = "Can't load module: "+bin;
+            err = "Can't load module: "+so_file;
         }
 
         g_response["err"] = err;
     }
 
+}
+
+void build()
+{
+    auto fn = filesystem::absPath(g_query["awdoc"].str());
+    auto dir = filesystem::stripExtension(fn);
+    auto cgi = filesystem::basename(dir);
+    auto err = g_response["err"].str();
+
+    // Change directory and invoke make
+    auto makefile = filesystem::findAWDir()+"/lib/awcpp.makefile";
+    err += filesystem::cwd(dir);
+    ostringstream error;
+    error << make(makefile, cgi);
+
+    // Get the build log
+    std::string build_log;
+    err += filesystem::readFile("build.log", build_log);
+    g_response["error"]=error.str();
+    g_response["build_log"]=build_log;
+    g_response["err"]=err;
+    g_response["type"]="bin";
 }
 
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp )
