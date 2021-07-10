@@ -37,6 +37,7 @@ function AwDocRenderer(div) {
     this.renderers = {};
     this.queue = [];
     this.running = false;
+    this.renderers["array"] = this;
 }
 
 AwDocRenderer.prototype.start = function () {
@@ -44,8 +45,8 @@ AwDocRenderer.prototype.start = function () {
     this._dispatch();
 }
 
-AwDocRenderer.prototype.post = function ( obj ) {
-    this.queue.push( obj );
+AwDocRenderer.prototype.post = function ( obj, div, callback ) {
+    this.queue.push( {"obj":obj, "div":div, "callback":callback} );
     if( this.running ) this._dispatch();
 }
 
@@ -81,14 +82,22 @@ AwDocRenderer.prototype.render = function( awdoc ) {
     this._render( obj, src, cnt );
 };
 
+AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
+    var type = obj.type;
+    if (type == "array") {
+        var obj = obj.array[0]; // TODO: Extract all items in array and create div for each.
+        this.post( obj, div, callback );
+    }
+};
+
 AwDocRenderer.prototype._dispatch = function() {
     while( this.queue.length > 0 ) {
         obj = this.queue.shift();
 
         // Invoke the relevant renderer.
-        var renderer_name = obj.type;
+        var renderer_name = obj.obj.type;
         if (this.renderers.hasOwnProperty(renderer_name)) {
-            this.renderers[renderer_name].renderObj( obj );
+            this.renderers[renderer_name].renderObj( obj.obj, obj.div, obj.callback );
         }
     }
 };
@@ -103,11 +112,10 @@ AwDocRenderer.prototype._render = function( obj, src, cnt ) {
     this.div.appendChild(div);
 
     obj.content = src;
-    obj.div = div;
-    obj.callback = function() {
+    callback = function() {
         console.log(obj.type+" "+obj.id+" done!");
     };
 
-    this.post( obj );
+    this.post( obj, div, callback );
 };
 

@@ -34,27 +34,23 @@ var PlotRenderer = function() {
     
 };
 
-PlotRenderer.prototype.renderObj = function( obj ) {
-    this.render( obj, obj.div, obj.callback );
-};
-
-PlotRenderer.prototype.render = function(json, div, callback) {
-    div.src_json = json;
+PlotRenderer.prototype.renderObj = function(obj, div, callback) {
+    div.src_obj = obj;
     var fig = this._createSvgFigureInDiv( div );
     var p = new Plot();
 
     // Get the series
-    if (json["data"]) {
-        p.addSeries(json.data);
-    } else if (json["x"]) {
-        p.addSeries(json.x, json.y);
+    if (obj["data"]) {
+        p.addSeries(obj.data);
+    } else if (obj["x"]) {
+        p.addSeries(obj.x, obj.y);
     }
 
     // Get the labels
     var xlabel = ""
-    if (json["xlabel"]) xlabel = json.xlabel;
+    if (obj["xlabel"]) xlabel = obj.xlabel;
     var ylabel = ""
-    if (json["ylabel"]) ylabel = json.ylabel;
+    if (obj["ylabel"]) ylabel = obj.ylabel;
     p.axisLabels(xlabel, ylabel);
 
     p.draw(fig);
@@ -83,7 +79,7 @@ PlotRenderer.prototype._clicked = function(div) {
 
         var div_download = document.createElement("div");
         var ta=document.createElement("textarea");
-        ta.value = JSON.stringify(div.src_json);
+        ta.value = JSON.stringify(div.src_obj);
         ta.style.width = "100%";
         div.appendChild(ta);
         ta.style.height = (ta.scrollHeight+8)+"px";

@@ -21,13 +21,12 @@
 #include "filesystem.h"
 
 #include <fstream>
-#include <sstream>
 #include <dlfcn.h>
 
 using namespace std;
 
 void processQuery( Json& query );
-void build();
+int build();
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp );
 std::string cppFuncHdr( const std::string& dir, const std::string& func );
 int make( const std::string& makefile, const std::string& cgi );
@@ -46,9 +45,9 @@ int main(int argc, char *args[])
 
 void processQuery( Json& query )
 {
-    string cmd=query["cmd"].str();
+    string type = query["type"].str();
 
-    if( cmd == "src" )
+    if( type == "src" )
     {
         auto fn = filesystem::absPath(query["awdoc"].str());
         auto dir = filesystem::stripExtension(fn);
@@ -81,17 +80,24 @@ void processQuery( Json& query )
             out = cppFuncHdr(dir, func);
             err += filesystem::writeFile(dir+"/func.d/"+func+"_aw.h", out);
 
+            g_response["type"]="func";
             g_response["func"]=func;
         }
     }
-    else if( cmd == "run" )
+    else if( type == "run" )
     {
         auto fn = filesystem::absPath(g_query["awdoc"].str());
 
-        build();
+        int error_code=build();
 
-        //std::string err;
-        auto err = g_response["err"].str();
+        if (error_code!=0)
+        {
+            g_response["type"] = "mono";
+            return;
+        }
+
+        auto content = g_response["content"].str();
+        string err;
         auto dir = filesystem::stripExtension(fn);
         auto cgi = filesystem::basename(dir);
         auto so_file = dir+"/"+cgi+".so";
@@ -111,7 +117,7 @@ void processQuery( Json& query )
 
             // Get the function response
             Json* func_resp = (Json*)dlsym(dlh, "g_response");
-            if( func_resp != NULL ) g_response["resp"]=*func_resp;
+            if( func_resp != NULL ) g_response["array"]=*func_resp;
             else err += "Can't access response JSON.\n";
 
             dlclose(dlh);
@@ -121,31 +127,44 @@ void processQuery( Json& query )
             err = "Can't load module: "+so_file;
         }
 
-        g_response["err"] = err;
+        if (err.size() > 0)
+        {
+            // Append err to content.
+            g_response["content"] = content + "\n" + err;
+            g_response["type"] = "mono";
+        }
+        else
+        {
+            g_response["type"] = "array";
+        }
     }
-
 }
 
-void build()
+int build()
 {
     auto fn = filesystem::absPath(g_query["awdoc"].str());
     auto dir = filesystem::stripExtension(fn);
     auto cgi = filesystem::basename(dir);
-    auto err = g_response["err"].str();
+    string err;
 
     // Change directory and invoke make
     auto makefile = filesystem::findAWDir()+"/lib/awcpp.makefile";
     err += filesystem::cwd(dir);
-    ostringstream error;
-    error << make(makefile, cgi);
 
-    // Get the build log
-    std::string build_log;
-    err += filesystem::readFile("build.log", build_log);
-    g_response["error"]=error.str();
-    g_response["build_log"]=build_log;
-    g_response["err"]=err;
-    g_response["type"]="bin";
+    int exit_code=-1;
+    string build_log;
+    if (err.size()==0)
+    {
+        exit_code = make(makefile, cgi);
+
+        // Get the build log
+        err = filesystem::readFile("build.log", build_log);
+    }
+
+    // Append err and build log to content.
+    g_response["content"] = g_response["content"].str() + err + build_log;
+
+    return exit_code;
 }
 
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp )

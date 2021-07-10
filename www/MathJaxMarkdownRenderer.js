@@ -41,8 +41,8 @@ var MathJaxMarkdownRenderer = function() {
 
 };
 
-MathJaxMarkdownRenderer.prototype.renderObj = function( obj ) {
-    this.render( obj.content, obj.div, obj.callback );
+MathJaxMarkdownRenderer.prototype.renderObj = function( obj, div, callback ) {
+    this.render( obj.content, div, callback );
 };
 
 MathJaxMarkdownRenderer.prototype.render = function(mjmd, div, callback) {
@@ -76,7 +76,7 @@ MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(div, callback) 
 
     this._processMathJaxOutput(div);
 
-    callback();
+    if( callback ) callback();
 };
 
 MathJaxMarkdownRenderer.prototype._processMathJaxOutput = function(div) {
