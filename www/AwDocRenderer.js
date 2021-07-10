@@ -36,6 +36,7 @@ function AwDocRenderer(div) {
     this.div = div;
     this.renderers = {};
     this.queue = [];
+    this.cnt = 0;
     this.running = false;
     this.renderers["array"] = this;
     this.renderers["json"] = this;
@@ -47,6 +48,13 @@ AwDocRenderer.prototype.start = function () {
 }
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
+
+    // Create a default ID if one is not given
+    if (obj.hasOwnProperty("id") == false) obj.id = obj.type + "_" + this.cnt;
+    this.cnt++;
+
+    //console.log("P> "+obj.id);
+
     this.queue.push( {"obj":obj, "div":div, "callback":callback} );
     if( this.running ) this._dispatch();
 }
@@ -67,7 +75,7 @@ AwDocRenderer.prototype.render = function( awdoc ) {
         if (line.startsWith("AW{") && line.endsWith("}")) {
 
             // Render the previous section
-            if (cnt>0) this._render( obj, src, cnt );
+            if (cnt>0) this._render( obj, src );
 
             // Get attributes of this new section
             obj = JSON.parse(line.slice(2));
@@ -80,7 +88,7 @@ AwDocRenderer.prototype.render = function( awdoc ) {
     }
 
     // Render remaining content
-    if (cnt>0) this._render( obj, src, cnt );
+    if (cnt>0) this._render( obj, src );
     else this._render( {"type":"json"}, src, 0 ); // The doc may have just JSON.
 };
 
@@ -112,10 +120,7 @@ AwDocRenderer.prototype._dispatch = function() {
     }
 };
 
-AwDocRenderer.prototype._render = function( obj, src, cnt ) {
-
-    // Create a default ID if one is not given
-    if (obj.hasOwnProperty("id") == false) obj.id = obj.type+"_"+cnt;
+AwDocRenderer.prototype._render = function( obj, src ) {
 
     // Create a div for the rendered output.
     var div = document.createElement("div");

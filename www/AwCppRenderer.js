@@ -25,12 +25,6 @@
  *
  */
 
-// Dependencies:
-//   jsonarraybuffers.js
-//   aw-sh.js
-//   PlotRenderer.js
-//   NavBar.js
-
 var QueryQueue = function(url, awdoc_renderer) {
     this.url = url;
     this.awdoc_renderer = awdoc_renderer;
