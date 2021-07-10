@@ -21,14 +21,16 @@ SIGNAL_DIR=../../lib/signal
 CXXFLAGS += -fPIC -I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
 LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
 
+SO=$(CGI).so
+
 -include includes.mk
 
-all:	$(CGI)
+all:	$(SO)
 
-$(CGI):	$(OBJS) $(FUNC_OBJS)
-	$(CXX) -shared -fPIC $^ $(LDFLAGS) -lAw -o $@.so
+$(SO):	$(OBJS) $(FUNC_OBJS)
+	$(CXX) -shared -fPIC $^ $(LDFLAGS) -lAw -o $@
 
 clean:
-	$(RM) $(call FixPath,$(DIR)/$(CGI))
+	$(RM) $(call FixPath,$(SO))
 	$(RM) $(call FixPath,$(OBJS))
 	$(RM) $(call FixPath,$(FUNC_OBJS))

@@ -85,6 +85,7 @@ AwDocRenderer.prototype.render = function( awdoc ) {
 AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     var type = obj.type;
     if (type == "array") {
+        div.innerHTML="";
         for (var i=0; i<obj.array.length; i++) {
             var new_div = document.createElement("div");
             div.appendChild(new_div);

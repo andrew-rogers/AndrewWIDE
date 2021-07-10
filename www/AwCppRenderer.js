@@ -39,14 +39,16 @@ var QueryQueue = function(url, awdoc_renderer) {
 };
 
 QueryQueue.prototype.renderObj = function( obj, div, callback ) {
-    if (this.waiting) this.queue.push({"obj":obj, "div":div, "callback":callback});
-    else this._query( obj, div, callback );
+    this.queue.push({"obj":obj, "div":div, "callback":callback});
+    this._next();
 };
 
 QueryQueue.prototype._next = function() {
-    if (this.queue.length > 0) {
-        var obj = this.queue.shift();
-        this._query( obj.obj, obj.div, obj.callback );
+    if (this.waiting==false) {
+        if (this.queue.length > 0) {
+            var obj = this.queue.shift();
+            this._query( obj.obj, obj.div, obj.callback );
+        }
     }
 };
 
@@ -58,12 +60,7 @@ QueryQueue.prototype._query = function( obj, div, callback ) {
 	xhr.onload = function (event) {
 	    that.waiting = false;
 		var response_obj=JSON.parse(xhr.response);
-		if (div) {
-		    that.awdoc_renderer.post( response_obj, div, callback);
-		}
-		else {
-		    if( callback ) callback(response_obj);
-		}
+		that.awdoc_renderer.post( response_obj, div, callback);
 		that._next();
 	};
 	xhr.send(JSON.stringify(obj));
