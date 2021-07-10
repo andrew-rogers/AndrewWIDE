@@ -29,8 +29,40 @@
 //   jsonarraybuffers.js
 //   aw-sh.js
 //   PlotRenderer.js
-//   JsonQuery.js
 //   NavBar.js
+
+var QueryQueue = function(url) {
+    this.url = url;
+    this.waiting = false;
+    this.queue = [];
+};
+
+QueryQueue.prototype.query = function( obj, callback ) {
+    if (this.waiting) this.queue.push({"obj":obj, "callback":callback});
+    else this._query( obj, callback );
+};
+
+QueryQueue.prototype._next = function() {
+    if (this.queue.length > 0) {
+        var obj = this.queue.shift();
+        this._query( obj.obj, obj.callback );
+    }
+};
+
+QueryQueue.prototype._query = function( obj, callback ) {
+    var that = this;
+    var xhr = new XMLHttpRequest();
+	xhr.open("POST", this.url, true);
+	xhr.onload = function (event) {
+		var response_obj=JSON.parse(xhr.response);
+		if( callback ) callback(response_obj);
+		that.waiting = false;
+		that._next();
+	};
+	xhr.send(JSON.stringify(obj));
+
+    this.waiting = true;
+};
 
 var MonoRenderer = function() {
 };
@@ -50,8 +82,7 @@ MonoRenderer.prototype.renderObj = function( obj ) {
 var AwCppRenderer = function(docname, awdoc_renderer) {
     this.docname = docname;
     this.awdoc_renderer = awdoc_renderer;
-    this.queue = [];
-    this.build_done = true;
+    this.qq = new QueryQueue("/cgi-bin/awcpp.cgi");
     this.cnt = 0;
     awdoc_renderer.registerRenderer("mono", new MonoRenderer());
     awdoc_renderer.registerRenderer("func", this);
@@ -89,33 +120,20 @@ AwCppRenderer.prototype._render = function(cpp, func_name, div, callback) {
     var div_result = document.createElement("div");
     div.appendChild(div_result);
 
-    // Queue the C++ code for building on the server
-    this.queue.push([cpp, func_name, div_result, callback]);
-    this._tryNext();
+    this._src(cpp, func_name, div_result, callback);
 
     var that = this;
     butt_run.onclick = function() {
-        // Queue the C++ code for building on the server
-        that.queue.push([ta.value, func_name, div_result, callback]);
-        that._tryNext();
+        that._src(ta.value, func_name, div_result, callback);
     }
 };
-
-AwCppRenderer.prototype._tryNext = function() {
-    if (this.build_done) {
-        if (this.queue.length>0) {
-            var build_args = this.queue.shift();
-            if (build_args) this._src(build_args[0], build_args[1], build_args[2], build_args[3]);
-        }
-    }
-}
 
 AwCppRenderer.prototype._src = function(cpp, func_name, div_result, callback) {
     var fn=this.docname;
     if (fn.endsWith(".awdoc")) {
         var obj = { "cmd":"src", "awdoc":fn, "func":func_name, "cpp":cpp };
         var that=this;
-        JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
+        this.qq.query(obj, function(response) {
             if (response.func) {
                 var obj = { "type":"func", "func":response.func, "div":div_result, "callback":callback };
                 that.awdoc_renderer.post( obj );
@@ -124,11 +142,9 @@ AwCppRenderer.prototype._src = function(cpp, func_name, div_result, callback) {
                 obj = { "type":"mono", "id":"awcpp_"+that.cnt, "content":response["build_log"], "div":div_result, "callback":callback };
                 that.cnt = that.cnt + 1;
                 that.awdoc_renderer.post( obj );
-	            that._tryNext();
 	        }
 	        else {
 	            if( callback ) callback();
-	            that._tryNext();
 	        }
         });
 	}
@@ -137,15 +153,12 @@ AwCppRenderer.prototype._src = function(cpp, func_name, div_result, callback) {
 AwCppRenderer.prototype._run = function(func_name, div_result, callback) {
     var fn=this.docname;
 	var obj = { "cmd":"run", "awdoc":fn, "func":func_name };
-	this.build_done=false;
-    var that=this;
-    JsonQuery.query("/cgi-bin/awcpp.cgi", obj, function(response) {
-        that.build_done=true;
+	var that=this;
+    this.qq.query(obj, function(response) {
         if (response.error != "0" && response.build_log) {
             obj = { "type":"mono", "id":"awcpp_"+that.cnt, "content":response["build_log"], "div":div_result, "callback":callback };
             that.cnt = that.cnt + 1;
             that.awdoc_renderer.post( obj );
-            that._tryNext();
         }
         else {
             var resp = response["resp"];
@@ -154,18 +167,7 @@ AwCppRenderer.prototype._run = function(func_name, div_result, callback) {
             obj.div = div_result;
             obj.callback = callback;
             that.awdoc_renderer.post( obj );
-            that._tryNext();
         }
     });
-};
-
-AwCppRenderer.prototype._viewTextInDiv = function(text, div) {
-    div.innerHTML="";
-    var ta = document.createElement("textarea");
-    ta.style.width = "100%";
-    ta.value = text;
-    ta.readOnly = true;
-    div.appendChild(ta);
-    ta.style.height = (ta.scrollHeight+8)+"px";
 };
 
