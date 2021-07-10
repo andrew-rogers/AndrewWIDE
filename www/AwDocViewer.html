@@ -30,8 +30,8 @@ if (fn.startsWith("?file=")) {
     var fn = decodeURIComponent(fn.slice(6));
 
     var awdr = new AwDocRenderer();
+    new AwCppRenderer(fn, awdr)
     awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
-    awdr.registerRenderer("awcpp", new AwCppRenderer(fn, awdr));
     awdr.registerRenderer("diagram", new DiagramRenderer());
     awdr.registerRenderer("plot", new PlotRenderer());
 

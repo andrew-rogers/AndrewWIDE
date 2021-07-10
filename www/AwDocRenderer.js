@@ -38,6 +38,7 @@ function AwDocRenderer(div) {
     this.queue = [];
     this.running = false;
     this.renderers["array"] = this;
+    this.renderers["json"] = this;
 }
 
 AwDocRenderer.prototype.start = function () {
@@ -66,7 +67,7 @@ AwDocRenderer.prototype.render = function( awdoc ) {
         if (line.startsWith("AW{") && line.endsWith("}")) {
 
             // Render the previous section
-            this._render( obj, src, cnt );
+            if (cnt>0) this._render( obj, src, cnt );
 
             // Get attributes of this new section
             obj = JSON.parse(line.slice(2));
@@ -79,7 +80,8 @@ AwDocRenderer.prototype.render = function( awdoc ) {
     }
 
     // Render remaining content
-    this._render( obj, src, cnt );
+    if (cnt>0) this._render( obj, src, cnt );
+    else this._render( {"type":"json"}, src, 0 ); // The doc may have just JSON.
 };
 
 AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
@@ -91,6 +93,10 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
             div.appendChild(new_div);
             this.post( obj.array[i], new_div, callback );
         }
+    }
+    else if (type == "json") {
+        var new_obj = JSON.parse(obj.content);
+        this.post( { "type":"array", "array":new_obj }, div, callback);
     }
 };
 

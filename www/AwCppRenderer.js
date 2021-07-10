@@ -36,6 +36,9 @@ var QueryQueue = function(url, awdoc_renderer) {
     this.awdoc_renderer = awdoc_renderer;
     this.waiting = false;
     this.queue = [];
+
+    awdoc_renderer.registerRenderer("func_src", this);
+    awdoc_renderer.registerRenderer("func", this);
 };
 
 QueryQueue.prototype.renderObj = function( obj, div, callback ) {
@@ -66,7 +69,8 @@ QueryQueue.prototype._query = function( obj, div, callback ) {
 	xhr.send(JSON.stringify(obj));
 };
 
-var MonoRenderer = function() {
+var MonoRenderer = function( awdoc_renderer ) {
+    awdoc_renderer.registerRenderer("mono", this);
 };
 
 MonoRenderer.prototype.renderObj = function( obj, div, callback ) {
@@ -84,11 +88,11 @@ MonoRenderer.prototype.renderObj = function( obj, div, callback ) {
 var AwCppRenderer = function(docname, awdoc_renderer) {
     this.docname = docname;
     this.awdoc_renderer = awdoc_renderer;
-    this.qq = new QueryQueue("/cgi-bin/awcpp.cgi", awdoc_renderer);
-    this.cnt = 0;
-    awdoc_renderer.registerRenderer("mono", new MonoRenderer());
-    awdoc_renderer.registerRenderer("func_src", this.qq);
-    awdoc_renderer.registerRenderer("func", this.qq);
+    new QueryQueue("/cgi-bin/awcpp.cgi", awdoc_renderer);
+    new MonoRenderer( awdoc_renderer );
+
+    // Register types handled by this class.
+    awdoc_renderer.registerRenderer("awcpp", this);
 };
 
 AwCppRenderer.prototype.renderObj = function( obj, div, callback ) {
