@@ -47,13 +47,12 @@ void processQuery( Json& query )
 {
     string type = query["type"].str();
 
-    if( type == "src" )
+    if( type == "func_src" )
     {
-        auto fn = filesystem::absPath(query["awdoc"].str());
-        auto dir = filesystem::stripExtension(fn);
+        auto dir = filesystem::absPath(query["module"].str());
         auto func = query["func"].str();
-        auto cpp = query["cpp"].str();
-        auto cgi = filesystem::stripExtension( filesystem::basename( fn ) );
+        auto cpp = query["src"].str();
+        auto cgi = filesystem::basename( dir );
         if( func.compare("globals") == 0 )
         {
             auto err = filesystem::mkdir(dir); /// @todo Check for errors
@@ -83,10 +82,11 @@ void processQuery( Json& query )
             g_response["type"]="func";
             g_response["func"]=func;
         }
+        g_response["module"] = query["module"].str();
     }
-    else if( type == "run" )
+    else if( type == "func" )
     {
-        auto fn = filesystem::absPath(g_query["awdoc"].str());
+        auto dir = filesystem::absPath(g_query["module"].str());
 
         int error_code=build();
 
@@ -98,7 +98,6 @@ void processQuery( Json& query )
 
         auto content = g_response["content"].str();
         string err;
-        auto dir = filesystem::stripExtension(fn);
         auto cgi = filesystem::basename(dir);
         auto so_file = dir+"/"+cgi+".so";
         auto func = query["func"].str();
@@ -142,8 +141,7 @@ void processQuery( Json& query )
 
 int build()
 {
-    auto fn = filesystem::absPath(g_query["awdoc"].str());
-    auto dir = filesystem::stripExtension(fn);
+    auto dir = filesystem::absPath(g_query["module"].str());
     auto cgi = filesystem::basename(dir);
     string err;
 

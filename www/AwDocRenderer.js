@@ -85,8 +85,11 @@ AwDocRenderer.prototype.render = function( awdoc ) {
 AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     var type = obj.type;
     if (type == "array") {
-        var obj = obj.array[0]; // TODO: Extract all items in array and create div for each.
-        this.post( obj, div, callback );
+        for (var i=0; i<obj.array.length; i++) {
+            var new_div = document.createElement("div");
+            div.appendChild(new_div);
+            this.post( obj.array[i], new_div, callback );
+        }
     }
 };
 
