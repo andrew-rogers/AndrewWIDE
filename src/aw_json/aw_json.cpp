@@ -76,7 +76,7 @@ string htmlHeader()
     oss << "        <script src=\"https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG\"></script>\n";
     oss << "    </head>\n";
     oss << "    <body>\n";
-    oss << "        <textarea id=\"ta_awjson\">\n";
+    oss << "        <textarea id=\"ta_awjson\" hidden>\n";
     return oss.str();
 }
 
@@ -87,7 +87,6 @@ string htmlFooter()
     oss << "        <script>\n";
     oss << "var awdr = new AwDocRenderer();\n";
     oss << "var ta_awjson = document.getElementById(\"ta_awjson\");\n";
-    oss << "ta_awjson.hidden = true;\n";
     oss << "awdr.registerRenderer(\"mjmd\", new MathJaxMarkdownRenderer());\n";
     oss << "awdr.registerRenderer(\"diagram\", new DiagramRenderer());\n";
     oss << "awdr.registerRenderer(\"plot\", new PlotRenderer());\n";

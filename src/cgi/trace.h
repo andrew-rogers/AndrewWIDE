@@ -24,14 +24,14 @@
 #define NUM_ARGS_M1(a1, a2, a3, a4, a5, N, ...) N
 
 
-#define TRACE_1(var) aw_trace(__func__,#var,(var))
+#define TRACE_1(var) aw_trace(__FILE__,__LINE__,__func__,#var,(var))
 //#define TRACE_2(key, var) aw_trace(key,__func__,#var,(var))
 
-#define trace(...) TRACE_M1(NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
+#define AW_TRACE(...) TRACE_M1(NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
 #define TRACE_M1(n, ...) TRACE_M2(n, __VA_ARGS__)
 #define TRACE_M2(n, ...) TRACE_##n(__VA_ARGS__)
 
-void aw_trace(const std::string& fname, const std::string& name, double val);
+void aw_trace(const std::string& file, int line, const std::string& fname, const std::string& vname, double val);
 
 #endif //TRACE_H
 
