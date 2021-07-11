@@ -12,7 +12,8 @@ endif
 CXXFLAGS += -fPIC
 
 LIB_OBJS= \
- cgi/json.o \
+ aw_json/aw_json.o \
+ aw_json/json.o \
  cgi/filesystem.o \
  cgi/cgi_post.o \
  cgi/awmath.o \

@@ -21,7 +21,7 @@
 #define PLOT_H
 
 #include "awvector.h"
-#include "json.h"
+#include "../aw_json/json.h"
 
 #include <string>
 

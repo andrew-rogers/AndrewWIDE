@@ -11,16 +11,17 @@ else
     LDFLAGS += -ldl
 endif
 
+JSON_DIR=../aw_json
 
 CGI_DIR=../../www/cgi-bin
 CGIS=$(CGI_DIR)/awcpp.cgi $(CGI_DIR)/filesystem.cgi
 
 all: $(CGIS)
 
-$(CGI_DIR)/awcpp.cgi: awcpp_cgi.cpp json.cpp filesystem.cpp cgi_post.cpp
+$(CGI_DIR)/awcpp.cgi: awcpp_cgi.cpp $(JSON_DIR)/json.cpp filesystem.cpp cgi_post.cpp
 	g++ $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-$(CGI_DIR)/filesystem.cgi: filesystem_cgi.cpp json.cpp filesystem.cpp cgi_post.cpp
+$(CGI_DIR)/filesystem.cgi: filesystem_cgi.cpp $(JSON_DIR)/json.cpp filesystem.cpp cgi_post.cpp
 	g++ $(CXXFLAGS) $^ -o $@
 
 clean:

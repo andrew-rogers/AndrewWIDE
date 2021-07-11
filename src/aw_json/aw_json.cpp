@@ -1,6 +1,6 @@
 /*
-    AndrewWIDE - CGI POST processing functions
-    Copyright (C) 2018  Andrew Rogers
+    AndrewWIDE - Instrumentation with JSON output
+    Copyright (C) 2021  Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,16 +17,19 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef CGI_POST_H
-#define CGI_POST_H
+#include "aw_json.h"
+#include "../cgi/filesystem.h"
 
-#include "../aw_json/json.h"
+#include <fstream>
 
-extern Json g_query;
-extern Json g_response;
+//Json g_response;
 
-void getQuery();
-void sendResponse();
-
-#endif //CGI_POST_H
-
+void save(const std::string& filename)
+{
+    std::ofstream out(filesystem::fixPath(filename), std::ios::out | std::ios::binary);
+    if( out )
+    {
+        out << g_response;
+        out.close();
+    }
+}

@@ -20,7 +20,7 @@
 #ifndef AWVECTOR_H
 #define AWVECTOR_H
 
-#include "json.h"
+#include "../aw_json/json.h"
 
 #include <vector>
 
