@@ -25,7 +25,14 @@
 
 extern Json g_response;
 
+namespace AwJson {
+
 void save(const std::string& filename);
+std::string htmlHeader();
+std::string htmlFooter();
+std::string htmlScript(const std::string& src);
+
+}
 
 #endif // AW_JSON_H
 

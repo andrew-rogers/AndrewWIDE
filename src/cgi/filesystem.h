@@ -38,6 +38,7 @@ bool isRelative( const std::string& path );
 std::string findAWDir();
 std::string absPath( const std::string& path );
 std::string basename( const std::string& path );
+std::string extension( const std::string& path );
 std::string stripExtension( const std::string& path );
 int listFiles( const std::string& path, Json& list );
 std::string readFile( const std::string& path, std::string& content );

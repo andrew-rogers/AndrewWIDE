@@ -133,6 +133,13 @@ std::string stripExtension( const std::string& path )
     return path;
 }
 
+std::string extension( const std::string& path )
+{
+    std::size_t found = path.rfind(".");
+    if( found != std::string::npos ) return path.substr(found+1);
+    return "";
+}
+
 int listFiles( const std::string& path, Json& list )
 {
     int cnt(0);
