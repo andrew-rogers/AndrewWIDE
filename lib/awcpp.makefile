@@ -20,7 +20,7 @@ FUNC_OBJS=$(patsubst %.cpp,%.o,$(wildcard func.d/*_aw.cpp))
 AWSRC_DIR=$(AW_DIR)/src
 SIGNAL_DIR=$(AW_DIR)/lib/signal
 
-CXXFLAGS += -fPIC -I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
+CXXFLAGS += -fPIC -I.. -I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
 LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
 
 SO=$(CGI).so
