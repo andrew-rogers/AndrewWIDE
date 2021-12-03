@@ -5,9 +5,11 @@
         <script src="AwDocRenderer.js"></script>
         <script src="DiagramRenderer.js"></script>
         <script src="JsonQuery.js"></script>
+        <script src="fileselector.js"></script>
         <script src="FileSystem.js"></script>
         <script src="file.js"></script>
         <script src="MathJaxMarkdownRenderer.js"></script>
+        <script src="menu.js"></script>
         <script src="svgarray.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"></script>
@@ -26,9 +28,7 @@
         
 var fn = window.location.search;
 
-if (fn.startsWith("?file=")) {
-    var fn = decodeURIComponent(fn.slice(6));
-
+var open_doc = function( fn ) {
     var awdr = new AwDocRenderer();
     new AwCppRenderer(fn, awdr)
     awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
@@ -39,7 +39,19 @@ if (fn.startsWith("?file=")) {
         awdr.render(content);
         awdr.start();
     });
+};
 
+if (fn.startsWith("?file=")) {
+    var fn = decodeURIComponent(fn.slice(6));
+    open_doc(fn);
+}
+else {
+    div=document.createElement("div");
+    document.body.appendChild(div);
+    var fs = new FileSelector(div, FileSystem.list);
+    fs.show(function(fn){
+        open_doc(fn);
+    });
 }
 
         </script>
