@@ -146,14 +146,14 @@ int build()
     string err;
 
     // Change directory and invoke make
-    auto makefile = filesystem::findAWDir()+"/lib/awcpp.makefile";
+    auto awdir = filesystem::findAWDir();
     err += filesystem::cwd(dir);
 
     int exit_code=-1;
     string build_log;
     if (err.size()==0)
     {
-        exit_code = make(makefile, cgi);
+        exit_code = make(awdir, cgi);
 
         // Get the build log
         err = filesystem::readFile("build.log", build_log);
@@ -209,13 +209,17 @@ std::string cppFuncHdr( const std::string& dir, const std::string& func )
     return out;
 }
 
-int make( const std::string& makefile, const std::string& cgi )
+int make( const std::string& awdir, const std::string& cgi )
 {
 #ifdef WINDOWS
-    std::string cmd = "mingw32-make CGI=\""+cgi+"\" -f \""+filesystem::fixPath(makefile)+"\" > build.log 2>&1";
+    std::string cmd = "mingw32-make";
 #else
-    std::string cmd = "make CGI=\""+cgi+"\" -f \""+makefile+"\" > build.log 2>&1";
+    std::string cmd = "make";
 #endif
+    cmd += " CGI=\""+cgi+"\"";
+    cmd += " AW_DIR=\"" + filesystem::fixPath(awdir) + "\"";
+    cmd += " -f \"" + filesystem::fixPath( awdir + "/lib/awcpp.makefile" ) + "\"";
+    cmd += " > build.log 2>&1";
     return system(cmd.c_str());
 }
 

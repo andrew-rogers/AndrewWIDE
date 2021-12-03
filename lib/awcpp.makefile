@@ -1,3 +1,5 @@
+# CGI and AW_DIR must be supplied by caller.
+
 # https://stackoverflow.com/questions/4058840/makefile-that-distincts-between-windows-and-unix-like-systems
 # https://stackoverflow.com/questions/714100/os-detecting-makefile
 ifeq '$(findstring ;,$(PATH))' ';'
@@ -15,8 +17,8 @@ OBJS=$(patsubst %.cpp,%.o,$(wildcard globals.cpp))
 # Find all the *_aw.cpp files in func.d and produce *.o names
 FUNC_OBJS=$(patsubst %.cpp,%.o,$(wildcard func.d/*_aw.cpp))
 
-AWSRC_DIR=../../src
-SIGNAL_DIR=../../lib/signal
+AWSRC_DIR=$(AW_DIR)/src
+SIGNAL_DIR=$(AW_DIR)/lib/signal
 
 CXXFLAGS += -fPIC -I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
 LDFLAGS=-L$(AWSRC_DIR) -L$(SIGNAL_DIR)
