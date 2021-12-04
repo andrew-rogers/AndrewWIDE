@@ -61,7 +61,8 @@ void processQuery( Json& query )
         else if( func.compare("global_defs") == 0 )
         {
             auto err = filesystem::mkdir(dir); /// @todo Check for errors
-            g_response["err"]=filesystem::writeFile(dir+"/globals.cpp", cpp);
+            auto out = cppFunc( dir, "", cpp );
+            g_response["err"]=filesystem::writeFile(dir+"/globals.cpp", out);
         }
         else if( func.compare("mk") == 0 )
         {
@@ -165,6 +166,13 @@ int build()
     return exit_code;
 }
 
+bool checkGlobals( const std::string& dir )
+{
+    std::string global;
+    filesystem::readFile(dir+"/globals.h", global); // String empty if file not found.
+    return global.size() > 0;
+}
+
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp )
 {
     std::string out;
@@ -182,13 +190,22 @@ std::string cppFunc( const std::string& dir, const std::string& func, const std:
     if( global.size() > 0 )
     {
         out += "// Include globals.\n";
-        out += "#include \"../globals.h\"\n";
+        if( func.size() > 0) out += "#include \"../globals.h\"\n";
+        else out += "#include \"globals.h\"\n"; // Page global code.
     }
     out += "\n";
-    out += "extern \"C\" void "+func+"()\n";
-    out += "{\n";
-    out += cpp;
-    out += "}\n";
+    if( func.size() > 0)
+    {
+        out += "extern \"C\" void "+func+"()\n";
+        out += "{\n";
+        out += cpp;
+        out += "}\n";
+    }
+    else
+    {
+        // Page global code.
+        out += cpp;
+    }
     return out;
 }
 
