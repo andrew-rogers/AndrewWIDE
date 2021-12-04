@@ -1,6 +1,6 @@
 /*
     AndrewWIDE - Vector extensions for mathematical operations
-    Copyright (C) 2018  Andrew Rogers
+    Copyright (C) 2018,2021  Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,10 +30,17 @@ class AwVector : public std::vector<T>
 public:
     AwVector() {}
     AwVector( size_t count ) : std::vector<T>( count ) {}
+
+    template <typename elem_t>
+    AwVector( const std::vector<elem_t> e ) : std::vector<T>( e.size() )
+    {
+        for( size_t i=0; i<e.size(); i++) (*this)[i] = e[i];
+    }
+
     void fromJsonArray(Json& json);
     Json toJsonArray() const;
 private:
-    
+
 };
 
 #include "awvector.cpp"
