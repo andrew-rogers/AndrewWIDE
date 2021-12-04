@@ -166,13 +166,6 @@ int build()
     return exit_code;
 }
 
-bool checkGlobals( const std::string& dir )
-{
-    std::string global;
-    filesystem::readFile(dir+"/globals.h", global); // String empty if file not found.
-    return global.size() > 0;
-}
-
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp )
 {
     std::string out;
