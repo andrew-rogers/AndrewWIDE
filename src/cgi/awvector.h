@@ -28,6 +28,8 @@ template <class T>
 class AwVector : public std::vector<T>
 {
 public:
+    AwVector() {}
+    AwVector( size_t count ) : std::vector<T>( count ) {}
     void fromJsonArray(Json& json);
     Json toJsonArray() const;
 private:
