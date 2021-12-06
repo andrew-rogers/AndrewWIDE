@@ -20,6 +20,7 @@
 */
 
 #include "awvector.h"
+#include <fstream>
 
 using namespace std;
 
@@ -42,5 +43,34 @@ Json AwVector<T>::toJsonArray() const
         json[i]=(*this)[i];
     }
     return json;
+}
+
+template <class T>
+void AwVector<T>::save(const std::string fn)
+{
+    ofstream ofs(fn, ios::trunc | ios::binary);
+    if( ofs.is_open() )
+    {
+        for( int i=0; i<vector<T>::size(); i++ ) {
+            T val = (*this)[i];
+            ofs.write( (char *)&val, sizeof(val) );
+        }
+        ofs.close();
+    }
+}
+
+template <class T>
+void AwVector<T>::load(const std::string fn)
+{
+    vector<T>::clear();
+    ifstream ifs(fn, ios::binary);
+    if( ifs.is_open() )
+    {
+        while( ifs.good() ) {
+            T val;
+            if( ifs.read( (char *)&val, sizeof(val) ) ) vector<T>::push_back(val);
+        }
+        ifs.close();
+    }
 }
 

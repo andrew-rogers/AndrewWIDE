@@ -39,6 +39,9 @@ public:
 
     void fromJsonArray(Json& json);
     Json toJsonArray() const;
+
+    void save(const std::string fn);
+    void load(const std::string fn);
 private:
 
 };
