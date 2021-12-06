@@ -50,9 +50,9 @@ void processQuery( Json& query )
     if( type == "func_src" )
     {
         auto dir = filesystem::absPath(query["module"].str());
+        dir += ".awtmp";
         auto func = query["func"].str();
         auto cpp = query["src"].str();
-        auto cgi = filesystem::basename( dir );
         if( func.compare("globals") == 0 )
         {
             auto err = filesystem::mkdir(dir); /// @todo Check for errors
@@ -88,6 +88,8 @@ void processQuery( Json& query )
     else if( type == "func" )
     {
         auto dir = filesystem::absPath(g_query["module"].str());
+        auto cgi = filesystem::basename(dir);
+        dir += ".awtmp";
 
         int error_code=build();
 
@@ -99,7 +101,6 @@ void processQuery( Json& query )
 
         auto content = g_response["content"].str();
         string err;
-        auto cgi = filesystem::basename(dir);
         auto so_file = dir+"/"+cgi+".so";
         auto func = query["func"].str();
         void* dlh = dlopen(so_file.c_str(), RTLD_LAZY);
@@ -144,6 +145,7 @@ int build()
 {
     auto dir = filesystem::absPath(g_query["module"].str());
     auto cgi = filesystem::basename(dir);
+    dir += ".awtmp";
     string err;
 
     // Change directory and invoke make
