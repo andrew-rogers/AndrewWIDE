@@ -1,6 +1,6 @@
 /*
     AndrewWIDE - Math utilities
-    Copyright (C) 2020 Andrew Rogers
+    Copyright (C) 2020,2021 Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ static const double PI=3.141592653589793F;
 AwVector<double> linspace(double start, double end, int length);
 AwVector<double> sin(const AwVector<double>& angle);
 AwVector<double> operator*(double a, const AwVector<double>& vec);
+AwVector<double> operator+(const AwVector<double>& vec, double a);
 
 #endif // AWMATH_H
 

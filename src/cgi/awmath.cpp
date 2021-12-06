@@ -1,6 +1,6 @@
 /*
     AndrewWIDE - Math utilities
-    Copyright (C) 2020 Andrew Rogers
+    Copyright (C) 2020,2021 Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +47,16 @@ AwVector<double> operator*(double a, const AwVector<double>& vec)
     for( int i=0; i<vec.size(); i++)
     {
         ret.push_back(a*vec[i]);
+    }
+    return ret;
+}
+
+AwVector<double> operator+(const AwVector<double>& vec, double a)
+{
+    AwVector<double> ret(vec.size());
+    for( int i=0; i<vec.size(); i++)
+    {
+        ret[i] = vec[i]+a;
     }
     return ret;
 }
