@@ -117,6 +117,13 @@ AwDocRenderer.prototype._dispatch = function() {
         if (this.renderers.hasOwnProperty(renderer_name)) {
             this.renderers[renderer_name].renderObj( obj.obj, obj.div, obj.callback );
         }
+        else {
+            var ta = document.createElement("textarea");
+            ta.value = "Error: No renderer for '" + renderer_name + "'\n";
+            ta.value += JSON.stringify(obj.obj);
+            ta.style.width = "100%";
+            obj.div.appendChild(ta);
+        }
     }
 };
 
