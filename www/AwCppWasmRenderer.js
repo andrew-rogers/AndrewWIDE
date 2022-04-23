@@ -39,6 +39,7 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
         // Add the C++ source to the module
         // TODO: depending on whether this is a global section or function section, generate wrapper code.
         Module.wasmCpp = obj.content;
+        this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":Module.wasmCpp}, div, callback);
     }
     if (type == "wasm-b64") {
         var ta = this._textArea( obj.content, div );

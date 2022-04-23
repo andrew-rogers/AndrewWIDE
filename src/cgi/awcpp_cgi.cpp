@@ -29,6 +29,7 @@ void processQuery( Json& query );
 int build();
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp );
 std::string cppFuncHdr( const std::string& dir, const std::string& func );
+void buildWasm();
 int make( const std::string& makefile, const std::string& cgi );
 
 int main(int argc, char *args[])
@@ -139,6 +140,15 @@ void processQuery( Json& query )
             g_response["type"] = "array";
         }
     }
+    else if( type == "awcppwasm_src" )
+    {
+        buildWasm();
+    }
+    else
+    {
+        g_response["type"] = "mono";
+        g_response["content"] = "Type '"+type+"' not supported by backend.";
+    }
 }
 
 int build()
@@ -219,6 +229,19 @@ std::string cppFuncHdr( const std::string& dir, const std::string& func )
     out += "#endif //"+guard+"\n";
 
     return out;
+}
+
+void buildWasm()
+{
+    auto dir = filesystem::absPath(g_query["module"].str());
+    auto cpp = g_query["src"].str();
+
+    // Create a temp directory
+    dir += ".awtmp";
+    auto err = filesystem::mkdir(dir); /// @todo Check for errors
+
+    // Write the C++ source to file
+    g_response["err"]=filesystem::writeFile(dir+"/src.cpp", cpp);
 }
 
 int make( const std::string& awdir, const std::string& cgi )

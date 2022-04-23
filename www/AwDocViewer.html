@@ -30,9 +30,10 @@
 var fn = window.location.search;
 
 var open_doc = function( fn ) {
-    var awdr = new AwDocRenderer();
-    new AwCppRenderer(fn, awdr)
+    var awdr = new AwDocRenderer(fn);
+    new AwCppRenderer(awdr)
     var cppwasm = new AwCppWasmRenderer(awdr);
+    var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
     awdr.registerRenderer("awcppwasm", cppwasm);
     awdr.registerRenderer("wasm-b64", cppwasm);
     awdr.registerRenderer("wasm-rt", cppwasm);

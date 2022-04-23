@@ -25,7 +25,7 @@
  *
  */
 
-var QueryQueue = function(url, awdoc_renderer) {
+var XhrRenderer = function(url, awdoc_renderer) {
     this.url = url;
     this.awdoc_renderer = awdoc_renderer;
     this.waiting = false;
@@ -33,14 +33,15 @@ var QueryQueue = function(url, awdoc_renderer) {
 
     awdoc_renderer.registerRenderer("func_src", this);
     awdoc_renderer.registerRenderer("func", this);
+    awdoc_renderer.registerRenderer("awcppwasm_src", this);
 };
 
-QueryQueue.prototype.renderObj = function( obj, div, callback ) {
+XhrRenderer.prototype.renderObj = function( obj, div, callback ) {
     this.queue.push({"obj":obj, "div":div, "callback":callback});
     this._next();
 };
 
-QueryQueue.prototype._next = function() {
+XhrRenderer.prototype._next = function() {
     if (this.waiting==false) {
         if (this.queue.length > 0) {
             var obj = this.queue.shift();
@@ -49,7 +50,7 @@ QueryQueue.prototype._next = function() {
     }
 };
 
-QueryQueue.prototype._query = function( obj, div, callback ) {
+XhrRenderer.prototype._query = function( obj, div, callback ) {
     this.waiting = true;
     var that = this;
     var xhr = new XMLHttpRequest();
@@ -79,10 +80,9 @@ MonoRenderer.prototype.renderObj = function( obj, div, callback ) {
     if( callback ) callback();
 };
 
-var AwCppRenderer = function(docname, awdoc_renderer) {
-    this.docname = docname;
+var AwCppRenderer = function(awdoc_renderer) {
+    this.docname = awdoc_renderer.docname;
     this.awdoc_renderer = awdoc_renderer;
-    new QueryQueue("/cgi-bin/awcpp.cgi", awdoc_renderer);
     new MonoRenderer( awdoc_renderer );
 
     // Register types handled by this class.

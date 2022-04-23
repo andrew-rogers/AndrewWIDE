@@ -25,7 +25,8 @@
  *
  */
 
-function AwDocRenderer(div) {
+function AwDocRenderer(docname, div) {
+    this.docname = docname;
     if(div){
         div=div;
     } else{
