@@ -30,6 +30,7 @@ Module = {};
 
 var AwCppWasmRenderer = function(awdr) {
     this.awdr = awdr;
+    this.runtime_js = "";
 };
 
 AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
@@ -55,12 +56,22 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             resp = ccall("get_response","string",[],[])
             that.awdr.post(JSON.parse(resp), div_result, callback);
         }
+
+        // The runtime is also needed before initiliasing the wasm.
+        if (this.runtime_js != "") this._insertRuntime();
     }
     if (type == "wasm-rt") {
-        scr = document.createElement("script");
-        scr.innerText = obj.content;
-        document.head.appendChild(scr);
+        this.runtime_js = obj.content;
+
+        // The wasm binary is needed before initiliasing the wasm.
+        if (Module["wasmBinary"]) this._insertRuntime();
     }
+};
+
+AwCppWasmRenderer.prototype._insertRuntime = function() {
+    scr = document.createElement("script");
+    scr.innerText = this.runtime_js;
+    document.head.appendChild(scr);
 };
 
 AwCppWasmRenderer.prototype._textArea = function( text, div ) {

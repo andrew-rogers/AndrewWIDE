@@ -240,8 +240,40 @@ void buildWasm()
     dir += ".awtmp";
     auto err = filesystem::mkdir(dir); /// @todo Check for errors
 
-    // Write the C++ source to file
-    g_response["err"]=filesystem::writeFile(dir+"/src.cpp", cpp);
+    // TODO: Write the C++ source to file
+    g_response["err"]=filesystem::writeFile(dir+"/src.c", cpp);
+
+    // Change directory and invoke emcc
+    err += filesystem::cwd(dir);
+
+    // TODO: C++ instead of C
+    string cmd = "emcc src.c -o src.js -s WASM=1 -s EXPORTED_RUNTIME_METHODS=\"['ccall']\" -Oz  --minify=0";
+    int error_code = system(cmd.c_str());
+
+    // Convert wasm to base64
+    cmd = "cat src.wasm | base64 -w0 > src.b64";
+    error_code = system(cmd.c_str());
+
+    // Read the base64 wasm
+    string b64;
+    err += filesystem::readFile("src.b64", b64);
+
+    // Read the runtime JavaScript
+    string rt_js;
+    err += filesystem::readFile("src.js", rt_js);
+
+    // Assemble the response JSON
+    Json arr;
+    Json wasm;
+    Json rt;
+    wasm["type"] = "wasm-b64";
+    wasm["content"] = b64;
+    rt["type"]= "wasm-rt";
+    rt["content"] = rt_js;
+    arr.push_back(wasm);
+    arr.push_back(rt);
+    g_response["type"] = "array";
+    g_response["array"] = arr;
 }
 
 int make( const std::string& awdir, const std::string& cgi )
