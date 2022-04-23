@@ -240,14 +240,12 @@ void buildWasm()
     dir += ".awtmp";
     auto err = filesystem::mkdir(dir); /// @todo Check for errors
 
-    // TODO: Write the C++ source to file
-    g_response["err"]=filesystem::writeFile(dir+"/src.c", cpp);
+    // Write the C++ source to file
+    g_response["err"]=filesystem::writeFile(dir+"/src.cpp", cpp);
 
     // Change directory and invoke emcc
     err += filesystem::cwd(dir);
-
-    // TODO: C++ instead of C
-    string cmd = "emcc src.c -o src.js -s WASM=1 -s EXPORTED_RUNTIME_METHODS=\"['ccall']\" -Oz  --minify=0";
+    string cmd = "emcc src.cpp -o src.js -s WASM=1 -s EXPORTED_RUNTIME_METHODS=\"['ccall']\" -Oz  --minify=0";
     int error_code = system(cmd.c_str());
 
     // Convert wasm to base64
