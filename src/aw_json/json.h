@@ -48,7 +48,7 @@ public:
     ~Json();
     bool parse(std::istream& in);
     bool parse(JsonTokeniser& tokeniser);
-    void stringify(std::ostream& out);
+    void stringify(std::string& out) const;
     char getLastToken();
     std::string str();
     double toNumber() const;

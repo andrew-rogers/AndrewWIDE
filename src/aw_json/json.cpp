@@ -19,8 +19,6 @@
 
 #include "json.h"
 
-#include <sstream>
-
 using namespace std;
 
 JsonTokeniser::JsonTokeniser(istream& in) : in(in)
@@ -362,24 +360,24 @@ bool Json::parse(JsonTokeniser& tokeniser)
     return !error;
 }
 
-void Json::stringify(ostream& out)
+void Json::stringify(string& out) const
 {
     switch(m_type)
     {
         case string_type:
         {
-            out << "\"";
+            out += "\"";
             for( int i=0; i<m_str->length(); i++)
             {
                 char c=(*m_str)[i];
-                if( c=='\t' ) out << "\\t";
-                else if( c=='\n' ) out << "\\n";
-                else if( c=='\r' ) out << "\\r";
-                else if( c=='\"' ) out << "\\\"";
-                else if( c=='\\' ) out << "\\\\";
-                else out << c;
+                if( c=='\t' ) out += "\\t";
+                else if( c=='\n' ) out += "\\n";
+                else if( c=='\r' ) out += "\\r";
+                else if( c=='\"' ) out += "\\\"";
+                else if( c=='\\' ) out += "\\\\";
+                else out += c;
             }
-            out << "\"";
+            out += "\"";
             break;
         }
        case number_type:
@@ -387,13 +385,13 @@ void Json::stringify(ostream& out)
             for( int i=0; i<m_str->length(); i++)
             {
                 char c=(*m_str)[i];
-                out << c;
+                out += c;
             }
             break;
         }
         case object_type:
         {
-            out << "{";
+            out += "{";
             bool first(true);
             for(map<string,Json>::iterator it=m_pairs->begin(); it!=m_pairs->end(); ++it)
             {
@@ -401,27 +399,29 @@ void Json::stringify(ostream& out)
                 Json& value=it->second;
                 if( value.m_type != undefined_type )
                 {
-                    if(!first) out<<",";
-                    out << "\"" << key << "\":";
+                    if(!first) out += ",";
+                    out += "\"";
+                    out += key;
+                    out += "\":";
                     value.stringify(out);
                     first=false;
                 }
             }   
-            out << "}";
+            out += "}";
             break;
         }
         case array_type:
         {
-            out << "[";
+            out += "[";
             for(int i=0; i<m_values->size()-1; i++)
             {
                 Json& value=(*m_values)[i];
                 value.stringify(out);
-                out<<",";
+                out += ",";
             }
             Json& value=(*(m_values))[m_values->size()-1];
             value.stringify(out);
-            out << "]";
+            out += "]";
             break;
         }
     }
@@ -449,8 +449,7 @@ double Json::toNumber() const
     double val(0.0);
     if(m_str)
     {
-        istringstream iss(*m_str);
-        iss >> val;
+        val = stod(*m_str);
     }
     else
     {
@@ -535,9 +534,7 @@ Json& Json::operator=(const std::string& val)
 Json& Json::operator=(const double& val)
 {
     m_type=number_type;
-    ostringstream oss;
-    oss << val;
-    m_str=make_shared<string>(oss.str());
+    m_str=make_shared<string>(to_string(val));
     return (*this);
 }
 
@@ -568,7 +565,9 @@ istream& operator>>(istream& in, Json& value)
 
 ostream& operator<<(ostream& out, Json& value)
 {
-    value.stringify(out);
+    string str;
+    value.stringify(str);
+    out << str;
     return out;
 }
 
