@@ -42,6 +42,7 @@ std::string extension( const std::string& path );
 std::string stripExtension( const std::string& path );
 int listFiles( const std::string& path, Json& list );
 std::string readFile( const std::string& path, std::string& content );
+std::string readFile( const std::string& path, std::vector<char>& content );
 std::string writeFile( const std::string& path, const std::string& content );
 std::string mkdir( const std::string& path );
 

@@ -214,6 +214,21 @@ std::string readFile( const std::string& path, std::string& content )
     return "Can't read file: "+path;
 }
 
+std::string readFile( const std::string& path, std::vector<char>& content )
+{
+    std::ifstream in(fixPath(path), std::ios::in | std::ios::binary);
+    if( in )
+    {
+        in.seekg( 0, std::ios::end );
+        content.resize( in.tellg() );
+        in.seekg( 0, std::ios::beg );
+        in.read( &content[0], content.size() );
+        in.close();
+        return( "" );
+    }
+    return "Can't read file: "+path;
+}
+
 std::string writeFile( const std::string& path, const std::string& content )
 {
     std::ofstream out(fixPath(path), std::ios::out | std::ios::binary);

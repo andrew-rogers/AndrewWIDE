@@ -32,6 +32,7 @@ std::string cppFuncHdr( const std::string& dir, const std::string& func );
 void buildWasm();
 int make( const std::string& makefile, const std::string& cgi );
 int emmake( const std::string& awdir );
+string base64Encode(vector<char>& data);
 
 int main(int argc, char *args[])
 {
@@ -249,13 +250,10 @@ void buildWasm()
     err += filesystem::cwd(dir);
     int error_code = emmake(awdir);
 
-    // Convert wasm to base64
-    string cmd = "cat src.wasm | base64 -w0 > src.b64";
-    error_code = system(cmd.c_str());
-
-    // Read the base64 wasm
-    string b64;
-    err += filesystem::readFile("src.b64", b64);
+    // Read the wasm file and convert to base64
+    vector<char> wasmbytes;
+    err += filesystem::readFile("src.wasm", wasmbytes);
+    string b64 = base64Encode(wasmbytes);
 
     // Read the runtime JavaScript
     string rt_js;
@@ -300,5 +298,33 @@ int emmake( const std::string& awdir )
     cmd += " -f \"" + filesystem::fixPath( awdir + "/lib/awcppwasm.makefile" ) + "\"";
     cmd += " > build.log 2>&1";
     return system(cmd.c_str());
+}
+
+string base64Encode(vector<char>& data)
+{
+    const string tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    string out;
+    unsigned int buff(0U);
+    int cnt(0);
+
+    for( unsigned char val : data )
+    {
+        // Shift in 8 bits
+        buff = (buff << 8) + val;
+        cnt += 8;
+
+        while( cnt >= 6 )
+        {
+            // Shift out 6 bits
+            cnt -= 6;
+            int ind = (buff>>cnt)&63;
+            out += tab[ind];
+        }
+    }
+
+    if( cnt>0 ) out += tab[(buff<<(6-cnt))&0x3f];
+    while( out.size() % 4 ) out += '=';
+
+    return out;
 }
 
