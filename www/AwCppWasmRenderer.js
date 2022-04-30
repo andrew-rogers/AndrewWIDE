@@ -31,16 +31,80 @@ Module = {};
 var AwCppWasmRenderer = function(awdr) {
     this.awdr = awdr;
     this.runtime_js = "";
+    this.build_pending = false;
+    this.blocks = {};
+    this.globals_block = "";
+    this.call_queue=[];
+    awdr.registerRenderer("awcppwasm_build", this);
+
+    var hdr = "#include \"json.h\"\n\n";
+    hdr += "#include <stdlib.h>\n";
+    hdr += "#include <string.h>\n";
+    hdr += "#include <emscripten.h>\n\n";
+
+    hdr += "char *g_str_query;\n";
+
+    hdr += "Json g_query;\n";
+    hdr += "Json g_response;\n";
+
+    hdr += "EMSCRIPTEN_KEEPALIVE\n";
+    hdr += "extern \"C\" void set_query(char* query)\n";
+    hdr += "{\n";
+    hdr += "    g_str_query = (char*)malloc(strlen(query)+1);\n";
+    hdr += "    if(g_str_query)\n";
+    hdr += "    {\n";
+    hdr += "        char* p=query;\n";
+    hdr += "        char* o=g_str_query;\n";
+    hdr += "        while(*p != '\0')\n";
+    hdr += "            *o = (*p);\n";
+    hdr += "            o++;\n";
+    hdr += "            p++;\n";
+    hdr += "        }\n";
+    hdr += "        *o = '\0';\n";
+    hdr += "    }\n";
+    hdr += "}\n";
+
+    hdr += "EMSCRIPTEN_KEEPALIVE\n";
+    hdr += "extern \"C\" const char* get_response()\n";
+    hdr += "{\n";
+    hdr += "    std::string str;\n";
+    hdr += "    g_response.stringify(str);\n";
+    hdr += "    return str.c_str();\n";
+    hdr += "}\n";
+    this.header = hdr;
 };
 
 AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
     var type = obj.type;
     if (type == "awcppwasm") {
         this._textArea( obj.content, div );
-        // Add the C++ source to the module
-        // TODO: depending on whether this is a global section or function section, generate wrapper code.
-        Module.wasmCpp = obj.content;
-        this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":Module.wasmCpp}, div, callback);
+
+        var id = obj.id;
+        if (id == "globals") {
+            this.globals_block = obj.content;
+        }
+        else {
+            this.blocks[id] = obj.content;
+            // Create a div for the execution result
+            var div_result = document.createElement("div");
+            div.appendChild(div_result);
+            this.call_queue.push({"id":obj.id, "div":div_result});
+        }
+        this._notifyBuild( div, callback );
+    }
+    if (type == "awcppwasm_build") {
+        var src = this.header + this.globals_block;
+        var keys = Object.keys(this.blocks);
+        for (var i=0; i<keys.length; i++) {
+            var id = keys[i];
+            src += "EMSCRIPTEN_KEEPALIVE\n";
+            src += "extern \"C\" void "+id+"()\n";
+            src += "{\n";
+            src += this.blocks[id];
+            src += "}\n\n";
+        }
+        this.build_pending = false;
+        this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":src}, div, callback);
     }
     if (type == "wasm-b64") {
         var ta = this._textArea( obj.content, div );
@@ -50,11 +114,17 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
         div.appendChild(div_result);
         that = this;
         Module.onRuntimeInitialized = function() {
-            args={};
-            ccall("set_query","void",["string"],[JSON.stringify(args)]);
-            ccall("myplot","void",[],[]);
-            resp = ccall("get_response","string",[],[])
-            that.awdr.post(JSON.parse(resp), div_result, callback);
+
+            // Call all functions in the call queue.
+            for (var i=0; i<that.call_queue.length; i++) {
+                var call = that.call_queue[i];
+                var args = {};
+                ccall("set_query","void",["string"],[JSON.stringify(args)]);
+                ccall(call.id,"void",[],[]);
+                var resp = ccall("get_response","string",[],[])
+                that.awdr.post(JSON.parse(resp), call.div, callback);
+            }
+            that.call_queue=[];
         }
 
         // The runtime is also needed before initiliasing the wasm.
@@ -68,10 +138,18 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
     }
 };
 
+AwCppWasmRenderer.prototype._notifyBuild = function( div, callback ) {
+    if (!this.build_pending) {
+        this.build_pending = true;
+        this.awdr.post({"type":"awcppwasm_build"}, div, callback);
+    }
+};
+
 AwCppWasmRenderer.prototype._insertRuntime = function() {
     scr = document.createElement("script");
     scr.innerText = this.runtime_js;
     document.head.appendChild(scr);
+    this.build_pending = false;
 };
 
 AwCppWasmRenderer.prototype._textArea = function( text, div ) {

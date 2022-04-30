@@ -12,57 +12,16 @@ To get started with WebAssembly support it was necessary to understand how the W
 - Running the wasm
 - Passing JSON to and from the wasm
 
+AW{"type":"awcppwasm","id":"globals"}
+/* No globals */
+
 AW{"type":"awcppwasm"}
-#include "json.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <emscripten.h>
-
-
-char *g_str_query;
-
-Json g_query;
-Json g_response;
-
-EMSCRIPTEN_KEEPALIVE
-extern "C" void set_query(char* query)
-{
-    g_str_query = (char*)malloc(strlen(query)+1);
-    if(g_str_query)
-    {
-        char* p=query;
-        char* o=g_str_query;
-        while(*p != '\0')
-        {
-            *o = (*p);
-            o++;
-            p++;
-        } 
-        *o = '\0';
-    }
-}
-
-EMSCRIPTEN_KEEPALIVE
-extern "C" const char* get_response()
-{
-    std::string str;
-    g_response.stringify(str);
-    return str.c_str();
-}
-
-EMSCRIPTEN_KEEPALIVE
-extern "C" void myplot()
-{
-    Json data;
-    data[0]=0;
-    data[1]=1.4;
-    data[2]=2;
-    data[3]=0;
-    data[4]=1;
-    data[5]=2;
-    g_response["type"]="plot";
-    g_response["data"]=data;
-}
-
-
+Json data;
+data[0]=0;
+data[1]=0.7;
+data[2]=2;
+data[3]=0;
+data[4]=1;
+data[5]=2;
+g_response["type"]="plot";
+g_response["data"]=data;
