@@ -13,13 +13,18 @@ To get started with WebAssembly support it was necessary to understand how the W
 - Passing JSON to and from the wasm
 
 AW{"type":"awcppwasm"}
+#include "json.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <emscripten.h>
+#include <sstream>
 
 
 char *g_str_query;
-char *g_str_response;
+const char *g_str_response;
+
+Json g_query;
 
 EMSCRIPTEN_KEEPALIVE
 extern "C" void set_query(char* query)
@@ -40,7 +45,7 @@ extern "C" void set_query(char* query)
 }
 
 EMSCRIPTEN_KEEPALIVE
-extern "C" char* get_response()
+extern "C" const char* get_response()
 {
     return g_str_response;
 }
@@ -48,7 +53,19 @@ extern "C" char* get_response()
 EMSCRIPTEN_KEEPALIVE
 extern "C" void myplot()
 {
-    g_str_response = "{\"data\":[0,0.0209774,0.0419455,0.0628952,0.0838172,0.104702,0.125541,0.146325,0.167045,0.18769,-0.146325,-0.125541,-0.104702,-0.0838169,-0.0628949,-0.0419452,-0.020977,3.49691e-7],\"type\":\"plot\",\"id\":\"plot_14\"}";
+    std::stringstream ss;
+    Json j;
+    Json data;
+    data[0]=0;
+    data[1]=1;
+    data[2]=2;
+    data[3]=0;
+    data[4]=1;
+    data[5]=2;
+    j["type"]="plot";
+    j["data"]=data;
+    ss << j;
+    g_str_response=ss.str().c_str();
 }
 
 

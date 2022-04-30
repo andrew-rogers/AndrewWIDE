@@ -9,33 +9,32 @@ else
     FixPath = $1
 endif
 
+OUTPUTS := outputs
+
 CXXFLAGS += -fPIC
 
 LIB_OBJS= \
- aw_json/aw_json.o \
- aw_json/json.o \
- cgi/filesystem.o \
- cgi/cgi_post.o \
- cgi/awmath.o \
- cgi/plot.o \
- cgi/trace.o
+ $(OUTPUTS)/aw_json/aw_json.o \
+ $(OUTPUTS)/aw_json/json.o \
+ $(OUTPUTS)/cgi/filesystem.o \
+ $(OUTPUTS)/cgi/cgi_post.o \
+ $(OUTPUTS)/cgi/awmath.o \
+ $(OUTPUTS)/cgi/plot.o \
+ $(OUTPUTS)/cgi/trace.o
 
-AWF_OBJS= \
- aw_framework/awapp.o \
- aw_framework/awfd.o \
- aw_framework/awfdobserver.o \
- aw_framework/awobserver.o \
- aw_framework/awpoll.o \
- aw_framework/awserver.o \
- aw_framework/awsocket.o \
- aw_framework/awsubject.o
+all:	$(OUTPUTS) $(OUTPUTS)/libAw.a
 
-all:	libAw.a
+$(OUTPUTS):
+	mkdir -p $(OUTPUTS)/aw_json
+	mkdir -p $(OUTPUTS)/cgi
 
-libAw.a: $(LIB_OBJS)
+$(OUTPUTS)/%.o:%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(OUTPUTS)/libAw.a: $(LIB_OBJS)
 	$(AR) rvs $@ $^
 
 clean:
-	$(RM) $(call FixPath,libAw.a)
+	$(RM) $(call FixPath,$(OUTPUTS)/libAw.a)
 	$(RM) $(call FixPath,$(LIB_OBJS))
 

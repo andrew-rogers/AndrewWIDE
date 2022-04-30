@@ -9,19 +9,27 @@ else
     FixPath = $1
 endif
 
+OUTPUTS := outputs
+
 LIB_OBJS= \
- filter.o
+ $(OUTPUTS)/filter.o
 
 AWSRC_DIR=../../src
 
 CXXFLAGS=-I$(AWSRC_DIR)/cgi
 
-all:	libSignal.a
+all:	$(OUTPUTS) $(OUTPUTS)/libSignal.a
 
-libSignal.a: $(LIB_OBJS)
+$(OUTPUTS):
+	mkdir -p $(OUTPUTS)
+
+$(OUTPUTS)/%.o:%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(OUTPUTS)/libSignal.a: $(LIB_OBJS)
 	$(AR) rvs $@ $^
 
 clean:
-	$(RM) $(call FixPath,libSignal.a)
+	$(RM) $(call FixPath,$(OUTPUTS)/libSignal.a)
 	$(RM) $(call FixPath,$(LIB_OBJS))
 

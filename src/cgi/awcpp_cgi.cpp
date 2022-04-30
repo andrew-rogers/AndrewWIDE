@@ -31,6 +31,7 @@ std::string cppFunc( const std::string& dir, const std::string& func, const std:
 std::string cppFuncHdr( const std::string& dir, const std::string& func );
 void buildWasm();
 int make( const std::string& makefile, const std::string& cgi );
+int emmake( const std::string& awdir );
 
 int main(int argc, char *args[])
 {
@@ -243,13 +244,13 @@ void buildWasm()
     // Write the C++ source to file
     g_response["err"]=filesystem::writeFile(dir+"/src.cpp", cpp);
 
-    // Change directory and invoke emcc
+    // Change directory and invoke emmake
+    auto awdir = filesystem::findAWDir();
     err += filesystem::cwd(dir);
-    string cmd = "emcc src.cpp -o src.js -s WASM=1 -s EXPORTED_RUNTIME_METHODS=\"['ccall']\" -Oz  --minify=0";
-    int error_code = system(cmd.c_str());
+    int error_code = emmake(awdir);
 
     // Convert wasm to base64
-    cmd = "cat src.wasm | base64 -w0 > src.b64";
+    string cmd = "cat src.wasm | base64 -w0 > src.b64";
     error_code = system(cmd.c_str());
 
     // Read the base64 wasm
@@ -284,6 +285,19 @@ int make( const std::string& awdir, const std::string& cgi )
     cmd += " CGI=\""+cgi+"\"";
     cmd += " AW_DIR=\"" + filesystem::fixPath(awdir) + "\"";
     cmd += " -f \"" + filesystem::fixPath( awdir + "/lib/awcpp.makefile" ) + "\"";
+    cmd += " > build.log 2>&1";
+    return system(cmd.c_str());
+}
+
+int emmake( const std::string& awdir )
+{
+#ifdef WINDOWS
+    std::string cmd = "emmake mingw32-make";
+#else
+    std::string cmd = "emmake make";
+#endif
+    cmd += " AW_DIR=\"" + filesystem::fixPath(awdir) + "\"";
+    cmd += " -f \"" + filesystem::fixPath( awdir + "/lib/awcppwasm.makefile" ) + "\"";
     cmd += " > build.log 2>&1";
     return system(cmd.c_str());
 }
