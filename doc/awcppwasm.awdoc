@@ -4,24 +4,10 @@ WebAssembly
 
 Using [WebAssembly](https://webassembly.org/) it is possbile to run the compiled C++ code in the browser. This makes it possible to produce documentation that viewers can interact with without the use of a server. However, the C++ has to be compiled to webassembly using a server. Once compiled, the WebAssembly can be run in the browser taking paramaters from the document.
 
-Experimental
-------------
-
-To get started with WebAssembly support it was necessary to understand how the WebAssembly, or *wasm*, could be integrated into an AwDoc. Two important concepts had to be proven before investing further development effort:
-
-- Running the wasm
-- Passing JSON to and from the wasm
-
 AW{"type":"awcppwasm","id":"globals"}
 /* No globals */
 
 AW{"type":"awcppwasm"}
-Json data;
-data[0]=0;
-data[1]=0.7;
-data[2]=2;
-data[3]=0;
-data[4]=1;
-data[5]=2;
-g_response["type"]="plot";
-g_response["data"]=data;
+    plot(sin(linspace(0,4*PI,600)));
+    plot(sin(linspace(0,7*PI,600)));
+

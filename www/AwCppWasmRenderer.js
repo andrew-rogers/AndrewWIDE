@@ -36,42 +36,7 @@ var AwCppWasmRenderer = function(awdr) {
     this.globals_block = "";
     this.call_queue=[];
     awdr.registerRenderer("awcppwasm_build", this);
-
-    var hdr = "#include \"json.h\"\n\n";
-    hdr += "#include <stdlib.h>\n";
-    hdr += "#include <string.h>\n";
-    hdr += "#include <emscripten.h>\n\n";
-
-    hdr += "char *g_str_query;\n";
-
-    hdr += "Json g_query;\n";
-    hdr += "Json g_response;\n";
-
-    hdr += "EMSCRIPTEN_KEEPALIVE\n";
-    hdr += "extern \"C\" void set_query(char* query)\n";
-    hdr += "{\n";
-    hdr += "    g_str_query = (char*)malloc(strlen(query)+1);\n";
-    hdr += "    if(g_str_query)\n";
-    hdr += "    {\n";
-    hdr += "        char* p=query;\n";
-    hdr += "        char* o=g_str_query;\n";
-    hdr += "        while(*p != '\0')\n";
-    hdr += "            *o = (*p);\n";
-    hdr += "            o++;\n";
-    hdr += "            p++;\n";
-    hdr += "        }\n";
-    hdr += "        *o = '\0';\n";
-    hdr += "    }\n";
-    hdr += "}\n";
-
-    hdr += "EMSCRIPTEN_KEEPALIVE\n";
-    hdr += "extern \"C\" const char* get_response()\n";
-    hdr += "{\n";
-    hdr += "    std::string str;\n";
-    hdr += "    g_response.stringify(str);\n";
-    hdr += "    return str.c_str();\n";
-    hdr += "}\n";
-    this.header = hdr;
+    this.header = "#include \"wasm.h\"\n\n";
 };
 
 AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
