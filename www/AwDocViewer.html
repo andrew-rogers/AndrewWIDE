@@ -35,8 +35,6 @@ var open_doc = function( fn ) {
     var cppwasm = new AwCppWasmRenderer(awdr);
     var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
     awdr.registerRenderer("awcppwasm", cppwasm);
-    awdr.registerRenderer("wasm-b64", cppwasm);
-    awdr.registerRenderer("wasm-rt", cppwasm);
     awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
     awdr.registerRenderer("diagram", new DiagramRenderer());
     awdr.registerRenderer("plot", new PlotRenderer());

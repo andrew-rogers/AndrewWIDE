@@ -36,6 +36,7 @@ var AwCppWasmRenderer = function(awdr) {
     this.globals_block = "";
     this.call_queue=[];
     awdr.registerRenderer("awcppwasm_build", this);
+    awdr.registerRenderer("wasm", this);
     this.header = "#include \"wasm.h\"\n\n";
 };
 
@@ -69,36 +70,12 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             src += "}\n\n";
         }
         this.build_pending = false;
-        this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":src}, div, callback);
+        this._srcToWasm( src, div, callback );
     }
-    if (type == "wasm-b64") {
-        Module.wasmBinary = Uint8Array.from(atob(obj.content), c => c.charCodeAt(0)).buffer;
-        // Create a div for the execution result
-        var div_result = document.createElement("div");
-        div.appendChild(div_result);
-        that = this;
-        Module.onRuntimeInitialized = function() {
-
-            // Call all functions in the call queue.
-            for (var i=0; i<that.call_queue.length; i++) {
-                var call = that.call_queue[i];
-                var args = {"inputs": that._getInputs(call.inputs)};
-                ccall("set_query","void",["string"],[JSON.stringify(args)]);
-                ccall(call.id,"void",[],[]);
-                var resp = ccall("get_response","string",[],[])
-                that.awdr.post(JSON.parse(resp), call.div, callback);
-            }
-            that.call_queue=[];
-        }
-
-        // The runtime is also needed before initiliasing the wasm.
-        if (this.runtime_js != "") this._insertRuntime();
-    }
-    if (type == "wasm-rt") {
-        this.runtime_js = obj.content;
-
-        // The wasm binary is needed before initiliasing the wasm.
-        if (Module["wasmBinary"]) this._insertRuntime();
+    if (type == "wasm") {
+        Module.wasmBinary = Uint8Array.from(atob(obj.b64), c => c.charCodeAt(0)).buffer;
+        this.runtime_js = obj.rt_js;
+        this._insertRuntime();
     }
 };
 
@@ -113,10 +90,32 @@ AwCppWasmRenderer.prototype._getInputs = function( inputs ) {
 };
 
 AwCppWasmRenderer.prototype._insertRuntime = function() {
+    that = this;
+    Module.onRuntimeInitialized = function() {
+
+        // Call all functions in the call queue.
+        for (var i=0; i<that.call_queue.length; i++) {
+            var call = that.call_queue[i];
+            var args = {"inputs": that._getInputs(call.inputs)};
+            ccall("set_query","void",["string"],[JSON.stringify(args)]);
+            ccall(call.id,"void",[],[]);
+            var resp = ccall("get_response","string",[],[])
+            that.awdr.post(JSON.parse(resp), call.div, callback);
+        }
+        that.call_queue=[];
+    }
+
+    // Create script element and inject the JavaScript
     scr = document.createElement("script");
     scr.innerText = this.runtime_js;
     document.head.appendChild(scr);
     this.build_pending = false;
+};
+
+AwCppWasmRenderer.prototype._srcToWasm = function( src, div, callback ) {
+    // TODO: Create hash for source and lookup stored wasm.
+    // Compile if wam for source hash not found.
+    this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":src}, div, callback);
 };
 
 AwCppWasmRenderer.prototype._notifyBuild = function( div, callback ) {

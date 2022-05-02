@@ -260,17 +260,9 @@ void buildWasm()
     err += filesystem::readFile("src.js", rt_js);
 
     // Assemble the response JSON
-    Json arr;
-    Json wasm;
-    Json rt;
-    wasm["type"] = "wasm-b64";
-    wasm["content"] = b64;
-    rt["type"]= "wasm-rt";
-    rt["content"] = rt_js;
-    arr.push_back(wasm);
-    arr.push_back(rt);
-    g_response["type"] = "array";
-    g_response["array"] = arr;
+    g_response["type"] = "wasm";
+    g_response["b64"] = b64;
+    g_response["rt_js"] = rt_js;
 }
 
 int make( const std::string& awdir, const std::string& cgi )
