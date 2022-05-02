@@ -41,6 +41,7 @@ function AwDocRenderer(docname, div) {
     this.running = false;
     this.renderers["array"] = this;
     this.renderers["json"] = this;
+    this.named_sections = {};
 }
 
 AwDocRenderer.prototype.start = function () {
@@ -50,11 +51,15 @@ AwDocRenderer.prototype.start = function () {
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
 
-    // Create a default ID if one is not given
-    if (obj.hasOwnProperty("id") == false) obj.id = obj.type + "_" + this.cnt;
+    if (obj.hasOwnProperty("id")) {
+        // If section has an ID store it for alter referencing.
+        this.named_sections[obj.id] = obj;
+    }
+    else {
+        // Create a default ID if one is not given
+        obj.id = obj.type + "_" + this.cnt;
+    }
     this.cnt++;
-
-    //console.log("P> "+obj.id);
 
     this.queue.push( {"obj":obj, "div":div, "callback":callback} );
     if( this.running ) this._dispatch();

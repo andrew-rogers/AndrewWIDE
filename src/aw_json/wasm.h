@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <emscripten.h>
+#include <sstream>
 
-char *g_str_query;
 std::string g_str_response;
 Json g_query;
 Json g_response;
@@ -17,19 +17,8 @@ Json g_response;
 EMSCRIPTEN_KEEPALIVE
 extern "C" void set_query(char* query)
 {
-    g_str_query = (char*)malloc(strlen(query)+1);
-    if(g_str_query)
-    {
-        char* p=query;
-        char* o=g_str_query;
-        while(*p != '\0')
-        {
-            *o = (*p);
-            o++;
-            p++;
-        }
-        *o = '\0';
-    }
+    istringstream in(query);
+    in >> g_query;
 }
 
 EMSCRIPTEN_KEEPALIVE

@@ -53,7 +53,7 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             // Create a div for the execution result
             var div_result = document.createElement("div");
             div.appendChild(div_result);
-            this.call_queue.push({"id":obj.id, "div":div_result});
+            this.call_queue.push({"id":obj.id, "inputs": obj.inputs, "div":div_result});
         }
         this._notifyBuild( div, callback );
     }
@@ -72,7 +72,6 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
         this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":src}, div, callback);
     }
     if (type == "wasm-b64") {
-        var ta = this._textArea( obj.content, div );
         Module.wasmBinary = Uint8Array.from(atob(obj.content), c => c.charCodeAt(0)).buffer;
         // Create a div for the execution result
         var div_result = document.createElement("div");
@@ -83,7 +82,7 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             // Call all functions in the call queue.
             for (var i=0; i<that.call_queue.length; i++) {
                 var call = that.call_queue[i];
-                var args = {};
+                var args = {"inputs": that._getInputs(call.inputs)};
                 ccall("set_query","void",["string"],[JSON.stringify(args)]);
                 ccall(call.id,"void",[],[]);
                 var resp = ccall("get_response","string",[],[])
@@ -103,11 +102,14 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
     }
 };
 
-AwCppWasmRenderer.prototype._notifyBuild = function( div, callback ) {
-    if (!this.build_pending) {
-        this.build_pending = true;
-        this.awdr.post({"type":"awcppwasm_build"}, div, callback);
+AwCppWasmRenderer.prototype._getInputs = function( inputs ) {
+    // Search the awdoc sections for the specified input sections and get their content.
+    ret = {};
+    for (var i=0; i<inputs.length; i++) {
+        var key = inputs[i];
+        ret[key] = this.awdr.named_sections[key].content;
     }
+    return ret;
 };
 
 AwCppWasmRenderer.prototype._insertRuntime = function() {
@@ -115,6 +117,13 @@ AwCppWasmRenderer.prototype._insertRuntime = function() {
     scr.innerText = this.runtime_js;
     document.head.appendChild(scr);
     this.build_pending = false;
+};
+
+AwCppWasmRenderer.prototype._notifyBuild = function( div, callback ) {
+    if (!this.build_pending) {
+        this.build_pending = true;
+        this.awdr.post({"type":"awcppwasm_build"}, div, callback);
+    }
 };
 
 AwCppWasmRenderer.prototype._textArea = function( text, div ) {

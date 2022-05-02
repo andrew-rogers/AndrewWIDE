@@ -7,7 +7,15 @@ Using [WebAssembly](https://webassembly.org/) it is possbile to run the compiled
 AW{"type":"awcppwasm","id":"globals"}
 /* No globals */
 
-AW{"type":"awcppwasm"}
+AW{"type":"mono","id":"inputs_1"}
+time (n)
+AW{"type":"mono","id":"inputs_2"}
+amplitude
+
+AW{"type":"awcppwasm","inputs":["inputs_1", "inputs_2"]}
+    auto str_in1 = g_query["inputs"]["inputs_1"].str();
+    auto str_in2 = g_query["inputs"]["inputs_2"].str();
     plot(sin(linspace(0,4*PI,600)));
     plot(sin(linspace(0,7*PI,600)));
-
+    xlabel(str_in1);
+    ylabel(str_in2);
