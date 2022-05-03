@@ -9,14 +9,18 @@ else
     FixPath = $1
 endif
 
-OUTPUTS := outputs
+ifeq '$(findstring emcc,$(CC))' 'emcc'
+    OUTPUTS := wasm
+else
+    OUTPUTS := outputs
+    LIB_OBJS = $(OUTPUTS)/cgi/filesystem.o
+endif
 
 CXXFLAGS += -fPIC
 
-LIB_OBJS= \
+LIB_OBJS += \
  $(OUTPUTS)/aw_json/aw_json.o \
  $(OUTPUTS)/aw_json/json.o \
- $(OUTPUTS)/cgi/filesystem.o \
  $(OUTPUTS)/cgi/cgi_post.o \
  $(OUTPUTS)/cgi/awmath.o \
  $(OUTPUTS)/cgi/plot.o \
@@ -25,8 +29,9 @@ LIB_OBJS= \
 all:	$(OUTPUTS) $(OUTPUTS)/libAw.a
 
 $(OUTPUTS):
-	mkdir -p $(OUTPUTS)/aw_json
-	mkdir -p $(OUTPUTS)/cgi
+	mkdir $@
+	mkdir $@/aw_json
+	mkdir $@/cgi
 
 $(OUTPUTS)/%.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
