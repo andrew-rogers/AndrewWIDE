@@ -3,9 +3,11 @@
 ifeq '$(findstring ;,$(PATH))' ';'
     CXXFLAGS += -D WINDOWS
     RM = del /Q
+    MKDIR = mkdir
     FixPath = $(subst /,\,$1)
 else
     RM = rm -f
+    MKDIR = mkdir -p
     FixPath = $1
 endif
 
@@ -29,9 +31,9 @@ LIB_OBJS += \
 all:	$(OUTPUTS) $(OUTPUTS)/libAw.a
 
 $(OUTPUTS):
-	mkdir $@
-	mkdir $@/aw_json
-	mkdir $@/cgi
+	$(MKDIR) $(call FixPath,$@)
+	$(MKDIR) $(call FixPath,$@/aw_json)
+	$(MKDIR) $(call FixPath,$@/cgi)
 
 $(OUTPUTS)/%.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
