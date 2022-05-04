@@ -78,7 +78,7 @@ AwDocRenderer.prototype.render = function( awdoc ) {
         var line = lines[i];
 
         // Check if line is AW tag
-        if (line.startsWith("AW{") && line.endsWith("}")) {
+        if (line.startsWith("AW{") && line.trim().endsWith("}")) {
 
             // Render the previous section
             if (cnt>0) this._render( obj, src );
