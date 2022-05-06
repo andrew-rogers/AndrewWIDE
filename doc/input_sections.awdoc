@@ -1,0 +1,64 @@
+AW{"type":"mjmd"}
+Sections for User Input
+=======================
+
+Input sections can be used to supply user data to runnable sections. This data can be edited and the runnable re-run
+without the need to recompile the runnable. 
+
+Defining an Input Section
+-------------------------
+
+A mono-spaced input text area can be specified as
+
+```
+    AW{"type":"mono","id":"params"}
+```
+
+As these input sections will be referenced by the runnable sections they must have a user defined id.
+
+Referencing an Input Section
+----------------------------
+
+A runnable section can reference input sections by use of the **inputs** attribute.
+
+```
+    AW{"type":"awcppwasm","inputs":["params"]}
+```
+
+Examples
+--------
+
+The globals section below contains a **readParams()** function which processes the text from the user input section. It
+converts a comma separated set of values into an array which it stored in the global variable, **g_samples**.
+
+AW{"type":"awcppwasm","id":"globals"}
+#include "LineReader.h"
+
+AwVector<double> g_samples;
+
+void readParams(const std::string& str)
+{
+    LineReader lr(str);
+    auto line = lr.read();
+    auto parts = line.split(":");
+    auto vals = parts[1].split(",");
+    g_samples.clear();
+    for (auto v : vals) g_samples.push_back(stod(v));
+}
+
+AW{"type":"mono","id":"params"}
+samples: 1,5,3,9
+
+AW{"type":"awcppwasm","inputs":["params"]}
+    auto str_params = g_query["inputs"]["params"].str();
+    readParams(str_params);
+    plot(g_samples);
+    
+AW{"type":"mono","id":"params1"}
+samples: 1,5,3,9
+
+AW{"type":"awcppwasm","inputs":["params1"]}
+    auto str_params = g_query["inputs"]["params1"].str();
+    readParams(str_params);
+    plot(g_samples);
+
