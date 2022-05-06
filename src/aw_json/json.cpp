@@ -173,6 +173,14 @@ Json::~Json()
 {
 }
 
+void Json::clear()
+{
+    if (m_pairs) m_pairs->clear();
+    if (m_str) m_str->clear();
+    if (m_values) m_values->clear();
+    m_type = undefined_type;
+}
+
 bool Json::parse(istream& in)
 {
     JsonTokeniser tokeniser(in);

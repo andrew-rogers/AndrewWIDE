@@ -46,6 +46,7 @@ class Json
 public:
     Json();
     ~Json();
+    void clear();
     bool parse(std::istream& in);
     bool parse(JsonTokeniser& tokeniser);
     void stringify(std::string& out) const;

@@ -26,7 +26,8 @@ LIB_OBJS += \
  $(OUTPUTS)/cgi/cgi_post.o \
  $(OUTPUTS)/cgi/awmath.o \
  $(OUTPUTS)/cgi/plot.o \
- $(OUTPUTS)/cgi/trace.o
+ $(OUTPUTS)/cgi/trace.o \
+ $(OUTPUTS)/utils/LineReader.o
 
 all:	$(OUTPUTS) $(OUTPUTS)/libAw.a
 
@@ -34,6 +35,7 @@ $(OUTPUTS):
 	$(MKDIR) $(call FixPath,$@)
 	$(MKDIR) $(call FixPath,$@/aw_json)
 	$(MKDIR) $(call FixPath,$@/cgi)
+	$(MKDIR) $(call FixPath,$@/utils)
 
 $(OUTPUTS)/%.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

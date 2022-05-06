@@ -54,7 +54,13 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             // Create a div for the execution result
             var div_result = document.createElement("div");
             div.appendChild(div_result);
-            this.call_queue.push({"id":obj.id, "inputs": obj.inputs, "div":div_result});
+            var runnable = {"id":obj.id, "inputs": obj.inputs, "div":div_result};
+            var that = this;
+            runnable.run = function( callback ) {
+                that._run(runnable, callback);
+            };
+            this.awdr.addRunnable( runnable );
+            this.call_queue.push(obj.id);
         }
         this._notifyBuild( div, callback );
     }
@@ -84,7 +90,7 @@ AwCppWasmRenderer.prototype._getInputs = function( inputs ) {
     ret = {};
     for (var i=0; i<inputs.length; i++) {
         var key = inputs[i];
-        ret[key] = this.awdr.named_sections[key].content;
+        ret[key] = this.awdr.named_sections[key].obj.content;
     }
     return ret;
 };
@@ -95,12 +101,8 @@ AwCppWasmRenderer.prototype._insertRuntime = function() {
 
         // Call all functions in the call queue.
         for (var i=0; i<that.call_queue.length; i++) {
-            var call = that.call_queue[i];
-            var args = {"inputs": that._getInputs(call.inputs)};
-            ccall("set_query","void",["string"],[JSON.stringify(args)]);
-            ccall(call.id,"void",[],[]);
-            var resp = ccall("get_response","string",[],[])
-            that.awdr.post(JSON.parse(resp), call.div, callback);
+            var id = that.call_queue[i];
+            that._run( that.awdr.runnables[id], callback );
         }
         that.call_queue=[];
     }
@@ -112,17 +114,25 @@ AwCppWasmRenderer.prototype._insertRuntime = function() {
     this.build_pending = false;
 };
 
-AwCppWasmRenderer.prototype._srcToWasm = function( src, div, callback ) {
-    // TODO: Create hash for source and lookup stored wasm.
-    // Compile if wam for source hash not found.
-    this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":src}, div, callback);
-};
-
 AwCppWasmRenderer.prototype._notifyBuild = function( div, callback ) {
     if (!this.build_pending) {
         this.build_pending = true;
         this.awdr.post({"type":"awcppwasm_build"}, div, callback);
     }
+};
+
+AwCppWasmRenderer.prototype._run = function( runnable, callback ) {
+    var args = {"inputs": that._getInputs(runnable.inputs)};
+    ccall("set_query","void",["string"],[JSON.stringify(args)]);
+    ccall(runnable.id,"void",[],[]);
+    var resp = ccall("get_response","string",[],[])
+    that.awdr.post(JSON.parse(resp), runnable.div, callback);
+};
+
+AwCppWasmRenderer.prototype._srcToWasm = function( src, div, callback ) {
+    // TODO: Create hash for source and lookup stored wasm.
+    // Compile if wam for source hash not found.
+    this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":src}, div, callback);
 };
 
 AwCppWasmRenderer.prototype._textArea = function( text, div ) {

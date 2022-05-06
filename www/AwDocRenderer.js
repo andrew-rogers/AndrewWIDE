@@ -42,18 +42,24 @@ function AwDocRenderer(docname, div) {
     this.renderers["array"] = this;
     this.renderers["json"] = this;
     this.named_sections = {};
+    this.runnables = {};
 }
 
-AwDocRenderer.prototype.start = function () {
-    this.running = true;
-    this._dispatch();
+AwDocRenderer.prototype.addRunnable = function ( runnable ) {
+    this.runnables[runnable.id] = runnable;
+    for (var i=0; i<runnable.inputs.length; i++) {
+        var input_id = runnable.inputs[i];
+        this._createNamedSection( input_id );
+        this.named_sections[input_id].deps.push(runnable.id);
+    }
 }
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
 
     if (obj.hasOwnProperty("id")) {
         // If section has an ID store it for alter referencing.
-        this.named_sections[obj.id] = obj;
+        this._createNamedSection( obj.id );
+        this.named_sections[obj.id].obj = obj;
     }
     else {
         // Create a default ID if one is not given
@@ -112,6 +118,25 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
         var new_obj = JSON.parse(obj.content);
         this.post( { "type":"array", "array":new_obj }, div, callback);
     }
+};
+
+AwDocRenderer.prototype.runDeps = function ( id ) {
+    var deps = this.named_sections[id].deps;
+    for (var i=0; i<deps.length; i++) {
+        var runnable_id = deps[i];
+        this.runnables[runnable_id].run( callback );
+    }
+}
+
+AwDocRenderer.prototype.start = function () {
+    this.running = true;
+    this._dispatch();
+}
+
+AwDocRenderer.prototype._createNamedSection = function( name ) {
+
+    // Create the named section if it doesn't exist
+    if (this.named_sections.hasOwnProperty(name) == false) this.named_sections[name] = {"obj": {}, "deps": []};
 };
 
 AwDocRenderer.prototype._dispatch = function() {

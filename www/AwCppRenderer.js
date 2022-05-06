@@ -65,19 +65,66 @@ XhrRenderer.prototype._query = function( obj, div, callback ) {
 };
 
 var MonoRenderer = function( awdoc_renderer ) {
+    this.awdr = awdoc_renderer;
     awdoc_renderer.registerRenderer("mono", this);
 };
 
 MonoRenderer.prototype.renderObj = function( obj, div, callback ) {
-    // Put the content into a textarea
+
+    // Clear the div
+    div.innerHTML="";
+
+    // Create controls
+    var controls = new NavBar();
+    var butt_run = document.createElement("button");
+    butt_run.innerHTML="Run";
+    controls.addRight(butt_run);
+    var butt_drop = document.createElement("button");
+    butt_drop.innerHTML="Drop file here";
+    butt_drop.className="drop";
+    controls.addRight(butt_drop);
+    //controls.elem.hidden = true;
+    div.appendChild(controls.elem);
+
+    // Put the content into the textarea
     var ta = document.createElement("textarea");
     ta.style.width = "100%";
     ta.value = obj.content;
-    div.innerHTML="";
     div.appendChild(ta);
     div.style.width = "100%";
     ta.style.height = (ta.scrollHeight+8)+"px";
     if( callback ) callback();
+
+    // Drop handlers
+    var that = this;
+    butt_drop.ondrop = function(e) {
+        e.preventDefault();
+        var filename = e.dataTransfer.files[0];
+        that._handleDroppedFile( obj, ta, filename );
+        return false;
+    };
+    ta.ondrop = function(e) {
+        e.preventDefault();
+        var filename = e.dataTransfer.files[0];
+        that._handleDroppedFile( obj, ta, filename );
+        return false;
+    };
+
+    // Run handler
+    butt_run.onclick = function(e) {
+        obj.content = ta.value;
+        that.awdr.runDeps(obj.id);
+    };
+};
+
+MonoRenderer.prototype._handleDroppedFile = function( obj, ta, filename ) {
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        obj.filename = filename;
+        obj.content = event.target.result;
+        ta.value = obj.content;
+    };
+    reader.readAsText(filename);
 };
 
 var AwCppRenderer = function(awdoc_renderer) {

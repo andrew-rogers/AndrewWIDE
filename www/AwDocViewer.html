@@ -23,10 +23,22 @@
         <script src="Diagram/SvgFigure.js"></script>
         <script src="XML.js"></script>
         <script src="NavBar.js"></script>
+        <style>
+            .drop { border: 5px dashed #ccc;}
+        </style>
     </head>
     <body>
         <script>
         
+
+// Prevent dropped files being openned in new browser tabs.
+window.addEventListener("dragover",function(e){
+  e.preventDefault();
+},false);
+window.addEventListener("drop",function(e){
+  e.preventDefault();
+},false);
+
 var fn = window.location.search;
 
 var open_doc = function( fn ) {

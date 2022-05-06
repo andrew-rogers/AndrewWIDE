@@ -17,6 +17,8 @@ Json g_response;
 EMSCRIPTEN_KEEPALIVE
 extern "C" void set_query(char* query)
 {
+    g_query.clear();
+    g_response.clear();
     istringstream in(query);
     in >> g_query;
 }
@@ -27,6 +29,7 @@ extern "C" const char* get_response()
     Json resp;
     resp["array"] = g_response;
     resp["type"] = "array";
+    g_str_response.clear();
     resp.stringify(g_str_response);
     return g_str_response.c_str();
 }
