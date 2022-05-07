@@ -27,6 +27,7 @@ LIB_OBJS += \
  $(OUTPUTS)/cgi/awmath.o \
  $(OUTPUTS)/cgi/plot.o \
  $(OUTPUTS)/cgi/trace.o \
+ $(OUTPUTS)/utils/Debug.o \
  $(OUTPUTS)/utils/LineReader.o
 
 all:	$(OUTPUTS) $(OUTPUTS)/libAw.a

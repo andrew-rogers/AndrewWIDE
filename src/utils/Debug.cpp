@@ -1,5 +1,5 @@
 /*
-    AndrewWIDE - Text reading utilities
+    AndrewWIDE - Debug utilites
     Copyright (C) 2022  Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
@@ -17,36 +17,22 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef LINEREADER_H
-#define LINEREADER_H
+#include "Debug.h"
 
-#include <string>
-#include <vector>
+#include <sys/time.h>
 
-class Line : public std::string
+void logts(const std::string& msg)
 {
-public:
-    Line( const std::string& str) : std::string(str)
-    {
-    }
-    std::vector<Line> split(const std::string& delim);
-};
+    struct timeval tv;
+	gettimeofday(&tv, NULL);
+	std::string sec = std::to_string(tv.tv_sec); 
+	std::string ms = std::to_string(tv.tv_usec / 1000);
+	while (ms.size()<3) ms = "0" + ms;
 
-class LineReader
-{
-public:
-    LineReader(const std::string& input);
-    Line read();
-    bool good() const
-    {
-        return m_good;
-    }
-
-private:
-    const std::string& m_input;
-    std::size_t m_pos;
-    bool m_good;
-};
-
-#endif // LINEREADER_H
+    std::string tsmsg = sec + "." + ms + ": " + msg;
+    Json log;
+    log["type"] = "log";
+    log["msg"] = tsmsg;
+    g_response.push_back(log);
+}
 

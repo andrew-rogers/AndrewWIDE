@@ -1,5 +1,5 @@
 /*
-    AndrewWIDE - Text reading utilities
+    AndrewWIDE - Debug utilites
     Copyright (C) 2022  Andrew Rogers
 
     This program is free software; you can redistribute it and/or modify
@@ -17,36 +17,14 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef LINEREADER_H
-#define LINEREADER_H
+#ifndef DEBUG_H
+#define DEBUG_H
 
-#include <string>
-#include <vector>
+#include "../aw_json/json.h"
 
-class Line : public std::string
-{
-public:
-    Line( const std::string& str) : std::string(str)
-    {
-    }
-    std::vector<Line> split(const std::string& delim);
-};
+extern Json g_response;
 
-class LineReader
-{
-public:
-    LineReader(const std::string& input);
-    Line read();
-    bool good() const
-    {
-        return m_good;
-    }
+void logts(const std::string& msg);
 
-private:
-    const std::string& m_input;
-    std::size_t m_pos;
-    bool m_good;
-};
-
-#endif // LINEREADER_H
+#endif // DEBUG_H
 
