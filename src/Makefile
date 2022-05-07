@@ -16,6 +16,7 @@ ifeq '$(findstring emcc,$(CC))' 'emcc'
 else
     OUTPUTS := outputs
     LIB_OBJS = $(OUTPUTS)/cgi/filesystem.o
+    LIB_OBJS += $(OUTPUTS)/cgi/cgi_post.o
 endif
 
 CXXFLAGS += -fPIC
@@ -26,7 +27,6 @@ LIB_OBJS += \
  $(OUTPUTS)/aw_json/json.o \
  $(OUTPUTS)/aw_json/plot.o \
  $(OUTPUTS)/aw_json/trace.o \
- $(OUTPUTS)/cgi/cgi_post.o \
  $(OUTPUTS)/utils/Debug.o \
  $(OUTPUTS)/utils/LineReader.o
 
