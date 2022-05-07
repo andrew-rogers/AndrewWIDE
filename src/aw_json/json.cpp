@@ -127,7 +127,7 @@ bool JsonTokeniser::parseString(istream& in, string& str)
                         if( c == 't' ) c='\t';
                         else if( c == 'n' ) c='\n';
                         else if( c == 'r' ) c='\r';
-                        str=str+c;
+                        str+=c;
                     }
                     break;
                 }
@@ -141,7 +141,7 @@ bool JsonTokeniser::parseString(istream& in, string& str)
 
                 default:
                 {
-                    str=str+c;
+                    str+=c;
                 }
             }
         }
