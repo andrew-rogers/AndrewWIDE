@@ -22,11 +22,11 @@ CXXFLAGS += -fPIC
 
 LIB_OBJS += \
  $(OUTPUTS)/aw_json/aw_json.o \
+ $(OUTPUTS)/aw_json/awmath.o \
  $(OUTPUTS)/aw_json/json.o \
+ $(OUTPUTS)/aw_json/plot.o \
+ $(OUTPUTS)/aw_json/trace.o \
  $(OUTPUTS)/cgi/cgi_post.o \
- $(OUTPUTS)/cgi/awmath.o \
- $(OUTPUTS)/cgi/plot.o \
- $(OUTPUTS)/cgi/trace.o \
  $(OUTPUTS)/utils/Debug.o \
  $(OUTPUTS)/utils/LineReader.o
 

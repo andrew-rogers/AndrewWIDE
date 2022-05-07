@@ -21,7 +21,7 @@
 #define AW_JSON_H
 
 #include "json.h"
-#include "../cgi/plot.h"
+#include "plot.h"
 
 extern Json g_response;
 

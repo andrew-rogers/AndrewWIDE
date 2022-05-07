@@ -21,7 +21,7 @@ AWSRC_DIR=$(AW_DIR)/src
 AWLIB_DIR=$(AW_DIR)/src/outputs
 SIGNAL_DIR=$(AW_DIR)/lib/signal
 
-CXXFLAGS += -fPIC -I.. -I$(AWSRC_DIR)/cgi -I$(SIGNAL_DIR)
+CXXFLAGS += -fPIC -I.. -I$(AWSRC_DIR)/aw_json -I$(SIGNAL_DIR)
 LDFLAGS=-L$(AWLIB_DIR) -L$(SIGNAL_DIR)
 
 SO=$(CGI).so
