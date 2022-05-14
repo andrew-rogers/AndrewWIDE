@@ -34,6 +34,7 @@ function AwDocRenderer(docname, div) {
         document.body.appendChild(div);
     }
 
+    this.aw_json = []; // Used to store all document objects for download.
     this.div = div;
     this.renderers = {};
     this.queue = [];
@@ -41,16 +42,23 @@ function AwDocRenderer(docname, div) {
     this.running = false;
     this.renderers["array"] = this;
     this.renderers["json"] = this;
-    this.caches = [];
+    this.async = [];
     this.named_sections = {};
     this.runnables = {};
+    this.cache = [];
+    this.cache_map = {};
 
     // Make download link for serverless doc but hide for now
     this.download_link = document.createElement("a");
     this.download_link.hidden = true;
     div.appendChild(this.download_link);
-    //this._prepareServerlessDoc();
 }
+
+AwDocRenderer.prototype.addCache = function ( src_obj, resp ) {
+    var hash = this._createHash(JSON.stringify(src_obj.src));
+    this.cache_map[hash] = this.cache.length;
+    this.cache.push({"src_type": src_obj.type, "hash": hash, "resp": resp});
+};
 
 AwDocRenderer.prototype.addRunnable = function ( runnable ) {
     this.runnables[runnable.id] = runnable;
@@ -59,7 +67,7 @@ AwDocRenderer.prototype.addRunnable = function ( runnable ) {
         this._createNamedSection( input_id );
         this.named_sections[input_id].deps.push(runnable.id);
     }
-}
+};
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
 
@@ -74,13 +82,13 @@ AwDocRenderer.prototype.post = function ( obj, div, callback ) {
     }
     this.cnt++;
 
-    this.queue.push( {"obj":obj, "div":div, "callback":callback} );
+    this.queue.push( {"obj":obj, "div":div, "callback":callback, "pass": this.pass+1} );
     if( this.running ) this._dispatch();
-}
+};
 
-AwDocRenderer.prototype.registerCache = function( renderer ) {
-    var id = this.caches.length;
-    this.caches.push( {"done": false} );
+AwDocRenderer.prototype.registerAsync = function( renderer ) {
+    var id = this.async.length;
+    this.async.push( {"done": false} );
     return id;
 };
 
@@ -133,6 +141,17 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     }
 };
 
+AwDocRenderer.prototype.renderingComplete = function ( id ) {
+    this.async[id]["done"] = true;
+
+    // Check if all async renderers done
+    var done = true;
+    for (var i=0; i<this.async.length; i++) {
+        if (this.async[i].done == false) done = false;
+    }
+    if (done) this._prepareServerlessDoc();
+}
+
 AwDocRenderer.prototype.runDeps = function ( id ) {
     var deps = this.named_sections[id].deps;
     for (var i=0; i<deps.length; i++) {
@@ -141,22 +160,28 @@ AwDocRenderer.prototype.runDeps = function ( id ) {
     }
 }
 
-AwDocRenderer.prototype.setCache = function ( id, cache ) {
-    this.caches[id]["done"] = true;
-    this.caches[id]["cache"] = cache;
-
-    // Check if all caches done
-    var done = true;
-    for (var i=0; i<this.caches.length; i++) {
-        if (this.caches[i].done == false) done = false;
+AwDocRenderer.prototype.setCache = function ( cache ) {
+    this.cache = cache;
+    for (var i=0; i<cache.length; i++) {
+        var hash = cache[i].hash;
+        this.cache_map[hash] = i;
     }
-    if (done) this._prepareServerlessDoc();
 }
 
 AwDocRenderer.prototype.start = function () {
     this.running = true;
     this._dispatch();
 }
+
+AwDocRenderer.prototype._createHash = function( str ) {
+    var hash = 0;
+    var prime = 127;
+    for (var i=0; i<str.length; i++) {
+        hash = hash * prime + ( str.charCodeAt(i) & 0xff );
+        hash |= 0; // 32-bit. JavaScript uses double float for numbers.
+    }
+    return hash.toString();
+};
 
 AwDocRenderer.prototype._createNamedSection = function( name ) {
 
@@ -168,23 +193,47 @@ AwDocRenderer.prototype._dispatch = function() {
     while( this.queue.length > 0 ) {
         obj = this.queue.shift();
 
-        // Invoke the relevant renderer.
-        var renderer_name = obj.obj.type;
-        if (this.renderers.hasOwnProperty(renderer_name)) {
-            this.renderers[renderer_name].renderObj( obj.obj, obj.div, obj.callback );
-        }
-        else {
-            var ta = document.createElement("textarea");
-            ta.value = "Error: No renderer for '" + renderer_name + "'\n";
-            ta.value += JSON.stringify(obj.obj);
-            ta.style.width = "100%";
-            obj.div.appendChild(ta);
+        // Attempt to render obj from cache.
+        if (this._renderUsingCache(obj)==false) {
+
+            // Can't render from cache. Invoke the relevant renderer.
+            var renderer_name = obj.obj.type;
+            if (this.renderers.hasOwnProperty(renderer_name)) {
+                this.renderers[renderer_name].renderObj( obj.obj, obj.div, obj.callback );
+            }
+            else {
+                var ta = document.createElement("textarea");
+                ta.value = "Error: No renderer for '" + renderer_name + "'\n";
+                ta.value += JSON.stringify(obj.obj);
+                ta.style.width = "100%";
+                obj.div.appendChild(ta);
+            }
         }
     }
 };
 
 AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
-    var html = "<html><body></body></html>";
+    var html = "<!DOCTYPE html>\n<html>\n\t<head>\n";
+    html += "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" charset=\"UTF-8\">\n";
+    html += "\t\t<script src=\"AwAll.js\"></script>\n";
+    html += "\t\t<script src=\"https://cdn.jsdelivr.net/npm/marked/marked.min.js\"></script>\n";
+    html += "\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG\"></script>\n";
+    html += "\t</head>\n\t<body>\n"
+    html += "\t\t<textarea id=\"ta_awjson\" hidden>\n" + JSON.stringify(this.aw_json) + "\n\t\t</textarea>\n";
+    html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache) + "\n\t\t</textarea>\n";
+    html += "\t\t<script>\n";
+    html += "var awdr = new AwDocRenderer( \"" + this.docname + "\" );\n";
+    html += "var cppwasm = new AwCppWasmRenderer(awdr);\n";
+    html += "var ta_awjson = document.getElementById(\"ta_awjson\");\n";
+    html += "awdr.registerRenderer(\"awcppwasm\", cppwasm);\n";
+    html += "awdr.registerRenderer(\"mjmd\", new MathJaxMarkdownRenderer());\n";
+    html += "awdr.registerRenderer(\"diagram\", new DiagramRenderer());\n";
+    html += "awdr.registerRenderer(\"plot\", new PlotRenderer());\n";
+    html += "awdr.setCache(JSON.parse(ta_cache.value));\n";
+    html += "awdr.render(ta_awjson.value);\n";
+    html += "awdr.start();\n";
+    html += "\t\t</script>\n";
+    html += "\t</body>\n</html>";
 
     this.download_link.href = URL.createObjectURL(
         new Blob([html], {
@@ -203,10 +252,23 @@ AwDocRenderer.prototype._render = function( obj, src ) {
     this.div.appendChild(div);
 
     obj.content = src;
+    this.aw_json.push(obj);
     callback = function() {
         console.log(obj.type+" "+obj.id+" done!");
     };
 
     this.post( obj, div, callback );
+};
+
+AwDocRenderer.prototype._renderUsingCache = function( obj ) {
+    if (obj.obj.hasOwnProperty("src")) {
+        var hash = this._createHash(JSON.stringify(obj.obj.src));
+        if (this.cache_map.hasOwnProperty(hash)) {
+            var cache = this.cache[this.cache_map[hash]];
+            this.post( cache.resp, obj.div, obj.callback );
+            return true;
+        }
+    }
+    return false;
 };
 
