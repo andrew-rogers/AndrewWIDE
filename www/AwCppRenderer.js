@@ -30,15 +30,32 @@ var XhrRenderer = function(url, awdoc_renderer) {
     this.awdoc_renderer = awdoc_renderer;
     this.waiting = false;
     this.queue = [];
-
-    awdoc_renderer.registerRenderer("func_src", this);
-    awdoc_renderer.registerRenderer("func", this);
-    awdoc_renderer.registerRenderer("awcppwasm_src", this);
+    this.cache_id = awdoc_renderer.registerCache(this);
+    this.types = {
+        "func_src": {"cache": false},
+        "func": {"cache": false},
+        "awcppwasm_src": {"cache": true}
+    };
+    var keys = Object.keys(this.types);
+    for (var i=0; i<keys.length; i++) {
+        awdoc_renderer.registerRenderer(keys[i], this);
+    }
+    this.cache = {};
 };
 
 XhrRenderer.prototype.renderObj = function( obj, div, callback ) {
     this.queue.push({"obj":obj, "div":div, "callback":callback});
     this._next();
+};
+
+XhrRenderer.prototype._createHash = function( str ) {
+    var hash = 0;
+    var prime = 127;
+    for (var i=0; i<str.length; i++) {
+        hash = hash * prime + ( str.charCodeAt(i) & 0xff );
+        hash = hash & 0xffffffff; // 32-bit. JavaScript uses double float for numbers.
+    }
+    return hash.toString();
 };
 
 XhrRenderer.prototype._next = function() {
@@ -47,10 +64,27 @@ XhrRenderer.prototype._next = function() {
             var obj = this.queue.shift();
             this._query( obj.obj, obj.div, obj.callback );
         }
+        else {
+            this.awdoc_renderer.setCache(this.cache_id, this.cache);
+        }
     }
 };
 
 XhrRenderer.prototype._query = function( obj, div, callback ) {
+    var cache = this.types[obj.type].cache;
+    var str_query = JSON.stringify(obj);
+    var hash = "";
+    if (cache) {
+        hash = this._createHash( str_query );
+        if (cache.hasOwnProperty(hash)) {
+
+            // We have a matching cached response so post that instead of doing XHR.
+            var response_obj = cache[hash];
+            this.awdoc_renderer.post( response_obj, div, callback );
+		    this._next();
+		    return; // Don't run the XHR below.
+        }
+    }
     this.waiting = true;
     var that = this;
     var xhr = new XMLHttpRequest();
@@ -58,10 +92,11 @@ XhrRenderer.prototype._query = function( obj, div, callback ) {
 	xhr.onload = function (event) {
 	    that.waiting = false;
 		var response_obj=JSON.parse(xhr.response);
+		if (cache) that.cache[hash] = response_obj;
 		that.awdoc_renderer.post( response_obj, div, callback);
 		that._next();
 	};
-	xhr.send(JSON.stringify(obj));
+	xhr.send(str_query);
 };
 
 var MonoRenderer = function( awdoc_renderer ) {

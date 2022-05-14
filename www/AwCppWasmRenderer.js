@@ -47,13 +47,14 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
 
         var id = obj.id;
         if (id == "globals") {
-            this.globals_block = obj.content;
+            this.globals_block += obj.content;
         }
         else {
             this.blocks[id] = obj.content;
             // Create a div for the execution result
             var div_result = document.createElement("div");
             div.appendChild(div_result);
+            if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
             var runnable = {"id":obj.id, "inputs": obj.inputs, "div":div_result};
             var that = this;
             runnable.run = function( callback ) {

@@ -41,8 +41,15 @@ function AwDocRenderer(docname, div) {
     this.running = false;
     this.renderers["array"] = this;
     this.renderers["json"] = this;
+    this.caches = [];
     this.named_sections = {};
     this.runnables = {};
+
+    // Make download link for serverless doc but hide for now
+    this.download_link = document.createElement("a");
+    this.download_link.hidden = true;
+    div.appendChild(this.download_link);
+    //this._prepareServerlessDoc();
 }
 
 AwDocRenderer.prototype.addRunnable = function ( runnable ) {
@@ -70,6 +77,12 @@ AwDocRenderer.prototype.post = function ( obj, div, callback ) {
     this.queue.push( {"obj":obj, "div":div, "callback":callback} );
     if( this.running ) this._dispatch();
 }
+
+AwDocRenderer.prototype.registerCache = function( renderer ) {
+    var id = this.caches.length;
+    this.caches.push( {"done": false} );
+    return id;
+};
 
 AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
     this.renderers[name]=renderer;
@@ -128,6 +141,18 @@ AwDocRenderer.prototype.runDeps = function ( id ) {
     }
 }
 
+AwDocRenderer.prototype.setCache = function ( id, cache ) {
+    this.caches[id]["done"] = true;
+    this.caches[id]["cache"] = cache;
+
+    // Check if all caches done
+    var done = true;
+    for (var i=0; i<this.caches.length; i++) {
+        if (this.caches[i].done == false) done = false;
+    }
+    if (done) this._prepareServerlessDoc();
+}
+
 AwDocRenderer.prototype.start = function () {
     this.running = true;
     this._dispatch();
@@ -156,6 +181,19 @@ AwDocRenderer.prototype._dispatch = function() {
             obj.div.appendChild(ta);
         }
     }
+};
+
+AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
+    var html = "<html><body></body></html>";
+
+    this.download_link.href = URL.createObjectURL(
+        new Blob([html], {
+          type: "text/html"
+        })
+    );
+    this.download_link.setAttribute("download", "data.html");
+    this.download_link.innerHTML="Download doc.";
+    this.download_link.hidden = false;
 };
 
 AwDocRenderer.prototype._render = function( obj, src ) {
