@@ -129,11 +129,15 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     var type = obj.type;
     if (type == "array") {
         div.innerHTML="";
+        var running = this.running;
+        this.running = false; // Disable dispatch until all array items posted.
         for (var i=0; i<obj.array.length; i++) {
             var new_div = document.createElement("div");
             div.appendChild(new_div);
             this.post( obj.array[i], new_div, callback );
         }
+        this.running = running;
+        this._dispatch();
     }
     else if (type == "json") {
         var new_obj = JSON.parse(obj.content);
