@@ -227,6 +227,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
     html += "var awdr = new AwDocRenderer( \"" + this.docname + "\" );\n";
+    html += "new AwCppRenderer(awdr);\n";
     html += "var cppwasm = new AwCppWasmRenderer(awdr);\n";
     html += "var ta_awjson = document.getElementById(\"ta_awjson\");\n";
     html += "awdr.registerRenderer(\"awcppwasm\", cppwasm);\n";
