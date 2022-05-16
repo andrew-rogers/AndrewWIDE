@@ -2,9 +2,11 @@
 # https://stackoverflow.com/questions/714100/os-detecting-makefile
 ifeq '$(findstring ;,$(PATH))' ';'
     CAT = type
+    FixPath = $(subst /,\,$1)
     RM = del /Q
 else
     CAT = cat
+    FixPath = $1
     RM = rm -f
 endif
 
@@ -29,7 +31,7 @@ SRCS = AwCppRenderer.js \
  svgarray.js
 
 AwAll.js: $(SRCS)
-	$(CAT) $^ > $@
+	$(CAT) $(call FixPath,$^) > $@
 
 clean:
 	$(RM) AwAll.js
