@@ -57,3 +57,21 @@ Line LineReader::read()
     return line;
 }
 
+Parameters::Parameters( const std::string& str )
+{
+    LineReader lr(str);
+    while( lr.good() )
+    {
+        auto line = lr.read();
+        auto parts = line.split(":");
+        if (parts.size() == 2)
+        {
+            auto key = parts[0];
+            auto vals = parts[1].split(",");
+            AwVector<double> vec;
+            for (auto v: vals) vec.push_back(stod(v));
+            m_params[key]=vec;
+        }
+    }
+}
+

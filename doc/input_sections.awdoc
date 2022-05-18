@@ -46,36 +46,6 @@ void readParams(const std::string& str)
     for (auto v : vals) g_samples.push_back(stod(v));
 }
 
-#include <map>
-
-class Parameters
-{
-public:
-    Parameters( const std::string& str )
-    {
-        LineReader lr(str);
-        while( lr.good() )
-        {
-            auto line = lr.read();
-            auto parts = line.split(":");
-            if (parts.size() == 2)
-            {
-                auto key = parts[0];
-                auto vals = parts[1].split(",");
-                AwVector<double> vec;
-                for (auto v: vals) vec.push_back(stod(v));
-                m_params[key]=vec;
-            }
-        }
-    }
-    AwVector<double>& operator[](const std::string& key)
-    {
-        return m_params[key];
-    }
-private:
-    std::map<std::string, AwVector<double>> m_params;
-};
-
 AW{"type":"mono","id":"params"}
 samples: 1,5,3,9
 
@@ -84,8 +54,12 @@ AW{"type":"awcppwasm","inputs":["params"]}
     readParams(str_params);
     plot(g_samples);
     
+AW{"type":"mjmd"}
+The **LineReader** module also includes a **Parameters** class that can be used to extract named array variables from input
+sections.
+
 AW{"type":"mono","id":"params1"}
-samples: 1,5,3,9
+samples: 1,5,7.5,9
 
 AW{"type":"awcppwasm","inputs":["params1"]}
     auto str_params = g_query["inputs"]["params1"].str();

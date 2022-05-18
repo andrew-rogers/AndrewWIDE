@@ -20,8 +20,10 @@
 #ifndef LINEREADER_H
 #define LINEREADER_H
 
+#include "../aw_json/awvector.h"
+
 #include <string>
-#include <vector>
+#include <map>
 
 class Line : public std::string
 {
@@ -46,6 +48,18 @@ private:
     const std::string& m_input;
     std::size_t m_pos;
     bool m_good;
+};
+
+class Parameters
+{
+public:
+    Parameters( const std::string& str );
+    AwVector<double>& operator[](const std::string& key)
+    {
+        return m_params[key];
+    }
+private:
+    std::map<std::string, AwVector<double>> m_params;
 };
 
 #endif // LINEREADER_H
