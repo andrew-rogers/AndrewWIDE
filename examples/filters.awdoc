@@ -40,7 +40,7 @@ AW{"type":"awcppwasm","inputs":["params"]}
     // plot(f,h).label("Analogue"); // label not yet supported.
     plot(f,h);
     xlabel("Frequency (Hz)");
-    ylable("|H(f)|");
+    ylabel("|H(f)|");
 
     // Pole at 1+sRC=0
     double sp = -1.0 / RC;

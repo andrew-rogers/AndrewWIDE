@@ -247,22 +247,40 @@ void buildWasm()
 
     // Change directory and invoke emmake
     auto awdir = filesystem::findAWDir();
-    err += filesystem::cwd(dir);
-    int error_code = emmake(awdir);
+    err = filesystem::cwd(dir);
 
-    // Read the wasm file and convert to base64
     vector<char> wasmbytes;
-    err += filesystem::readFile("src.wasm", wasmbytes);
-    string b64 = base64Encode(wasmbytes);
-
-    // Read the runtime JavaScript
     string rt_js;
-    err += filesystem::readFile("src.js", rt_js);
+    string build_log;
 
-    // Assemble the response JSON
-    g_response["type"] = "wasm";
-    g_response["b64"] = b64;
-    g_response["rt_js"] = rt_js;
+    if (err.size()==0)
+    {
+        int error_code = emmake(awdir);
+        if (error_code) err = "Error code: " + to_string(error_code) + "\n";
+
+        // Read the wasm file
+        err += filesystem::readFile("src.wasm", wasmbytes);
+
+        // Read the runtime JavaScript
+        err += filesystem::readFile("src.js", rt_js);
+
+        // Read the build log
+        err += filesystem::readFile("build.log", build_log);
+    }
+
+    if (err.size()==0)
+    {
+        // Assemble the response JSON
+        g_response["type"] = "wasm";
+        g_response["b64"] = base64Encode(wasmbytes);
+        g_response["rt_js"] = rt_js;
+    }
+    else
+    {
+        // Assemble error information
+        g_response["type"] = "log";
+        g_response["msg"] = err + build_log;
+    }
 }
 
 int make( const std::string& awdir, const std::string& cgi )

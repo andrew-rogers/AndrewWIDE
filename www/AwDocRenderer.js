@@ -42,16 +42,23 @@ function AwDocRenderer(docname, div) {
     this.running = false;
     this.renderers["array"] = this;
     this.renderers["json"] = this;
+    this.renderers["log"] = this;
     this.async = [];
     this.named_sections = {};
     this.runnables = {};
     this.cache = [];
     this.cache_map = {};
 
-    // Make download link for serverless doc but hide for now
+    // Make download link for serverless doc but hide for now.
     this.download_link = document.createElement("a");
     this.download_link.hidden = true;
     div.appendChild(this.download_link);
+
+    // Textarea for displaying log.
+    this.ta_log = document.createElement("textarea");
+    this.ta_log.style.width = "100%";
+    this.ta_log.hidden = true;
+    div.appendChild(this.ta_log);
 }
 
 AwDocRenderer.prototype.addCache = function ( src_obj, resp ) {
@@ -143,6 +150,10 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     else if (type == "json") {
         var new_obj = JSON.parse(obj.content);
         this.post( { "type":"array", "array":new_obj }, div, callback);
+    }
+    else if (type == "log") {
+        this.ta_log.value += obj.msg;
+        this.ta_log.hidden = false;
     }
 };
 
