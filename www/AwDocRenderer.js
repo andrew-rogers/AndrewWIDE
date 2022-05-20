@@ -133,6 +133,7 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
         this.running = false; // Disable dispatch until all array items posted.
         for (var i=0; i<obj.array.length; i++) {
             var new_div = document.createElement("div");
+            if (obj.array[i]["hidden"]==true) new_div.hidden = true;
             div.appendChild(new_div);
             this.post( obj.array[i], new_div, callback );
         }
@@ -221,6 +222,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     html += "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" charset=\"UTF-8\">\n";
     html += "\t\t<script src=\"AwAll.js\"></script>\n";
     html += "\t\t<script src=\"https://cdn.jsdelivr.net/npm/marked/marked.min.js\"></script>\n";
+    html += "\t\t<script src='https://cdn.plot.ly/plotly-2.12.1.min.js'></script>\n";
     html += "\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG\"></script>\n";
     html += "\t</head>\n\t<body>\n"
     html += "\t\t<textarea id=\"ta_awjson\" hidden>\n" + JSON.stringify(this.aw_json) + "\n\t\t</textarea>\n";
@@ -233,7 +235,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     html += "awdr.registerRenderer(\"awcppwasm\", cppwasm);\n";
     html += "awdr.registerRenderer(\"mjmd\", new MathJaxMarkdownRenderer());\n";
     html += "awdr.registerRenderer(\"diagram\", new DiagramRenderer());\n";
-    html += "awdr.registerRenderer(\"plot\", new PlotRenderer());\n";
+    html += "new PlotRenderer(awdr);\n";
     html += "awdr.setCache(JSON.parse(ta_cache.value));\n";
     html += "awdr.render(ta_awjson.value);\n";
     html += "awdr.start();\n";
@@ -254,6 +256,7 @@ AwDocRenderer.prototype._render = function( obj, src ) {
 
     // Create a div for the rendered output.
     var div = document.createElement("div");
+    if (obj["hidden"]==true) div.hidden = true;
     this.div.appendChild(div);
 
     obj.content = src;
