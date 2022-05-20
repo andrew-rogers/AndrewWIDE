@@ -30,25 +30,39 @@ extern int g_plot_index;
 
 Json& plot_getJson();
 
-template <typename T>
-void plot(const AwVector<T>& vec)
+class PlotTrace : public Json
 {
-    Json trace;
+public:
+    PlotTrace& name(const std::string& str)
+    {
+        (*this)["name"]=str;
+        return *this;
+    }
+};
+
+template <typename T>
+PlotTrace plot(const AwVector<T>& vec)
+{
+    PlotTrace trace;
     trace["y"] = vec.toJsonArray();
 
     Json graph = plot_getJson();
     graph["data"].push_back(trace);
+
+    return trace;
 }
 
 template <typename T>
-void plot(const AwVector<T>& vec_x, const AwVector<T>& vec_y)
+PlotTrace plot(const AwVector<T>& vec_x, const AwVector<T>& vec_y)
 {
-    Json trace;
+    PlotTrace trace;
     trace["x"]=vec_x.toJsonArray();
     trace["y"]=vec_y.toJsonArray();
 
     Json graph = plot_getJson();
     graph["data"].push_back(trace);
+
+    return trace;
 }
 
 void xlabel(const std::string label);

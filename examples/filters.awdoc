@@ -37,8 +37,7 @@ AW{"type":"awcppwasm","inputs":["params"]}
         h[i] = abs(H);
     }
 
-    // plot(f,h).label("Analogue"); // label not yet supported.
-    plot(f,h);
+    plot(f,h).name("Analogue");
     xlabel("Frequency (Hz)");
     ylabel("|H(f)|");
 
@@ -62,6 +61,5 @@ AW{"type":"awcppwasm","inputs":["params"]}
         h[i] = abs(H);
     }
 
-    // plot(f,h).label("Digital"); // label not yet supported.
-    plot(f,h);
+    plot(f,h).name("Digital");
 
