@@ -30,8 +30,15 @@ std::vector<Line> Line::split(const std::string& delim)
         ret.push_back( l );
         pos = found + delim.size();
     }
-    Line l( substr( pos, delim.size()-pos ) );
-    ret.push_back( l );
+    if (pos > 0U)
+    {
+        Line l( substr( pos, delim.size()-pos ) );
+        ret.push_back( l );
+    }
+    else
+    {
+        ret.push_back(*this);
+    }
     return ret;
 }
 
