@@ -62,7 +62,6 @@ AW{"type":"mono","id":"params1"}
 samples: 1,5,7.5,9
 
 AW{"type":"awcppwasm","inputs":["params1"]}
-    auto str_params = g_query["inputs"]["params1"].str();
-    Parameters params(str_params);
+    Parameters params("params1");
     plot(params["samples"]);
 

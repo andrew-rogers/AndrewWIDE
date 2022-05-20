@@ -25,6 +25,8 @@
 #include <string>
 #include <map>
 
+extern Json g_query;
+
 class Line : public std::string
 {
 public:

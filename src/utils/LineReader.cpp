@@ -66,7 +66,8 @@ Line LineReader::read()
 
 Parameters::Parameters( const std::string& str )
 {
-    LineReader lr(str);
+    std::string input = g_query["inputs"][str].str();
+    LineReader lr(input);
     while( lr.good() )
     {
         auto line = lr.read();
