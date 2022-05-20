@@ -1,28 +1,67 @@
-AW{"type":"awcpp","id":"globals"}
-#include "filter.h"
+AW{"type":"awcppwasm","id":"globals","hidden":true}
 
-AW{"type":"awcpp","id":"mk"}
-LDFLAGS += -lSignal
+#include "LineReader.h"
+#include <complex>
 
 AW{"type":"mjmd"}
-Band-pass filter with poles at $0.95\cdot e^{\pm i \frac{\pi}{10}}$ on the z-plane. The code below plots the impulse response.
 
-AW{"type":"awcpp"}
+A low-pass RC filter has the [Laplace](https://en.wikipedia.org/wiki/Laplace_transform) transfer function
 
-    AwVector<double> b,a,x;
-    
-    b.push_back(1);
-    b.push_back(0);
-    b.push_back(-1);
-    
-    a.push_back(1);
-    a.push_back(-1.807);
-    a.push_back(0.9025);
+$$H(s)=\frac{1}{1+sRC}$$
 
-    for (int i=0; i<500; i++)
+AW{"type":"mono","id":"params"}
+R: 1000.0
+C: 100e-9
+Fs: 32000.0
+
+AW{"type":"mjmd"}
+
+C++ code to evaluate filter response using Laplace transform. A digital filter (created using the pole-zero placement
+method) is also evaluated. Note that the code cannot be edited then executed if running server-less. This is because the
+server back-end is required to compile the C++ to WebAssembly. This might be possible in the future using
+[Clang in Browser](https://github.com/tbfleming/cib).
+
+AW{"type":"awcppwasm","inputs":["params"]}
+
+    Parameters params("params");
+    double RC = params["R"][0] * params["C"][0];
+    double Fs = params["Fs"][0];
+
+    auto f = linspace(0,Fs/2,1000);
+    auto h = 0.0 * f; // Create zero initialised vector same length as f for response
+
+    for (int i=0; i<f.size(); i++)
     {
-        x.push_back(0);
+        complex<double> s = 1i * 2.0 * PI * f[i];
+        complex<double> H = 1.0 / ( 1.0 + s * RC );
+        h[i] = abs(H);
     }
-    x[100]=1.0;
-    
-    plot(iir(x,b,a));
+
+    // plot(f,h).label("Analogue"); // label not yet supported.
+    plot(f,h);
+    xlabel("Frequency (Hz)");
+    ylable("|H(f)|");
+
+    // Pole at 1+sRC=0
+    double sp = -1.0 / RC;
+
+    // Convert pole to z-domain
+    double T = 1.0/Fs;
+    double zp = exp(sp*T);
+
+    // Zero at z = -1
+    double zz = -1;
+
+    // Pass-band scaling
+    double K = (1.0-zp)/(1.0-zz);
+
+    for (int i=0; i<f.size(); i++)
+    {
+        complex<double> z = exp(1i * 2.0 * PI * f[i] * T);
+        complex<double> H = K*(z-zz)/(z-zp);
+        h[i] = abs(H);
+    }
+
+    // plot(f,h).label("Digital"); // label not yet supported.
+    plot(f,h);
+

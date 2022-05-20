@@ -5,7 +5,7 @@ Biquad Filter Examples
 
 The C++ code in this page is copied from [EarLevel Engineering](https://www.earlevel.com/main/2012/11/26/biquad-c-source-code/).
 
-AW{"type":"awcppwasm","id":"globals"}
+AW{"type":"awcppwasm","id":"globals","hidden":true}
 
 #include "LineReader.h"
 
@@ -258,8 +258,7 @@ possible in the future using [Clang in Browser](https://github.com/tbfleming/cib
 
 AW{"type":"awcppwasm","inputs":["params"]}
 
-auto str_params = g_query["inputs"]["params"].str();
-Parameters params(str_params);
+Parameters params("params");
 
 double Fc=params["Fc"][0];
 double sampleRate=params["Fs"][0];
