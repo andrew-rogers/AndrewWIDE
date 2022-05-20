@@ -59,7 +59,10 @@ PlotRenderer.prototype.renderObj = function(obj, div, callback) {
         p.draw(fig);
     }
     if (type == "plot") {
-        Plotly.newPlot(div, obj.data);
+        var layout = {};
+        if (obj["xlabel"]) layout["xaxis"] = {"title": obj.xlabel};
+        if (obj["ylabel"]) layout["yaxis"] = {"title": obj.ylabel};
+        Plotly.newPlot(div, obj.data, layout);
     }
     if( callback ) callback();
 };
