@@ -565,6 +565,15 @@ int Json::length() const
     return len;
 }
 
+bool Json::contains(const std::string& key) const
+{
+    if ( (*m_pairs).find(key) == (*m_pairs).end() ) {
+        // Not found
+        return false;
+    }
+    return true;
+}
+
 istream& operator>>(istream& in, Json& value)
 {
     value.parse(in);

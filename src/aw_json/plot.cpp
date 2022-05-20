@@ -21,15 +21,37 @@
 
 using namespace std;
 
+int g_plot_index = -1;
+
+Json& plot_getJson()
+{
+    // TODO: Can this go in the constructor of a singleton?
+
+    // Check for existing plot in g_response
+    if ( (g_plot_index >= 0) && (g_plot_index < g_response.length())
+         && (g_response[g_plot_index].contains("type"))
+         && (g_response[g_plot_index]["type"].str().compare("plot")==0) )
+    {
+        return g_response[g_plot_index];
+    }
+
+    // Create new plot in g_response
+    Json graph;
+    graph["type"]="plot";
+    g_plot_index = g_response.length();
+    g_response.push_back(graph);
+    return g_response[g_plot_index];
+}
+
 void xlabel(const string label)
 {
-    Json graph = g_response[g_response.length()-1];
+    Json graph = plot_getJson();
     graph["xlabel"] = label;
 }
 
 void ylabel(const string label)
 {
-    Json graph = g_response[g_response.length()-1];
+    Json graph = plot_getJson();
     graph["ylabel"] = label;
 }
 

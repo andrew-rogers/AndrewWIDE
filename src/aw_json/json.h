@@ -59,6 +59,7 @@ public:
     Json& operator=(const std::string& val);
     Json& operator=(const double& val);
     int length() const;
+    bool contains(const std::string& key) const;
 private:
     enum Type
     {

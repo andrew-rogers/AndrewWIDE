@@ -30,30 +30,37 @@
 //   Diagram/SvgFigure.js
 //   XML.js
 
-var PlotRenderer = function() {
-    
+var PlotRenderer = function(awdr) {
+    awdr.registerRenderer("plot", this);
+    awdr.registerRenderer("plotly", this);
 };
 
 PlotRenderer.prototype.renderObj = function(obj, div, callback) {
-    div.src_obj = obj;
-    var fig = this._createSvgFigureInDiv( div );
-    var p = new Plot();
+    var type = obj.type;
+    if (type == "plot_old") {
+        div.src_obj = obj;
+        var fig = this._createSvgFigureInDiv( div );
+        var p = new Plot();
 
-    // Get the series
-    if (obj["data"]) {
-        p.addSeries(obj.data);
-    } else if (obj["x"]) {
-        p.addSeries(obj.x, obj.y);
+        // Get the series
+        if (obj["data"]) {
+            p.addSeries(obj.data);
+        } else if (obj["x"]) {
+            p.addSeries(obj.x, obj.y);
+        }
+
+        // Get the labels
+        var xlabel = ""
+        if (obj["xlabel"]) xlabel = obj.xlabel;
+        var ylabel = ""
+        if (obj["ylabel"]) ylabel = obj.ylabel;
+        p.axisLabels(xlabel, ylabel);
+
+        p.draw(fig);
     }
-
-    // Get the labels
-    var xlabel = ""
-    if (obj["xlabel"]) xlabel = obj.xlabel;
-    var ylabel = ""
-    if (obj["ylabel"]) ylabel = obj.ylabel;
-    p.axisLabels(xlabel, ylabel);
-
-    p.draw(fig);
+    if (type == "plot") {
+        Plotly.newPlot(div, obj.data);
+    }
     if( callback ) callback();
 };
 

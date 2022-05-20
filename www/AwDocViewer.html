@@ -12,6 +12,7 @@
         <script src="menu.js"></script>
         <script src="svgarray.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js"></script>
+        <script src='https://cdn.plot.ly/plotly-2.12.1.min.js'></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"></script>
         <script src="AwCppRenderer.js"></script>
         <script src="AwCppWasmRenderer.js"></script>
@@ -43,13 +44,13 @@ var fn = window.location.search;
 
 var open_doc = function( fn ) {
     var awdr = new AwDocRenderer(fn);
-    new AwCppRenderer(awdr)
+    new AwCppRenderer(awdr);
     var cppwasm = new AwCppWasmRenderer(awdr);
     var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
     awdr.registerRenderer("awcppwasm", cppwasm);
     awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
     awdr.registerRenderer("diagram", new DiagramRenderer());
-    awdr.registerRenderer("plot", new PlotRenderer());
+    new PlotRenderer(awdr);
 
     FileSystem.readFile(fn, function( err, content ) {
         awdr.render(content);

@@ -26,24 +26,29 @@
 #include <string>
 
 extern Json g_response;
+extern int g_plot_index;
+
+Json& plot_getJson();
 
 template <typename T>
 void plot(const AwVector<T>& vec)
 {
-    Json graph;
-    graph["type"]="plot";
-    graph["data"]=vec.toJsonArray();
-    g_response.push_back(graph);
+    Json trace;
+    trace["y"] = vec.toJsonArray();
+
+    Json graph = plot_getJson();
+    graph["data"].push_back(trace);
 }
 
 template <typename T>
 void plot(const AwVector<T>& vec_x, const AwVector<T>& vec_y)
 {
-    Json graph;
-    graph["type"]="plot";
-    graph["x"]=vec_x.toJsonArray();
-    graph["y"]=vec_y.toJsonArray();
-    g_response.push_back(graph);
+    Json trace;
+    trace["x"]=vec_x.toJsonArray();
+    trace["y"]=vec_y.toJsonArray();
+
+    Json graph = plot_getJson();
+    graph["data"].push_back(trace);
 }
 
 void xlabel(const std::string label);
