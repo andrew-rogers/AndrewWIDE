@@ -241,7 +241,10 @@ AW{"type":"mjmd"}
 Lowpass filter parameters
 -------------------------
 
-The lowpass filter parameters below can be edited. Click the run button to get the impulse response.
+The lowpass filter parameters below can be edited. Click the run button to get the impulse response. Scroll down to see
+graph plot. Setting the cut-off frequency closer to the sample rate will increase the ringing seen in the impulse
+response. This is because as the pole is moved closer to the zero its radius increases thus getting closer to the unit
+circle. z-domain plot to come one day!
 
 AW{"type":"mono","id":"params"}
 Fc: 8.0
@@ -249,7 +252,9 @@ Fs: 32.0
 
 AW{"type":"mjmd"}
 
-C++ code to instantiate lowpass filter and plot the impulse response.
+C++ code to instantiate lowpass filter and plot the impulse response. Note that the code cannot be edited then executed
+if running server-less. This is because the server back-end is required to compile the C++ to WebAssembly. This might be
+possible in the future using [Clang in Browser](https://github.com/tbfleming/cib).
 
 AW{"type":"awcppwasm","inputs":["params"]}
 
