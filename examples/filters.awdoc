@@ -3,6 +3,10 @@ AW{"type":"awcppwasm","id":"globals","hidden":true}
 #include "LineReader.h"
 #include <complex>
 
+double g_zp;
+
+typedef AwVector<double> vec_t;
+
 AW{"type":"mjmd"}
 
 A low-pass RC filter has the [Laplace](https://en.wikipedia.org/wiki/Laplace_transform) transfer function
@@ -37,7 +41,7 @@ AW{"type":"awcppwasm","inputs":["params"]}
         h[i] = abs(H);
     }
 
-    plot(f,h).name("Analogue");
+    plot(f,h).name("Analogue").unitCircle();
     xlabel("Frequency (Hz)");
     ylabel("|H(f)|");
 
@@ -47,6 +51,7 @@ AW{"type":"awcppwasm","inputs":["params"]}
     // Convert pole to z-domain
     double T = 1.0/Fs;
     double zp = exp(sp*T);
+    g_zp = zp; // Copy to global for pole plotting later.
 
     // Zero at z = -1
     double zz = -1;
@@ -62,4 +67,19 @@ AW{"type":"awcppwasm","inputs":["params"]}
     }
 
     plot(f,h).name("Digital");
+
+AW{"type":"awcppwasm","inputs":["params"]}
+
+    // Input params not used.
+
+    vec_t x,y;
+
+    // Plot the zeros.
+    x.push_back(-1);
+    y.push_back(0);
+    plot(x,y).unitCircle().name("zeros");
+
+    // Plot the poles.
+    x[0] = g_zp;
+    plot(x,y).crosses().name("poles");
 

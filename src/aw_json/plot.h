@@ -33,11 +33,46 @@ Json& plot_getJson();
 class PlotTrace : public Json
 {
 public:
+    PlotTrace() : m_graph( plot_getJson() )
+    {
+        Json y;
+        (*this)["y"] = y;
+        m_graph["data"].push_back(*this);
+    }
+    PlotTrace( Json& graph ) : m_graph( graph )
+    {
+        Json y;
+        (*this)["y"] = y;
+        m_graph["data"].push_back(*this);
+    }
     PlotTrace& name(const std::string& str)
     {
         (*this)["name"]=str;
         return *this;
     }
+    PlotTrace& unitCircle()
+    {
+        Json circle;
+        circle["type"] = "circle";
+        circle["xref"] = "x";
+        circle["yref"] = "y";
+        circle["x0"] = -1;
+        circle["y0"] = -1;
+        circle["x1"] = 1;
+        circle["y1"] = 1;
+        circle["opacity"] = 0.2;
+        m_graph["layout"]["shapes"].push_back(circle);
+        m_graph["layout"]["xaxis"]["constrain"] = "domain";
+        m_graph["layout"]["yaxis"]["scaleanchor"] = "x";
+        return *this;
+    }
+    PlotTrace& crosses()
+    {
+        (*this)["marker"]["symbol"] = "x";
+        return *this;
+    }
+private:
+    Json& m_graph;
 };
 
 template <typename T>
@@ -45,10 +80,6 @@ PlotTrace plot(const AwVector<T>& vec)
 {
     PlotTrace trace;
     trace["y"] = vec.toJsonArray();
-
-    Json graph = plot_getJson();
-    graph["data"].push_back(trace);
-
     return trace;
 }
 
@@ -58,10 +89,6 @@ PlotTrace plot(const AwVector<T>& vec_x, const AwVector<T>& vec_y)
     PlotTrace trace;
     trace["x"]=vec_x.toJsonArray();
     trace["y"]=vec_y.toJsonArray();
-
-    Json graph = plot_getJson();
-    graph["data"].push_back(trace);
-
     return trace;
 }
 
