@@ -50,6 +50,7 @@ function AwDocRenderer(docname, div) {
     this.cache_map = {};
 
     // Make download link for serverless doc but hide for now.
+    this.serverless = false;
     this.download_link = document.createElement("a");
     this.download_link.hidden = true;
     div.appendChild(this.download_link);
@@ -240,6 +241,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
     html += "var awdr = new AwDocRenderer( \"" + this.docname + "\" );\n";
+    html += "awdr.serverless = true;\n";
     html += "new AwCppRenderer(awdr);\n";
     html += "var cppwasm = new AwCppWasmRenderer(awdr);\n";
     html += "var ta_awjson = document.getElementById(\"ta_awjson\");\n";
@@ -258,7 +260,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
           type: "text/html"
         })
     );
-    this.download_link.setAttribute("download", "data.html");
+    this.download_link.setAttribute("download", "AwDoc.html");
     this.download_link.innerHTML="Download doc.";
     this.download_link.hidden = false;
 };

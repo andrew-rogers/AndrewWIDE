@@ -50,7 +50,7 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             this.globals_block += obj.content;
         }
         else if (id=="mk") {
-            this.awdr.post({"type":"func_src","module":this.awdr.docname.slice(0,-6),"src":obj.content,"func":"mk"}, div, callback);
+            if(this.awdr.serverless == false) this.awdr.post({"type":"func_src","module":this.awdr.docname.slice(0,-6),"src":obj.content,"func":"mk"}, div, callback);
         }
         else {
             this.blocks[id] = obj.content;
