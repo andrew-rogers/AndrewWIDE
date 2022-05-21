@@ -237,35 +237,48 @@ void buildWasm()
 {
     auto dir = filesystem::absPath(g_query["module"].str());
     auto cpp = g_query["src"].str();
+    string err;
 
     // Create a temp directory
     dir += ".awtmp";
-    auto err = filesystem::mkdir(dir); /// @todo Check for errors
+    string e = filesystem::mkdir(dir); /// @todo Check for errors
+    //if (e.size()) err += e+"\n";
 
     // Write the C++ source to file
-    g_response["err"]=filesystem::writeFile(dir+"/src.cpp", cpp);
+    e = filesystem::writeFile(dir+"/src.cpp", cpp);
+    if (e.size()) err += e+"\n";
 
     // Change directory and invoke emmake
     auto awdir = filesystem::findAWDir();
-    err = filesystem::cwd(dir);
+    e = filesystem::cwd(dir);
+    if (e.size()) err = e+"\n";
 
     vector<char> wasmbytes;
     string rt_js;
-    string build_log;
 
     if (err.size()==0)
     {
         int error_code = emmake(awdir);
-        if (error_code) err = "Error code: " + to_string(error_code) + "\n";
+        if (error_code)
+        {
+            err += "Error code: " + to_string(error_code) + "\n";
 
-        // Read the wasm file
-        err += filesystem::readFile("src.wasm", wasmbytes);
+            // Read the build log
+            string build_log;
+            e = filesystem::readFile("build.log", build_log);
+            if (e.size()) err += e + "\n";
+            err += build_log;
+        }
+        else
+        {
+            // Read the wasm file
+            e = filesystem::readFile("src.wasm", wasmbytes);
+            if (e.size()) err += e+"\n";
 
-        // Read the runtime JavaScript
-        err += filesystem::readFile("src.js", rt_js);
-
-        // Read the build log
-        err += filesystem::readFile("build.log", build_log);
+            // Read the runtime JavaScript
+            e = filesystem::readFile("src.js", rt_js);
+            if (e.size()) err += e+"\n";
+        }
     }
 
     if (err.size()==0)
@@ -279,7 +292,7 @@ void buildWasm()
     {
         // Assemble error information
         g_response["type"] = "log";
-        g_response["msg"] = err + build_log;
+        g_response["msg"] = err;
     }
 }
 

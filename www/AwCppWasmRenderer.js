@@ -49,6 +49,9 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
         if (id == "globals") {
             this.globals_block += obj.content;
         }
+        else if (id=="mk") {
+            this.awdr.post({"type":"func_src","module":this.awdr.docname.slice(0,-6),"src":obj.content,"func":"mk"}, div, callback);
+        }
         else {
             this.blocks[id] = obj.content;
             // Create a div for the execution result
