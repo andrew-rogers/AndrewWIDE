@@ -49,6 +49,14 @@ function AwDocRenderer(docname, div) {
     this.cache = [];
     this.cache_map = {};
 
+    // Provide a URL for this doc. User can open it and bookmark it for quicker access.
+    this.url_link = document.createElement("a");
+    this.url_link.href = "AwDocViewer.html?file=" + encodeURIComponent(docname);
+    this.url_link.innerHTML = docname;
+    div.appendChild(this.url_link);
+    var tn = document.createTextNode(" ");
+    div.appendChild(tn);
+
     // Make download link for serverless doc but hide for now.
     this.serverless = false;
     this.download_link = document.createElement("a");
@@ -185,6 +193,12 @@ AwDocRenderer.prototype.setCache = function ( cache ) {
     }
 }
 
+AwDocRenderer.prototype.setServerless = function ( ) {
+    this.serverless = true;
+    this.url_link.hidden = true;
+}
+
+
 AwDocRenderer.prototype.start = function () {
     this.running = true;
     this._dispatch();
@@ -241,7 +255,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
     html += "var awdr = new AwDocRenderer( \"" + this.docname + "\" );\n";
-    html += "awdr.serverless = true;\n";
+    html += "awdr.setServerless();\n";
     html += "new AwCppRenderer(awdr);\n";
     html += "var cppwasm = new AwCppWasmRenderer(awdr);\n";
     html += "var ta_awjson = document.getElementById(\"ta_awjson\");\n";
