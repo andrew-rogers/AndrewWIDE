@@ -25,12 +25,29 @@
  *
  */
 
-function AwDocViewer() {
+function AwDocViewer( docname ) {
+    this.docname = docname;
     this._disableDrop();
     this.ta_awjson = document.getElementById("ta_awjson");
     if (this.ta_awjson == null) this._selectDoc();
-    else this._renderFromHTML;
+    else this._renderFromHTML();
 }
+
+AwDocViewer.prototype.inject = function ( scripts, callback ) {
+    var cnt = 0;
+    for (var i=0; i<scripts.length; i++) {
+        var script = document.createElement('script');
+        script.setAttribute('src', scripts[i]);
+        script.setAttribute('type', 'text/javascript');
+        script.onload = function() {
+            cnt = cnt + 1;
+            if (cnt == scripts.length) {
+                callback();
+            }
+        };
+        document.head.appendChild(script);
+    }
+};
 
 AwDocViewer.prototype._disableDrop = function () {
     // Prevent dropped files being openned in new browser tabs.
@@ -42,29 +59,46 @@ AwDocViewer.prototype._disableDrop = function () {
     },false);
 };
 
-AwDocViewer.prototype._instantiateRenderers = function () {
+AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     this.awdr = new AwDocRenderer(this.docname);
-    new AwCppRenderer(this.awdr);
-    var cppwasm = new AwCppWasmRenderer(this.awdr);
-    var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", this.awdr);
-    this.awdr.registerRenderer("awcppwasm", cppwasm);
-    this.awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
-    this.awdr.registerRenderer("diagram", new DiagramRenderer());
-    new PlotRenderer(this.awdr);
+    var that = this;
+    var scripts = [
+        "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js",
+        "https://cdn.plot.ly/plotly-2.12.1.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG" ];
+    if (typeof PlotRenderer === 'undefined') scripts.push("PlotRenderer.js");
+    this.inject(scripts, function() {
+        new AwCppRenderer(that.awdr);
+        var cppwasm = new AwCppWasmRenderer(that.awdr);
+        var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", that.awdr);
+        that.awdr.registerRenderer("awcppwasm", cppwasm);
+        that.awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
+        that.awdr.registerRenderer("diagram", new DiagramRenderer());
+        new PlotRenderer(that.awdr);
+        callback();
+    });
 };
 
 AwDocViewer.prototype._openDoc = function( fn ) {
     this.docname = fn;
-    this._instantiateRenderers();
     var that = this;
-    FileSystem.readFile(fn, function( err, content ) {
-        that.awdr.render(content);
-        that.awdr.start();
+    this._instantiateRenderers( function() {
+        FileSystem.readFile(fn, function( err, content ) {
+            that.awdr.render(content);
+            that.awdr.start();
+        });
     });
 };
 
 AwDocViewer.prototype._renderFromHTML = function( fn ) {
-    // TODO: Support rendering of AwJSON embedded in hidden textareas of HTML.
+    var that = this;
+    this._instantiateRenderers( function() {
+        that.awdr.setServerless();
+        var ta_cache = document.getElementById("ta_cache");
+        that.awdr.setCache(JSON.parse(ta_cache.value));
+        that.awdr.render(ta_awjson.value);
+        that.awdr.start();
+    });
 };
 
 AwDocViewer.prototype._selectDoc = function( fn ) {

@@ -247,25 +247,11 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     var html = "<!DOCTYPE html>\n<html>\n\t<head>\n";
     html += "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" charset=\"UTF-8\">\n";
     html += "\t\t<script src=\"AwAll.js\"></script>\n";
-    html += "\t\t<script src=\"https://cdn.jsdelivr.net/npm/marked/marked.min.js\"></script>\n";
-    html += "\t\t<script src='https://cdn.plot.ly/plotly-2.12.1.min.js'></script>\n";
-    html += "\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG\"></script>\n";
     html += "\t</head>\n\t<body>\n"
     html += "\t\t<textarea id=\"ta_awjson\" hidden>\n" + JSON.stringify(this.aw_json) + "\n\t\t</textarea>\n";
     html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
-    html += "var awdr = new AwDocRenderer( \"" + this.docname + "\" );\n";
-    html += "awdr.setServerless();\n";
-    html += "new AwCppRenderer(awdr);\n";
-    html += "var cppwasm = new AwCppWasmRenderer(awdr);\n";
-    html += "var ta_awjson = document.getElementById(\"ta_awjson\");\n";
-    html += "awdr.registerRenderer(\"awcppwasm\", cppwasm);\n";
-    html += "awdr.registerRenderer(\"mjmd\", new MathJaxMarkdownRenderer());\n";
-    html += "awdr.registerRenderer(\"diagram\", new DiagramRenderer());\n";
-    html += "new PlotRenderer(awdr);\n";
-    html += "awdr.setCache(JSON.parse(ta_cache.value));\n";
-    html += "awdr.render(ta_awjson.value);\n";
-    html += "awdr.start();\n";
+    html += "new AwDocViewer( \"" + this.docname + "\" );\n";
     html += "\t\t</script>\n";
     html += "\t</body>\n</html>";
 

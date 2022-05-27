@@ -13,6 +13,7 @@ endif
 SRCS = AwCppRenderer.js \
  AwCppWasmRenderer.js \
  AwDocRenderer.js \
+ AwDocViewer.js \
  Diagram/Geometry.js \
  Diagram/Plot/Plot.js \
  Diagram/Shapes/SignalProcessing.js \
