@@ -3,6 +3,7 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
         <script src="AwDocRenderer.js"></script>
+        <script src="AwDocViewer.js"></script>
         <script src="DiagramRenderer.js"></script>
         <script src="JsonQuery.js"></script>
         <script src="fileselector.js"></script>
@@ -30,46 +31,8 @@
     </head>
     <body>
         <script>
-        
 
-// Prevent dropped files being openned in new browser tabs.
-window.addEventListener("dragover",function(e){
-  e.preventDefault();
-},false);
-window.addEventListener("drop",function(e){
-  e.preventDefault();
-},false);
-
-var fn = window.location.search;
-
-var open_doc = function( fn ) {
-    var awdr = new AwDocRenderer(fn);
-    new AwCppRenderer(awdr);
-    var cppwasm = new AwCppWasmRenderer(awdr);
-    var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
-    awdr.registerRenderer("awcppwasm", cppwasm);
-    awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
-    awdr.registerRenderer("diagram", new DiagramRenderer());
-    new PlotRenderer(awdr);
-
-    FileSystem.readFile(fn, function( err, content ) {
-        awdr.render(content);
-        awdr.start();
-    });
-};
-
-if (fn.startsWith("?file=")) {
-    var fn = decodeURIComponent(fn.slice(6));
-    open_doc(fn);
-}
-else {
-    div=document.createElement("div");
-    document.body.appendChild(div);
-    var fs = new FileSelector(div, FileSystem.list);
-    fs.show(function(fn){
-        open_doc(fn);
-    });
-}
+var awdv = new AwDocViewer();
 
         </script>
     </body>
