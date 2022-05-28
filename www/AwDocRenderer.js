@@ -25,6 +25,41 @@
  *
  */
 
+function Queue(callback) {
+    this.queue = [];
+    this.callback = callback;
+    this.cnt = 0;
+    this.running = false;
+}
+
+Queue.prototype.post = function ( obj ) {
+    if (obj.constructor.name == "Array") {
+        for (var i=0; i<obj.length; i++) {
+            obj[i].id = this.cnt;
+            this.cnt += 1;
+            this.queue.push(obj[i]);
+        }
+    }
+    else {
+        obj.id = this.cnt;
+        this.cnt += 1;
+        this.queue.push(obj);
+    }
+    if( this.running) this._dispatch();
+};
+
+Queue.prototype.start = function ( obj ) {
+    this.running = true;
+    this._dispatch();
+};
+
+Queue.prototype._dispatch= function () {
+    while( this.queue.length > 0 ) {
+        obj = this.queue.shift();
+        this.callback( obj );
+    }
+};
+
 function AwDocRenderer(docname, div) {
     this.docname = docname;
     if(div){
@@ -37,7 +72,10 @@ function AwDocRenderer(docname, div) {
     this.aw_json = []; // Used to store all document objects for download.
     this.div = div;
     this.renderers = {};
-    this.queue = [];
+    var that = this;
+    this.queue = new Queue(function(obj){
+        that._dispatch(obj);
+    });
     this.cnt = 0;
     this.running = false;
     this.renderers["array"] = this;
@@ -98,8 +136,7 @@ AwDocRenderer.prototype.post = function ( obj, div, callback ) {
     }
     this.cnt++;
 
-    this.queue.push( {"obj":obj, "div":div, "callback":callback, "pass": this.pass+1} );
-    if( this.running ) this._dispatch();
+    this.queue.post({"obj":obj, "div":div, "callback":callback});
 };
 
 AwDocRenderer.prototype.registerAsync = function( renderer ) {
@@ -145,16 +182,15 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     var type = obj.type;
     if (type == "array") {
         div.innerHTML="";
-        var running = this.running;
-        this.running = false; // Disable dispatch until all array items posted.
+        var sections = [];
         for (var i=0; i<obj.array.length; i++) {
             var new_div = document.createElement("div");
             if (obj.array[i]["hidden"]==true) new_div.hidden = true;
             div.appendChild(new_div);
             this.post( obj.array[i], new_div, callback );
+            sections.push({"obj":obj.array[i], "div": new_div, "callback": callback});
         }
-        this.running = running;
-        this._dispatch();
+        this.queue.post(sections);
     }
     else if (type == "json") {
         var new_obj = JSON.parse(obj.content);
@@ -200,8 +236,7 @@ AwDocRenderer.prototype.setServerless = function ( ) {
 
 
 AwDocRenderer.prototype.start = function () {
-    this.running = true;
-    this._dispatch();
+    this.queue.start();
 }
 
 AwDocRenderer.prototype._createHash = function( str ) {
@@ -220,25 +255,21 @@ AwDocRenderer.prototype._createNamedSection = function( name ) {
     if (this.named_sections.hasOwnProperty(name) == false) this.named_sections[name] = {"obj": {}, "deps": []};
 };
 
-AwDocRenderer.prototype._dispatch = function() {
-    while( this.queue.length > 0 ) {
-        obj = this.queue.shift();
+AwDocRenderer.prototype._dispatch = function(obj) {
+    // Attempt to render obj from cache.
+    if (this._renderUsingCache(obj)==false) {
 
-        // Attempt to render obj from cache.
-        if (this._renderUsingCache(obj)==false) {
-
-            // Can't render from cache. Invoke the relevant renderer.
-            var renderer_name = obj.obj.type;
-            if (this.renderers.hasOwnProperty(renderer_name)) {
-                this.renderers[renderer_name].renderObj( obj.obj, obj.div, obj.callback );
-            }
-            else {
-                var ta = document.createElement("textarea");
-                ta.value = "Error: No renderer for '" + renderer_name + "'\n";
-                ta.value += JSON.stringify(obj.obj);
-                ta.style.width = "100%";
-                obj.div.appendChild(ta);
-            }
+        // Can't render from cache. Invoke the relevant renderer.
+        var renderer_name = obj.obj.type;
+        if (this.renderers.hasOwnProperty(renderer_name)) {
+            this.renderers[renderer_name].renderObj( obj.obj, obj.div, obj.callback );
+        }
+        else {
+            var ta = document.createElement("textarea");
+            ta.value = "Error: No renderer for '" + renderer_name + "'\n";
+            ta.value += JSON.stringify(obj.obj);
+            ta.style.width = "100%";
+            obj.div.appendChild(ta);
         }
     }
 };

@@ -48,8 +48,8 @@ AsyncLoader.prototype.load = function ( urls ) {
     }
 
     // Do additional check incase urls is empty array.
-    if (that.cnt == that.urls.length) {
-        if (that.onload()) that.onload();
+    if (this.cnt == this.urls.length) {
+        if (this.onload()) this.onload();
     }
 };
 
