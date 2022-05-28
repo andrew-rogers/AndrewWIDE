@@ -28,21 +28,16 @@
 function Queue(callback) {
     this.queue = [];
     this.callback = callback;
-    this.cnt = 0;
     this.running = false;
 }
 
 Queue.prototype.post = function ( obj ) {
     if (obj.constructor.name == "Array") {
         for (var i=0; i<obj.length; i++) {
-            obj[i].id = this.cnt;
-            this.cnt += 1;
             this.queue.push(obj[i]);
         }
     }
     else {
-        obj.id = this.cnt;
-        this.cnt += 1;
         this.queue.push(obj);
     }
     if( this.running) this._dispatch();
@@ -124,18 +119,7 @@ AwDocRenderer.prototype.addRunnable = function ( runnable ) {
 };
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
-
-    if (obj.hasOwnProperty("id")) {
-        // If section has an ID store it for alter referencing.
-        this._createNamedSection( obj.id );
-        this.named_sections[obj.id].obj = obj;
-    }
-    else {
-        // Create a default ID if one is not given
-        obj.id = obj.type + "_" + this.cnt;
-    }
-    this.cnt++;
-
+    this._assignId(obj);
     this.queue.post({"obj":obj, "div":div, "callback":callback});
 };
 
@@ -187,7 +171,7 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
             var new_div = document.createElement("div");
             if (obj.array[i]["hidden"]==true) new_div.hidden = true;
             div.appendChild(new_div);
-            this.post( obj.array[i], new_div, callback );
+            this._assignId(obj.array[i]);
             sections.push({"obj":obj.array[i], "div": new_div, "callback": callback});
         }
         this.queue.post(sections);
@@ -239,6 +223,19 @@ AwDocRenderer.prototype.start = function () {
     this.queue.start();
 }
 
+AwDocRenderer.prototype._assignId= function(obj) {
+    if (obj.hasOwnProperty("id")) {
+        // If section has an ID store it for later referencing.
+        this._createNamedSection( obj.id );
+        this.named_sections[obj.id].obj = obj;
+    }
+    else {
+        // Create a default ID if one is not given
+        obj.id = obj.type + "_" + this.cnt;
+    }
+    this.cnt++;
+}
+
 AwDocRenderer.prototype._createHash = function( str ) {
     var hash = 0;
     var prime = 127;
@@ -256,6 +253,7 @@ AwDocRenderer.prototype._createNamedSection = function( name ) {
 };
 
 AwDocRenderer.prototype._dispatch = function(obj) {
+
     // Attempt to render obj from cache.
     if (this._renderUsingCache(obj)==false) {
 
