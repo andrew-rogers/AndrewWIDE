@@ -10,10 +10,11 @@ else
     RM = rm -f
 endif
 
-SRCS = AwCppRenderer.js \
+# AwDocViewer Must be first, it has the AsyncLoader.
+SRCS = AwDocViewer.js \
+ AwCppRenderer.js \
  AwCppWasmRenderer.js \
  AwDocRenderer.js \
- AwDocViewer.js \
  Diagram/Geometry.js \
  Diagram/Plot/Plot.js \
  Diagram/Shapes/SignalProcessing.js \

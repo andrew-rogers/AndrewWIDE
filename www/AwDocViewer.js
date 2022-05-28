@@ -25,6 +25,36 @@
  *
  */
 
+function AsyncLoader() {
+    this.cnt = 0;
+    this.urls = [];
+    this.onload = null;
+}
+
+AsyncLoader.prototype.load = function ( urls ) {
+    for (var i=0; i<urls.length; i++) {
+        this.urls.push(urls[i]);
+        var script = document.createElement('script');
+        script.setAttribute('src', urls[i]);
+        script.setAttribute('type', 'text/javascript');
+        var that = this;
+        script.onload = function() {
+            that.cnt = that.cnt + 1;
+            if (that.cnt == that.urls.length) {
+                if (that.onload()) that.onload();
+            }
+        };
+        document.head.appendChild(script);
+    }
+
+    // Do additional check incase urls is empty array.
+    if (that.cnt == that.urls.length) {
+        if (that.onload()) that.onload();
+    }
+};
+
+var asyncLoader = new AsyncLoader();
+
 function AwDocViewer( docname ) {
     this.docname = docname;
     this._disableDrop();
@@ -32,22 +62,6 @@ function AwDocViewer( docname ) {
     if (this.ta_awjson == null) this._selectDoc();
     else this._renderFromHTML();
 }
-
-AwDocViewer.prototype.inject = function ( scripts, callback ) {
-    var cnt = 0;
-    for (var i=0; i<scripts.length; i++) {
-        var script = document.createElement('script');
-        script.setAttribute('src', scripts[i]);
-        script.setAttribute('type', 'text/javascript');
-        script.onload = function() {
-            cnt = cnt + 1;
-            if (cnt == scripts.length) {
-                callback();
-            }
-        };
-        document.head.appendChild(script);
-    }
-};
 
 AwDocViewer.prototype._disableDrop = function () {
     // Prevent dropped files being openned in new browser tabs.
@@ -62,12 +76,11 @@ AwDocViewer.prototype._disableDrop = function () {
 AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     this.awdr = new AwDocRenderer(this.docname);
     var that = this;
-    var scripts = [
-        "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js",
-        "https://cdn.plot.ly/plotly-2.12.1.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG" ];
+    var scripts = [];
+    if (typeof MathJaxMarkdownRenderer === 'undefined') scripts.push("MathJaxMarkdownRenderer.js");
     if (typeof PlotRenderer === 'undefined') scripts.push("PlotRenderer.js");
-    this.inject(scripts, function() {
+
+    asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);
         var cppwasm = new AwCppWasmRenderer(that.awdr);
         var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", that.awdr);
@@ -76,7 +89,8 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         that.awdr.registerRenderer("diagram", new DiagramRenderer());
         new PlotRenderer(that.awdr);
         callback();
-    });
+    };
+    asyncLoader.load( scripts );
 };
 
 AwDocViewer.prototype._openDoc = function( fn ) {

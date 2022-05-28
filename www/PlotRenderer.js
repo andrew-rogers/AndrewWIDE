@@ -30,6 +30,9 @@
 //   Diagram/SvgFigure.js
 //   XML.js
 
+asyncLoader.load( [
+    "https://cdn.plot.ly/plotly-2.12.1.min.js" ]);
+
 var PlotRenderer = function(awdr) {
     awdr.registerRenderer("plot", this);
     awdr.registerRenderer("plotly", this);

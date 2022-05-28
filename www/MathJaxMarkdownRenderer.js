@@ -29,6 +29,10 @@
 //   https://github.com/mathjax/MathJax/archive/2.7.8.zip
 //   https://github.com/markedjs/marked/raw/master/lib/marked.js
 
+asyncLoader.load( [
+        "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG" ] );
+
 var MathJaxMarkdownRenderer = function() {
 
     MathJax.Hub.Config({
