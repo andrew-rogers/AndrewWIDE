@@ -109,7 +109,7 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
     this._instantiateRenderers( function() {
         that.awdr.setServerless();
         var ta_cache = document.getElementById("ta_cache");
-        that.awdr.setCache(JSON.parse(ta_cache.value));
+        that.awdr.cache.setCache(JSON.parse(ta_cache.value));
         that.awdr.render(ta_awjson.value);
         that.awdr.start();
     });

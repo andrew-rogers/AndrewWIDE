@@ -25,6 +25,48 @@
  *
  */
 
+function CacheRenderer() {
+    this.cache = [];
+    this.cache_map = {};
+}
+
+CacheRenderer.prototype.add = function ( section_in, section_out ) {
+    var key = section_out.hash_key;
+    var hash = this._createHash(JSON.stringify(section_in.obj[key]));
+    this.cache_map[hash] = this.cache.length;
+    this.cache.push({"in_type": section_in.obj.type, "hash": hash, "hash_key": key, "out": section_out.obj});
+};
+
+CacheRenderer.prototype.renderSection = function( section_in, callback ) {
+    sections_out = [];
+    if (section_in.obj.hasOwnProperty("src")) {
+        var hash = this._createHash(JSON.stringify(section_in.obj.src));
+        if (this.cache_map.hasOwnProperty(hash)) {
+            var cache = this.cache[this.cache_map[hash]];
+            sections_out.push({"obj": cache.out, "div": section_in.div, "callback": section_in.callback});
+        }
+    }
+    if (callback) callback(sections_out);
+};
+
+CacheRenderer.prototype.setCache = function ( cache ) {
+    this.cache = cache;
+    for (var i=0; i<cache.length; i++) {
+        var hash = cache[i].hash;
+        this.cache_map[hash] = i;
+    }
+}
+
+CacheRenderer.prototype._createHash = function( str ) {
+    var hash = 0;
+    var prime = 127;
+    for (var i=0; i<str.length; i++) {
+        hash = hash * prime + ( str.charCodeAt(i) & 0xff );
+        hash |= 0; // 32-bit. JavaScript uses double float for numbers.
+    }
+    return hash.toString();
+};
+
 function Queue(callback) {
     this.queue = [];
     this.callback = callback;
@@ -79,8 +121,7 @@ function AwDocRenderer(docname, div) {
     this.async = [];
     this.named_sections = {};
     this.runnables = {};
-    this.cache = [];
-    this.cache_map = {};
+    this.cache = new CacheRenderer();
 
     // Provide a URL for this doc. User can open it and bookmark it for quicker access.
     this.url_link = document.createElement("a");
@@ -103,12 +144,6 @@ function AwDocRenderer(docname, div) {
     div.appendChild(this.ta_log);
 }
 
-AwDocRenderer.prototype.addCache = function ( src_obj, resp ) {
-    var hash = this._createHash(JSON.stringify(src_obj.src));
-    this.cache_map[hash] = this.cache.length;
-    this.cache.push({"src_type": src_obj.type, "hash": hash, "resp": resp});
-};
-
 AwDocRenderer.prototype.addRunnable = function ( runnable ) {
     this.runnables[runnable.id] = runnable;
     for (var i=0; i<runnable.inputs.length; i++) {
@@ -116,6 +151,13 @@ AwDocRenderer.prototype.addRunnable = function ( runnable ) {
         this._createNamedSection( input_id );
         this.named_sections[input_id].deps.push(runnable.id);
     }
+};
+
+AwDocRenderer.prototype.postSections = function( sections ) {
+    for (var i=0; i<sections.length; i++) {
+        this._assignId( sections[i].obj );
+    }
+    this.queue.post(sections);
 };
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
@@ -205,14 +247,6 @@ AwDocRenderer.prototype.runDeps = function ( id ) {
     }
 }
 
-AwDocRenderer.prototype.setCache = function ( cache ) {
-    this.cache = cache;
-    for (var i=0; i<cache.length; i++) {
-        var hash = cache[i].hash;
-        this.cache_map[hash] = i;
-    }
-}
-
 AwDocRenderer.prototype.setServerless = function ( ) {
     this.serverless = true;
     this.url_link.hidden = true;
@@ -236,39 +270,42 @@ AwDocRenderer.prototype._assignId= function(obj) {
     this.cnt++;
 }
 
-AwDocRenderer.prototype._createHash = function( str ) {
-    var hash = 0;
-    var prime = 127;
-    for (var i=0; i<str.length; i++) {
-        hash = hash * prime + ( str.charCodeAt(i) & 0xff );
-        hash |= 0; // 32-bit. JavaScript uses double float for numbers.
-    }
-    return hash.toString();
-};
-
 AwDocRenderer.prototype._createNamedSection = function( name ) {
 
     // Create the named section if it doesn't exist
     if (this.named_sections.hasOwnProperty(name) == false) this.named_sections[name] = {"obj": {}, "deps": []};
 };
 
-AwDocRenderer.prototype._dispatch = function(obj) {
+AwDocRenderer.prototype._dispatch = function(section) {
+    var that = this;
+    this.cache.renderSection( section, function(sections_out) {
+        if (sections_out.length == 0) {
+            that._dispatchRenderer(section);
+        }
+        else that.postSections(sections_out);
+    });
+};
 
-    // Attempt to render obj from cache.
-    if (this._renderUsingCache(obj)==false) {
-
-        // Can't render from cache. Invoke the relevant renderer.
-        var renderer_name = obj.obj.type;
-        if (this.renderers.hasOwnProperty(renderer_name)) {
-            this.renderers[renderer_name].renderObj( obj.obj, obj.div, obj.callback );
+AwDocRenderer.prototype._dispatchRenderer = function(section) {
+    var renderer_name = section.obj.type;
+    if (this.renderers.hasOwnProperty(renderer_name)) {
+        var renderer = this.renderers[renderer_name];
+        if (typeof renderer.renderSection === 'function') {
+            var that = this;
+            renderer.renderSection( section, function(sections_out) {
+                that._processOutputs( section, sections_out );
+            });
         }
         else {
-            var ta = document.createElement("textarea");
-            ta.value = "Error: No renderer for '" + renderer_name + "'\n";
-            ta.value += JSON.stringify(obj.obj);
-            ta.style.width = "100%";
-            obj.div.appendChild(ta);
+            renderer.renderObj( section.obj, section.div, section.callback );
         }
+    }
+    else {
+        var ta = document.createElement("textarea");
+        ta.value = "Error: No renderer for '" + renderer_name + "'\n";
+        ta.value += JSON.stringify(section.obj);
+        ta.style.width = "100%";
+        section.div.appendChild(ta);
     }
 };
 
@@ -278,7 +315,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     html += "\t\t<script src=\"AwAll.js\"></script>\n";
     html += "\t</head>\n\t<body>\n"
     html += "\t\t<textarea id=\"ta_awjson\" hidden>\n" + JSON.stringify(this.aw_json) + "\n\t\t</textarea>\n";
-    html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache) + "\n\t\t</textarea>\n";
+    html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache.cache) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
     html += "new AwDocViewer( \"" + this.docname + "\" );\n";
     html += "\t\t</script>\n";
@@ -292,6 +329,16 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     this.download_link.setAttribute("download", "AwDoc.html");
     this.download_link.innerHTML="Download doc.";
     this.download_link.hidden = false;
+};
+
+AwDocRenderer.prototype._processOutputs = function ( section_in, sections_out ) {
+    for (var i=0; i < sections_out.length; i++) {
+        var s = sections_out[i];
+        if (s.hasOwnProperty("hash_key")) {
+            this.cache.add( section_in, s);
+        }
+    }
+    this.postSections(sections_out);
 };
 
 AwDocRenderer.prototype._render = function( obj, src ) {
@@ -308,17 +355,5 @@ AwDocRenderer.prototype._render = function( obj, src ) {
     };
 
     this.post( obj, div, callback );
-};
-
-AwDocRenderer.prototype._renderUsingCache = function( obj ) {
-    if (obj.obj.hasOwnProperty("src")) {
-        var hash = this._createHash(JSON.stringify(obj.obj.src));
-        if (this.cache_map.hasOwnProperty(hash)) {
-            var cache = this.cache[this.cache_map[hash]];
-            this.post( cache.resp, obj.div, obj.callback );
-            return true;
-        }
-    }
-    return false;
 };
 

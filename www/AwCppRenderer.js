@@ -42,8 +42,8 @@ var XhrRenderer = function(url, awdoc_renderer) {
     }
 };
 
-XhrRenderer.prototype.renderObj = function( obj, div, callback ) {
-    this.queue.push({"obj":obj, "div":div, "callback":callback});
+XhrRenderer.prototype.renderSection = function( section, callback ) {
+    this.queue.push({"in": section, "callback": callback});
     this._next();
 };
 
@@ -51,7 +51,7 @@ XhrRenderer.prototype._next = function() {
     if (this.waiting==false) {
         if (this.queue.length > 0) {
             var obj = this.queue.shift();
-            this._query( obj.obj, obj.div, obj.callback );
+            this._query( obj.in, obj.callback );
         }
         else {
             this.awdoc_renderer.renderingComplete(this.renderer_id);
@@ -59,20 +59,21 @@ XhrRenderer.prototype._next = function() {
     }
 };
 
-XhrRenderer.prototype._query = function( obj, div, callback ) {
-    var use_cache = this.types[obj.type].cache;
+XhrRenderer.prototype._query = function( section, callback ) {
+    var use_cache = this.types[section.obj.type].cache;
     this.waiting = true;
     var that = this;
     var xhr = new XMLHttpRequest();
 	xhr.open("POST", this.url, true);
 	xhr.onload = function (event) {
 	    that.waiting = false;
-		var response_obj=JSON.parse(xhr.response);
-		if (use_cache) that.awdoc_renderer.addCache( obj, response_obj );
-		that.awdoc_renderer.post( response_obj, div, callback);
+	    section_out = {"div": section.div, "callback": section.callback};
+		section_out.obj=JSON.parse(xhr.response);
+		if (use_cache) section_out.hash_key = "src";
+		callback( [section_out] );
 		that._next();
 	};
-	xhr.send(JSON.stringify(obj));
+	xhr.send(JSON.stringify(section.obj));
 };
 
 var MonoRenderer = function( awdoc_renderer ) {
