@@ -99,7 +99,6 @@ AwDocViewer.prototype._openDoc = function( fn ) {
     this._instantiateRenderers( function() {
         FileSystem.readFile(fn, function( err, content ) {
             that.awdr.render(content);
-            that.awdr.start();
         });
     });
 };
@@ -111,7 +110,6 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
         var ta_cache = document.getElementById("ta_cache");
         that.awdr.cache.setCache(JSON.parse(ta_cache.value));
         that.awdr.render(ta_awjson.value);
-        that.awdr.start();
     });
 };
 

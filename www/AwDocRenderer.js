@@ -70,7 +70,6 @@ CacheRenderer.prototype._createHash = function( str ) {
 function Queue(callback) {
     this.queue = [];
     this.callback = callback;
-    this.running = false;
 }
 
 Queue.prototype.post = function ( obj ) {
@@ -82,12 +81,12 @@ Queue.prototype.post = function ( obj ) {
     else {
         this.queue.push(obj);
     }
-    if( this.running) this._dispatch();
-};
+    var that = this;
 
-Queue.prototype.start = function ( obj ) {
-    this.running = true;
-    this._dispatch();
+    // Dispatch on the next event cycle.
+    setTimeout( function(){
+        that._dispatch();
+    });
 };
 
 Queue.prototype._dispatch= function () {
@@ -250,11 +249,6 @@ AwDocRenderer.prototype.runDeps = function ( id ) {
 AwDocRenderer.prototype.setServerless = function ( ) {
     this.serverless = true;
     this.url_link.hidden = true;
-}
-
-
-AwDocRenderer.prototype.start = function () {
-    this.queue.start();
 }
 
 AwDocRenderer.prototype._assignId= function(obj) {
