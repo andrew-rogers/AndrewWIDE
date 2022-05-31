@@ -117,6 +117,7 @@ function AwDocRenderer(docname, div) {
     this.renderers["array"] = this;
     this.renderers["json"] = this;
     this.renderers["log"] = this;
+    this.renderers["runnable"] = this;
     this.async = [];
     this.named_sections = {};
     this.runnables = {};
@@ -224,6 +225,9 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     else if (type == "log") {
         this.ta_log.value += obj.msg;
         this.ta_log.hidden = false;
+    }
+    else if (type == "runnable") {
+        this.addRunnable( obj );
     }
 };
 

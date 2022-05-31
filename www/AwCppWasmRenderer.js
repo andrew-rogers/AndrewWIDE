@@ -59,9 +59,9 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             var div_result = document.createElement("div");
             div.appendChild(div_result);
             if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-            var runnable = {"id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "awcppwasm_run"};
-            this.awdr.addRunnable( runnable );
+            var runnable = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "awcppwasm_run"};
             this.call_queue.push(obj.id);
+            this.awdr.post(runnable, div_result, callback);
         }
         this._notifyBuild( div, callback );
     }
