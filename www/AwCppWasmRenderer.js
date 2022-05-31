@@ -37,6 +37,7 @@ var AwCppWasmRenderer = function(awdr) {
     this.call_queue=[];
     awdr.registerRenderer("awcppwasm_build", this);
     awdr.registerRenderer("wasm", this);
+    awdr.registerRenderer("awcppwasm_run", this);
     this.header = "#include \"wasm.h\"\n\n";
 };
 
@@ -58,11 +59,7 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
             var div_result = document.createElement("div");
             div.appendChild(div_result);
             if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-            var runnable = {"id":obj.id, "inputs": obj.inputs, "div":div_result};
-            var that = this;
-            runnable.run = function( callback ) {
-                that._run(runnable, callback);
-            };
+            var runnable = {"id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "awcppwasm_run"};
             this.awdr.addRunnable( runnable );
             this.call_queue.push(obj.id);
         }
@@ -86,6 +83,9 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
         Module.wasmBinary = Uint8Array.from(atob(obj.b64), c => c.charCodeAt(0)).buffer;
         this.runtime_js = obj.rt_js;
         this._insertRuntime();
+    }
+    if (type == "awcppwasm_run") {
+        this._run({"id": obj.id, "inputs": obj.inputs, "div":div}, callback);
     }
 };
 

@@ -242,7 +242,9 @@ AwDocRenderer.prototype.runDeps = function ( id ) {
     var deps = this.named_sections[id].deps;
     for (var i=0; i<deps.length; i++) {
         var runnable_id = deps[i];
-        this.runnables[runnable_id].run( callback );
+        var runnable = this.runnables[runnable_id];
+        runnable.type = runnable.run;
+        this.post( runnable, runnable.div, callback );
     }
 }
 
