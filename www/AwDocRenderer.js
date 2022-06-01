@@ -108,6 +108,7 @@ function AwDocRenderer(docname, div) {
 
     this.attributes = {};
     this.aw_json = []; // Used to store all document objects for download.
+    this.aw_objs = {}; // Dictionary of AwObjects keyed by id.
     this.div = div;
     this.renderers = {};
     var that = this;
@@ -120,9 +121,6 @@ function AwDocRenderer(docname, div) {
     this.renderers["array"] = this;
     this.renderers["json"] = this;
     this.renderers["log"] = this;
-    this.renderers["runnable"] = this.runnable;
-    this.renderers["run"] = this.runnable;
-    this.renderers["run_section"] = this.runnable;
     this.async = [];
     this.cache = new CacheRenderer();
 
@@ -217,6 +215,7 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
             if (obj.array[i]["hidden"]==true) new_div.hidden = true;
             div.appendChild(new_div);
             this._assignId(obj.array[i]);
+            this.aw_objs[obj.array[i].id] = obj.array[i];
             sections.push({"obj":obj.array[i], "div": new_div, "callback": callback});
         }
         this.queue.post(sections);
@@ -242,21 +241,13 @@ AwDocRenderer.prototype.renderingComplete = function ( id ) {
     if (done) this._prepareServerlessDoc();
 }
 
-AwDocRenderer.prototype.runDeps = function ( id ) {
-    this.runnable.runDeps(id);
-}
-
 AwDocRenderer.prototype.setServerless = function ( ) {
     this.serverless = true;
     this.url_link.hidden = true;
 }
 
 AwDocRenderer.prototype._assignId= function(obj) {
-    if (obj.hasOwnProperty("id")) {
-        // If section has an ID store it for later referencing.
-        if (obj.type == "mono") this.runnable.addSection( obj );
-    }
-    else {
+    if (obj.hasOwnProperty("id") == false) {
         // Create a default ID if one is not given
         obj.id = obj.type + "_" + this.cnt;
     }
@@ -342,6 +333,7 @@ AwDocRenderer.prototype._render = function( obj, src ) {
 
     obj.content = src;
     this.aw_json.push(obj);
+    this.aw_objs[obj.id] = obj;
     callback = function() {
         console.log(obj.type+" "+obj.id+" done!");
     };
@@ -353,20 +345,23 @@ function Runnable(awdr) {
     this.awdr = awdr;
     this.input_sections = {};
     this.runnables = {};
+    this.types = {
+        "run": {},
+        "runnable": {},
+        "run_section": {}
+    };
+    awdr.registerTypes(this.types, this);
 }
 
 Runnable.prototype.addRunnable = function ( runnable ) {
     this.runnables[runnable.id] = runnable;
     for (var i=0; i<runnable.inputs.length; i++) {
         var input_id = runnable.inputs[i];
-        this._createNamedSection( input_id );
+        if (this.input_sections.hasOwnProperty(input_id) == false) {
+            this.input_sections[input_id] = {"deps": [], "obj": this.awdr.aw_objs[input_id]};
+        }
         this.input_sections[input_id].deps.push(runnable.id);
     }
-};
-
-Runnable.prototype.addSection = function ( obj ) {
-    this._createNamedSection( obj.id );
-    this.input_sections[obj.id].obj = obj;
 };
 
 Runnable.prototype.renderSection = function( section_in, callback ) {
@@ -393,11 +388,6 @@ Runnable.prototype.runDeps = function ( id ) {
         var runnable_id = deps[i];
         this.awdr.post( {"type": "run", "id": deps[i]}, null, callback);
     }
-};
-
-Runnable.prototype._createNamedSection = function( name ) {
-    // Create the named section if it doesn't exist
-    if (this.input_sections.hasOwnProperty(name) == false) this.input_sections[name] = {"obj": {}, "deps": []};
 };
 
 Runnable.prototype._generateCallArgs = function ( input_sections ) {
