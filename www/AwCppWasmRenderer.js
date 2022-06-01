@@ -85,28 +85,18 @@ AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
         this._insertRuntime();
     }
     if (type == "awcppwasm_run") {
-        this._run({"id": obj.id, "inputs": obj.inputs, "div":div}, callback);
+        this._run( obj, div, callback );
     }
-};
-
-AwCppWasmRenderer.prototype._getInputs = function( inputs ) {
-    // Search the awdoc sections for the specified input sections and get their content.
-    ret = {};
-    for (var i=0; i<inputs.length; i++) {
-        var key = inputs[i];
-        ret[key] = this.awdr.named_sections[key].obj.content;
-    }
-    return ret;
 };
 
 AwCppWasmRenderer.prototype._insertRuntime = function() {
     that = this;
     Module.onRuntimeInitialized = function() {
 
-        // Call all functions in the call queue.
+        // Run all functions in the call queue.
         for (var i=0; i<that.call_queue.length; i++) {
             var id = that.call_queue[i];
-            that._run( that.awdr.runnables[id], callback );
+            that.awdr.post({"type": "run", "id": id});
         }
         that.call_queue=[];
     }
@@ -125,12 +115,11 @@ AwCppWasmRenderer.prototype._notifyBuild = function( div, callback ) {
     }
 };
 
-AwCppWasmRenderer.prototype._run = function( runnable, callback ) {
-    var args = {"inputs": that._getInputs(runnable.inputs)};
-    ccall("set_query","void",["string"],[JSON.stringify(args)]);
-    ccall(runnable.id,"void",[],[]);
+AwCppWasmRenderer.prototype._run = function( obj, div, callback ) {
+    ccall("set_query","void",["string"],[JSON.stringify(obj.args)]);
+    ccall(obj.id,"void",[],[]);
     var resp = ccall("get_response","string",[],[])
-    that.awdr.post(JSON.parse(resp), runnable.div, callback);
+    that.awdr.post(JSON.parse(resp), div, callback);
 };
 
 AwCppWasmRenderer.prototype._srcToWasm = function( src, div, callback ) {
