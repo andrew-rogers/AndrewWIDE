@@ -125,9 +125,8 @@ MonoRenderer.prototype.renderObj = function( obj, div, callback ) {
     // Run handler
     butt_run.onclick = function(e) {
         obj.content = ta.value;
-        that.awdr.runDeps(obj.id);
         var obj_out = {"type": "run_section", "id": obj.id};
-        //that.awdr.postSections([{"obj": obj_out}]);
+        that.awdr.postSections([{"obj": obj_out}]);
     };
 };
 

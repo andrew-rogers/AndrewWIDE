@@ -120,6 +120,7 @@ function AwDocRenderer(docname, div) {
     this.renderers["log"] = this;
     this.renderers["runnable"] = this.runnable;
     this.renderers["run"] = this.runnable;
+    this.renderers["run_section"] = this.runnable;
     this.async = [];
     this.cache = new CacheRenderer();
 
@@ -242,7 +243,7 @@ AwDocRenderer.prototype.setServerless = function ( ) {
 AwDocRenderer.prototype._assignId= function(obj) {
     if (obj.hasOwnProperty("id")) {
         // If section has an ID store it for later referencing.
-        this.runnable.addSection( obj );
+        if (obj.type == "mono") this.runnable.addSection( obj );
     }
     else {
         // Create a default ID if one is not given
@@ -365,6 +366,9 @@ Runnable.prototype.renderSection = function( section_in, callback ) {
     else if (type == "runnable") {
         this.addRunnable( section_in.obj );
     }
+    else if (type == "run_section") {
+        this.runDeps( id );
+    }
 };
 
 Runnable.prototype.runDeps = function ( id ) {
@@ -376,7 +380,6 @@ Runnable.prototype.runDeps = function ( id ) {
 };
 
 Runnable.prototype._createNamedSection = function( name ) {
-
     // Create the named section if it doesn't exist
     if (this.input_sections.hasOwnProperty(name) == false) this.input_sections[name] = {"obj": {}, "deps": []};
 };
