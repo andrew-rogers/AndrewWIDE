@@ -105,6 +105,7 @@ function AwDocRenderer(docname, div) {
         document.body.appendChild(div);
     }
 
+    this.attributes = {};
     this.aw_json = []; // Used to store all document objects for download.
     this.div = div;
     this.renderers = {};
@@ -165,6 +166,15 @@ AwDocRenderer.prototype.registerAsync = function( renderer ) {
 
 AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
     this.renderers[name]=renderer;
+};
+
+AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
+    var keys = Object.keys(types);
+    for (var i=0; i<keys.length; i++) {
+        var name = keys[i];
+        this.renderers[name] = renderer;
+        this.attributes[name] = types[name];
+    }
 };
 
 AwDocRenderer.prototype.render = function( awdoc ) {
@@ -308,9 +318,13 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
 };
 
 AwDocRenderer.prototype._processOutputs = function ( section_in, sections_out ) {
+    var type_in = section_in.obj.type;
+    var attributes = this.attributes[type_in] || {};
+    var hash_key = attributes["hash_key"] || null;
     for (var i=0; i < sections_out.length; i++) {
         var s = sections_out[i];
-        if (s.hasOwnProperty("hash_key")) {
+        if (hash_key) {
+            s.hash_key = hash_key;
             this.cache.add( section_in, s);
         }
     }

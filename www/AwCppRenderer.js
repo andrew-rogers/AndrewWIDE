@@ -32,14 +32,11 @@ var XhrRenderer = function(url, awdoc_renderer) {
     this.queue = [];
     this.renderer_id = awdoc_renderer.registerAsync(this);
     this.types = {
-        "func_src": {"cache": false},
-        "func": {"cache": false},
-        "awcppwasm_src": {"cache": true}
+        "func_src": {},
+        "func": {},
+        "awcppwasm_src": {"hash_key": "src"}
     };
-    var keys = Object.keys(this.types);
-    for (var i=0; i<keys.length; i++) {
-        awdoc_renderer.registerRenderer(keys[i], this);
-    }
+    awdoc_renderer.registerTypes(this.types, this);
 };
 
 XhrRenderer.prototype.renderSection = function( section, callback ) {
@@ -60,7 +57,6 @@ XhrRenderer.prototype._next = function() {
 };
 
 XhrRenderer.prototype._query = function( section, callback ) {
-    var use_cache = this.types[section.obj.type].cache;
     this.waiting = true;
     var that = this;
     var xhr = new XMLHttpRequest();
@@ -69,7 +65,6 @@ XhrRenderer.prototype._query = function( section, callback ) {
 	    that.waiting = false;
 	    section_out = {"div": section.div, "callback": section.callback};
 		section_out.obj=JSON.parse(xhr.response);
-		if (use_cache) section_out.hash_key = "src";
 		callback( [section_out] );
 		that._next();
 	};
