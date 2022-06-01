@@ -39,93 +39,87 @@ var AwCppWasmRenderer = function(awdr) {
     awdr.registerRenderer("wasm", this);
     awdr.registerRenderer("awcppwasm_run", this);
     this.header = "#include \"wasm.h\"\n\n";
+    this.module = "";
 };
 
-AwCppWasmRenderer.prototype.renderObj = function( obj, div, callback ) {
-    var type = obj.type;
+AwCppWasmRenderer.prototype.renderSection = function( section_in, callback ) {
+    this.module = section_in.doc.docname.slice(0,-6);
+    var type = section_in.obj.type;
     if (type == "awcppwasm") {
-        this._textArea( obj.content, div );
-
-        var id = obj.id;
-        if (id == "globals") {
-            this.globals_block += obj.content;
-        }
-        else if (id=="mk") {
-            if(this.awdr.serverless == false) this.awdr.post({"type":"func_src","module":this.awdr.docname.slice(0,-6),"src":obj.content,"func":"mk"}, div, callback);
-        }
-        else {
-            this.blocks[id] = obj.content;
-            // Create a div for the execution result
-            var div_result = document.createElement("div");
-            div.appendChild(div_result);
-            if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-            var runnable = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "awcppwasm_run"};
-            this.call_queue.push(obj.id);
-            this.awdr.post(runnable, div_result, callback);
-        }
-        this._notifyBuild( div, callback );
+        this._awcppwasm(section_in, callback);
     }
-    if (type == "awcppwasm_build") {
-        var src = this.header + this.globals_block;
-        var keys = Object.keys(this.blocks);
-        for (var i=0; i<keys.length; i++) {
-            var id = keys[i];
-            src += "EMSCRIPTEN_KEEPALIVE\n";
-            src += "extern \"C\" void "+id+"()\n";
-            src += "{\n";
-            src += this.blocks[id];
-            src += "}\n\n";
-        }
-        this.build_pending = false;
-        this._srcToWasm( src, div, callback );
+    else if (type == "awcppwasm_build") {
+        this._build(section_in, callback);
     }
-    if (type == "wasm") {
-        Module.wasmBinary = Uint8Array.from(atob(obj.b64), c => c.charCodeAt(0)).buffer;
-        this.runtime_js = obj.rt_js;
-        this._insertRuntime();
+    else if (type == "awcppwasm_run") {
+        this._run(section_in, callback);
     }
-    if (type == "awcppwasm_run") {
-        this._run( obj, div, callback );
+    else if (type == "wasm") {
+        this._wasm(section_in, callback);
     }
 };
 
-AwCppWasmRenderer.prototype._insertRuntime = function() {
-    that = this;
-    Module.onRuntimeInitialized = function() {
+AwCppWasmRenderer.prototype._awcppwasm = function( section_in, callback ) {
+    var obj = section_in.obj;
+    var div = section_in.div;
+    this._textArea( obj.content, div );
+    var sections_out = [];
 
-        // Run all functions in the call queue.
-        for (var i=0; i<that.call_queue.length; i++) {
-            var id = that.call_queue[i];
-            that.awdr.post({"type": "run", "id": id});
+    var id = obj.id;
+    if (id == "globals") {
+        this.globals_block += obj.content;
+    }
+    else if (id=="mk") {
+        if(this.awdr.serverless == false) {
+            s = {"div": section_in.div, "callback": section_in.callback};
+            s.obj = {"type":"func_src","module":this.module,"src":obj.content,"func":"mk"};
+            sections_out.push(s);
         }
-        that.call_queue=[];
+    }
+    else {
+        this.blocks[id] = obj.content;
+        // Create a div for the execution result
+        var div_result = document.createElement("div");
+        div.appendChild(div_result);
+        if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
+        this.call_queue.push(obj.id);
+        s = {"div": div_result, "callback": section_in.callback};
+        s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "awcppwasm_run"};
+        sections_out.push(s);
     }
 
-    // Create script element and inject the JavaScript
-    scr = document.createElement("script");
-    scr.innerText = this.runtime_js;
-    document.head.appendChild(scr);
-    this.build_pending = false;
-};
-
-AwCppWasmRenderer.prototype._notifyBuild = function( div, callback ) {
     if (!this.build_pending) {
         this.build_pending = true;
-        this.awdr.post({"type":"awcppwasm_build"}, div, callback);
+        var s = {"div": div, "callback": section_in.callback};
+        s.obj = {"type":"awcppwasm_build"};
+        sections_out.push(s);
     }
+    callback( sections_out );
 };
 
-AwCppWasmRenderer.prototype._run = function( obj, div, callback ) {
-    ccall("set_query","void",["string"],[JSON.stringify(obj.args)]);
-    ccall(obj.id,"void",[],[]);
+AwCppWasmRenderer.prototype._build = function( section_in, callback ) {
+    var src = this.header + this.globals_block;
+    var keys = Object.keys(this.blocks);
+    for (var i=0; i<keys.length; i++) {
+        var id = keys[i];
+        src += "EMSCRIPTEN_KEEPALIVE\n";
+        src += "extern \"C\" void "+id+"()\n";
+        src += "{\n";
+        src += this.blocks[id];
+        src += "}\n\n";
+    }
+    this.build_pending = false;
+    section_out = {"div": section_in.div, "callback": section_in.callback};
+    section_out.obj = {"type":"awcppwasm_src","module":this.module,"src":src}
+    callback( [section_out] );
+};
+
+AwCppWasmRenderer.prototype._run = function( section_in, callback ) {
+    ccall("set_query","void",["string"],[JSON.stringify(section_in.obj.args)]);
+    ccall(section_in.obj.id,"void",[],[]);
     var resp = ccall("get_response","string",[],[])
-    that.awdr.post(JSON.parse(resp), div, callback);
-};
-
-AwCppWasmRenderer.prototype._srcToWasm = function( src, div, callback ) {
-    // TODO: Create hash for source and lookup stored wasm.
-    // Compile if wam for source hash not found.
-    this.awdr.post({"type":"awcppwasm_src","module":this.awdr.docname.slice(0,-6),"src":src}, div, callback);
+    section_out = {"obj": JSON.parse(resp), "div": section_in.div, "callback": section_in.callback};
+    callback( [section_out] );
 };
 
 AwCppWasmRenderer.prototype._textArea = function( text, div ) {
@@ -136,5 +130,32 @@ AwCppWasmRenderer.prototype._textArea = function( text, div ) {
     div.appendChild(ta);
     ta.style.height = (ta.scrollHeight+8)+"px";
     return ta
+};
+
+AwCppWasmRenderer.prototype._wasm = function( section_in, callback) {
+    var obj = section_in.obj;
+    Module.wasmBinary = Uint8Array.from(atob(obj.b64), c => c.charCodeAt(0)).buffer;
+    this.runtime_js = obj.rt_js;
+
+    that = this;
+    Module.onRuntimeInitialized = function() {
+
+        // Run all functions in the call queue.
+        sections_out = [];
+        for (var i=0; i<that.call_queue.length; i++) {
+            var id = that.call_queue[i];
+            section_out = {}
+            section_out.obj = {"type": "run", "id": id};
+            sections_out.push(section_out);
+        }
+        callback( sections_out );
+        that.call_queue=[];
+    }
+
+    // Create script element and inject the JavaScript
+    scr = document.createElement("script");
+    scr.innerText = this.runtime_js;
+    document.head.appendChild(scr);
+    this.build_pending = false;
 };
 

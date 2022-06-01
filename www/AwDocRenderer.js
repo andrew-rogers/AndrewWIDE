@@ -97,6 +97,7 @@ Queue.prototype._dispatch= function () {
 };
 
 function AwDocRenderer(docname, div) {
+    this.doc = {"docname": docname};
     this.docname = docname;
     if(div){
         div=div;
@@ -264,6 +265,7 @@ AwDocRenderer.prototype._assignId= function(obj) {
 
 AwDocRenderer.prototype._dispatch = function(section) {
     var that = this;
+    section.doc = this.doc; // Document globals.
     this.cache.renderSection( section, function(sections_out) {
         if (sections_out.length == 0) {
             that._dispatchRenderer(section);
