@@ -1,0 +1,48 @@
+AW{"type":"mjmd"}
+
+Sample Block Interface to Replace JSON
+-------------------------------------- 
+
+Embedded systems often have small amounts of RAM and do not use dynamic memory allocation. By applying these same
+constraints to the WebAssembly that AndrewWIDE generates, the generated binary can be much smaller. The JSON interface
+requires the use of dynamic memory allocation, string stream libraries and other STL code that results in a large
+binary. An alternative interface is being developed that uses a number of sample block type interfaces.
+
+AW{"type":"awsignal","id":"globals","hidden":true}
+
+#include "Array"
+
+class FIR
+{
+public:
+    FIR( const Array<f32>& coeffs, Array<f32>& state) : m_coeffs( coeffs ), m_state(state)
+    {
+    }
+    
+    void processBlock( const Array<f32>& input, Array<f32>& output )
+    {
+        // TODO: Implement FIR filter function
+        // For now just copy input to output
+        for(size_t i=0; i<m_blockSize; i++) output[i] = input[i];
+    }
+}
+
+AW{"type":"mjmd"}
+
+The C++ code below is wrapped in a function with *input* and *output* as parameters. AwDoc javascript runtime knows how
+to call the function as the interface type is specified with the *interface* parameter in the header.
+
+AW{"type": "awsignal", "interface": "filter", "bs": 64, "id": "fir"}
+
+static ArrayAlloc<f32,4> coeffs = {1,2,2,1};
+static ArrayAlloc<f32,67> state;
+static Fir f(coeffs,state);
+
+f.processBlock( input, output );
+
+AW{"type": "javascript"}
+
+x=[1,0,0,0,0,0,0,0];
+plot(fir(x));
+xlabel("sample(n)");
+ylabel("Amplitude");
