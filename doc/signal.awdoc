@@ -50,6 +50,7 @@ f.processBlock( input, output );
 AW{"type": "javascript"}
 
 x=[1,0,0,0,0,0,0,0];
-plot(fir(x));
-xlabel("sample(n)");
-ylabel("Amplitude");
+y=fir(x);
+plot(y);
+//xlabel("sample(n)");
+//ylabel("Amplitude");

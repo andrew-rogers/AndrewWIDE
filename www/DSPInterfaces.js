@@ -25,10 +25,18 @@
  *
  */
 
-var FilterInterface = function() {
+var FilterInterface = function(js_renderer) {
+    this.js_renderer = js_renderer;
 };
 
 FilterInterface.prototype.genCpp = function( obj ) {
+    var js=this._js( obj );
+    var cpp=this._cpp( obj );
+    this.js_renderer.addFunction( obj.id, js );
+    return cpp;
+};
+
+FilterInterface.prototype._cpp = function( obj ) {
     var type = "Array<float>&";
     var ret = "";
     ret += "EMSCRIPTEN_KEEPALIVE\n";
@@ -39,3 +47,9 @@ FilterInterface.prototype.genCpp = function( obj ) {
     return ret;
 };
 
+FilterInterface.prototype._js = function( obj ) {
+    var src="";
+    src += "var x = arguments[0];\n";
+    src += "return x;\n"; // TODO: Call C++ filter function repeatedly until enitre list is processed.
+    return src;
+};
