@@ -8,14 +8,16 @@ constraints to the WebAssembly that AndrewWIDE generates, the generated binary c
 requires the use of dynamic memory allocation, string stream libraries and other STL code that results in a large
 binary. An alternative interface is being developed that uses a number of sample block type interfaces.
 
-AW{"type":"awsignal","id":"globals","hidden":true}
+AW{"type":"awcppwasm","id":"globals","hidden":true}
 
-#include "Array"
+#include "Array.h"
 
-class FIR
+typedef float f32;
+
+class Fir
 {
 public:
-    FIR( const Array<f32>& coeffs, Array<f32>& state) : m_coeffs( coeffs ), m_state(state)
+    Fir( const Array<f32>& coeffs, Array<f32>& state) : m_coeffs( coeffs ), m_state(state), m_blockSize(state.size() - coeffs.size() + 1U)
     {
     }
     
@@ -25,18 +27,27 @@ public:
         // For now just copy input to output
         for(size_t i=0; i<m_blockSize; i++) output[i] = input[i];
     }
-}
+
+private:
+    const Array<f32>& m_coeffs;
+    Array<f32>& m_state;
+    size_t m_blockSize;
+};
 
 AW{"type":"mjmd"}
 
 The C++ code below is wrapped in a function with *input* and *output* as parameters. AwDoc javascript runtime knows how
 to call the function as the interface type is specified with the *interface* parameter in the header.
 
-AW{"type": "awsignal", "interface": "filter", "bs": 64, "id": "fir"}
+AW{"type": "awcppwasm", "interface": "filter", "bs": 64, "id": "fir"}
 
 static ArrayAlloc<f32,4> coeffs = {1,2,2,1};
 static ArrayAlloc<f32,67> state;
 static Fir f(coeffs,state);
+
+// TODO: Get AwCppWasmRenderer to generate the correct function signature to include input and output parameters.
+ArrayAlloc<f32,64> input;
+ArrayAlloc<f32,64> output;
 
 f.processBlock( input, output );
 

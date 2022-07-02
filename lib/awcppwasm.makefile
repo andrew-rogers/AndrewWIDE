@@ -19,7 +19,7 @@ AWSRC_DIR=$(AW_DIR)/src
 AWLIB_DIR=$(AW_DIR)/src/wasm
 SIGNAL_DIR=$(AW_DIR)/lib/signal
 
-CXXFLAGS += -I.. -I$(AWSRC_DIR)/aw_json -I$(AWSRC_DIR)/utils -I$(SIGNAL_DIR)
+CXXFLAGS += -I.. -I$(AWSRC_DIR)/aw_json -I$(AWSRC_DIR)/lib -I$(AWSRC_DIR)/utils -I$(SIGNAL_DIR)
 LDFLAGS=-L$(AWLIB_DIR) -L$(SIGNAL_DIR)
 
 -include includes.mk
