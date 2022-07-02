@@ -33,6 +33,7 @@ var AwCppWasmRenderer = function(awdr) {
     this.runtime_js = "";
     this.build_pending = false;
     this.blocks = {};
+    this.cpp_src = "";
     this.globals_block = "";
     this.call_queue=[];
     awdr.registerRenderer("awcppwasm_build", this);
@@ -40,6 +41,11 @@ var AwCppWasmRenderer = function(awdr) {
     awdr.registerRenderer("awcppwasm_run", this);
     this.header = "#include \"wasm.h\"\n\n";
     this.module = "";
+    this.interfaces = {};
+};
+
+AwCppWasmRenderer.prototype.addInterface = function( name, i ) {
+    this.interfaces[name] = i;
 };
 
 AwCppWasmRenderer.prototype.renderSection = function( section_in, callback ) {
@@ -77,7 +83,8 @@ AwCppWasmRenderer.prototype._awcppwasm = function( section_in, callback ) {
         }
     }
     else {
-        this.blocks[id] = obj.content;
+        if (obj.hasOwnProperty("interface")) this.cpp_src += this.interfaces[obj.interface].genCpp(obj);
+        else this.blocks[id] = obj.content;
         // Create a div for the execution result
         var div_result = document.createElement("div");
         div.appendChild(div_result);
@@ -108,6 +115,7 @@ AwCppWasmRenderer.prototype._build = function( section_in, callback ) {
         src += this.blocks[id];
         src += "}\n\n";
     }
+    src += this.cpp_src;
     this.build_pending = false;
     section_out = {"div": section_in.div, "callback": section_in.callback};
     section_out.obj = {"type":"awcppwasm_src","module":this.module,"src":src}

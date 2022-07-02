@@ -79,6 +79,8 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     var scripts = [];
     if (typeof MathJaxMarkdownRenderer === 'undefined') scripts.push("MathJaxMarkdownRenderer.js");
     if (typeof PlotRenderer === 'undefined') scripts.push("PlotRenderer.js");
+    if (typeof FilterInterface === 'undefined') scripts.push("DSPInterfaces.js");
+
 
     asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);
@@ -88,6 +90,8 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         that.awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
         that.awdr.registerRenderer("diagram", new DiagramRenderer());
         new PlotRenderer(that.awdr);
+        var fi = new FilterInterface();
+        cppwasm.addInterface("filter", fi);
         callback();
     };
     asyncLoader.load( scripts );

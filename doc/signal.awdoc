@@ -45,10 +45,6 @@ static ArrayAlloc<f32,4> coeffs = {1,2,2,1};
 static ArrayAlloc<f32,67> state;
 static Fir f(coeffs,state);
 
-// TODO: Get AwCppWasmRenderer to generate the correct function signature to include input and output parameters.
-ArrayAlloc<f32,64> input;
-ArrayAlloc<f32,64> output;
-
 f.processBlock( input, output );
 
 AW{"type": "javascript"}
