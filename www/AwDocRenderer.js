@@ -343,11 +343,15 @@ AwDocRenderer.prototype._render = function( obj, src ) {
 
 function Runnable(awdr) {
     this.awdr = awdr;
+    this.disables={}; // If any items in this object are true, running is disabled and queued for later.
     this.input_sections = {};
+    this.queue = [];
     this.runnables = {};
     this.types = {
         "run": {},
         "runnable": {},
+        "run_enable": {},
+        "run_disable": {},
         "run_section": {}
     };
     awdr.registerTypes(this.types, this);
@@ -368,14 +372,16 @@ Runnable.prototype.renderSection = function( section_in, callback ) {
     var type = section_in.obj.type;
     var id = section_in.obj.id;
     if (type == "run") {
-        var runnable = this.runnables[id];
-        var args = this._generateCallArgs(runnable.inputs);
-        var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
-        section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
-        callback( [section_out] );
+        this._run( section_in, callback );
     }
     else if (type == "runnable") {
         this.addRunnable( section_in.obj );
+    }
+    else if (type == "run_enable") {
+        this._enable( section_in, callback );
+    }
+    else if (type == "run_disable") {
+        this._disable( section_in, callback );
     }
     else if (type == "run_section") {
         this.runDeps( id );
@@ -390,6 +396,30 @@ Runnable.prototype.runDeps = function ( id ) {
     }
 };
 
+Runnable.prototype._disable = function ( section_in, callback ) {
+    var name = section_in.obj.name;
+    this.disables[name] = true;
+};
+
+Runnable.prototype._dispatch = function () {
+    while( this.queue.length > 0 ) {
+        obj = this.queue.shift();
+        var section_in = obj.section_in;
+        var callback = obj.callback;
+        var runnable = this.runnables[section_in.obj.id];
+        var args = this._generateCallArgs(runnable.inputs);
+        var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
+        section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
+        callback( [section_out] );
+    }
+};
+
+Runnable.prototype._enable = function ( section_in, callback ) {
+    var name = section_in.obj.name;
+    delete this.disables[name];
+    if (Object.keys(this.disables).length == 0) this._dispatch();
+};
+
 Runnable.prototype._generateCallArgs = function ( input_sections ) {
     // Search the specified input sections and get their content.
     ret = {};
@@ -398,5 +428,11 @@ Runnable.prototype._generateCallArgs = function ( input_sections ) {
         ret[key] = this.input_sections[key].obj.content;
     }
     return {"inputs": ret};
+};
+
+Runnable.prototype._run = function ( section_in, callback ) {
+    var obj = {"section_in": section_in, "callback": callback};
+    this.queue.push(obj);
+    if (Object.keys(this.disables).length == 0) this._dispatch();
 };
 

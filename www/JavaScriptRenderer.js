@@ -43,7 +43,12 @@ var JavaScriptRenderer = function(awdoc_renderer) {
     };
 };
 
-JavaScriptRenderer.prototype.addFunction = function( id, src ) {
+JavaScriptRenderer.prototype.addFunction = function( id, func ) {
+    this.pagejs_vars += "var " + id + "=pagejs." + id + ";\n";
+    pagejs[id] = func;
+};
+
+JavaScriptRenderer.prototype.addFunctionE = function( id, src ) {
     this.pagejs_vars += "var " + id + "=pagejs." + id + ";\n";
     pagejs[id] = Function(this.pagejs_vars + src);
 };

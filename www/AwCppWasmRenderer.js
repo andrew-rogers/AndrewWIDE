@@ -35,7 +35,6 @@ var AwCppWasmRenderer = function(awdr) {
     this.blocks = {};
     this.cpp_src = "";
     this.globals_block = "";
-    this.call_queue=[];
     awdr.registerRenderer("awcppwasm_build", this);
     awdr.registerRenderer("wasm", this);
     awdr.registerRenderer("awcppwasm_run", this);
@@ -89,9 +88,20 @@ AwCppWasmRenderer.prototype._awcppwasm = function( section_in, callback ) {
         var div_result = document.createElement("div");
         div.appendChild(div_result);
         if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-        this.call_queue.push(obj.id);
-        s = {"div": div_result, "callback": section_in.callback};
+
+        // Disable run
+        var s = {"div": div_result, "callback": section_in.callback};
+        s.obj = {"type": "run_disable", "name": "awcppwasm"};
+        sections_out.push(s);
+
+        // Create a runnable for this C++ function.
+        var s = {"div": div_result, "callback": section_in.callback};
         s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "awcppwasm_run"};
+        sections_out.push(s);
+
+        // Queue the run for this C++ function.
+        var s = {}
+        s.obj = {"type": "run", "id": obj.id};
         sections_out.push(s);
     }
 
@@ -148,16 +158,10 @@ AwCppWasmRenderer.prototype._wasm = function( section_in, callback) {
     that = this;
     Module.onRuntimeInitialized = function() {
 
-        // Run all functions in the call queue.
-        sections_out = [];
-        for (var i=0; i<that.call_queue.length; i++) {
-            var id = that.call_queue[i];
-            section_out = {}
-            section_out.obj = {"type": "run", "id": id};
-            sections_out.push(section_out);
-        }
-        callback( sections_out );
-        that.call_queue=[];
+        // Enable run
+        var s = {};
+        s.obj = {"type": "run_enable", "name": "awcppwasm"};
+        callback( [s] );
     }
 
     // Create script element and inject the JavaScript

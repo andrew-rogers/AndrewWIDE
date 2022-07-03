@@ -30,26 +30,35 @@ var FilterInterface = function(js_renderer) {
 };
 
 FilterInterface.prototype.genCpp = function( obj ) {
-    var js=this._js( obj );
     var cpp=this._cpp( obj );
-    this.js_renderer.addFunction( obj.id, js );
+    var that = this;
+    this.js_renderer.addFunction( obj.id, function(x) {
+        return that._call( obj, x );
+    });
     return cpp;
 };
 
+FilterInterface.prototype._call = function( obj, x ) {
+    x[2]=0.5;
+    var cfunc = obj.id;
+    // TODO: Call C++ filter function repeatedly until enitre list is processed.
+    var stack = stackSave();
+    // stackAlloc returns 16-byte aligned addresses.
+    var p_in = stackAlloc(obj.bs*4);
+    var p_out = stackAlloc(obj.bs*4);
+    stackRestore(stack);
+    return x;
+};
+
 FilterInterface.prototype._cpp = function( obj ) {
-    var type = "Array<float>&";
     var ret = "";
     ret += "EMSCRIPTEN_KEEPALIVE\n";
-    ret += "extern \"C\" void "+obj.id+"( const "+type+" input, "+type+" output )\n";
+    ret += "extern \"C\" void "+obj.id+"( float* _input, float* _output )\n";
     ret += "{\n";
+    ret += "    Array<float> input(_input, " + obj.bs + ");\n";
+    ret += "    Array<float> output(_output, " + obj.bs + ");\n";
     ret += obj.content;
     ret += "}\n\n";
     return ret;
 };
 
-FilterInterface.prototype._js = function( obj ) {
-    var src="";
-    src += "var x = arguments[0];\n";
-    src += "return x;\n"; // TODO: Call C++ filter function repeatedly until enitre list is processed.
-    return src;
-};
