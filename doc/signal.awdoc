@@ -25,7 +25,7 @@ public:
     {
         // TODO: Implement FIR filter function
         // For now just copy input to output
-        for(size_t i=0; i<m_blockSize; i++) output[i] = input[i];
+        for(size_t i=0; i<m_blockSize; i++) output[i] = input[i]-0.3;
     }
 
 private:

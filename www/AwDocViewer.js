@@ -81,6 +81,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof PlotRenderer === 'undefined') scripts.push("PlotRenderer.js");
     if (typeof FilterInterface === 'undefined') scripts.push("DSPInterfaces.js");
     if (typeof JavaScriptRenderer === 'undefined') scripts.push("JavaScriptRenderer.js");
+    if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
 
     asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);

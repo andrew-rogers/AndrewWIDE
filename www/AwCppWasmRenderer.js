@@ -28,6 +28,9 @@
 // The Emscripten generated runtime uses a global Module object
 Module = {};
 
+// Use our own runtime also.
+wasm = null;
+
 var AwCppWasmRenderer = function(awdr) {
     this.awdr = awdr;
     this.runtime_js = "";
@@ -41,6 +44,7 @@ var AwCppWasmRenderer = function(awdr) {
     this.header = "#include \"wasm.h\"\n\n";
     this.module = "";
     this.interfaces = {};
+    wasm = new WasmRuntime();
 };
 
 AwCppWasmRenderer.prototype.addInterface = function( name, i ) {
