@@ -15,16 +15,19 @@ SRCS = AwDocViewer.js \
  AwCppRenderer.js \
  AwCppWasmRenderer.js \
  AwDocRenderer.js \
+ DSPInterfaces.js \
  Diagram/Geometry.js \
  Diagram/Plot/Plot.js \
  Diagram/Shapes/SignalProcessing.js \
  Diagram/SvgFigure.js \
  DiagramRenderer.js \
  FileSystem.js \
+ JavaScriptRenderer.js \
  JsonQuery.js \
  MathJaxMarkdownRenderer.js \
  NavBar.js \
  PlotRenderer.js \
+ WasmRuntime.js \
  XML.js \
  file.js \
  fileselector.js \

@@ -39,7 +39,6 @@ FilterInterface.prototype.genCpp = function( obj ) {
 };
 
 FilterInterface.prototype._call = function( obj, x ) {
-    x[2]=0.5;
     var bs = obj.bs;
     var cfunc = wasm.cfunc(obj.id);
     var p_in = wasm.stackAlloc(bs*4);

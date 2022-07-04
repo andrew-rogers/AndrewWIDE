@@ -19,13 +19,43 @@ class Fir
 public:
     Fir( const Array<f32>& coeffs, Array<f32>& state) : m_coeffs( coeffs ), m_state(state), m_blockSize(state.size() - coeffs.size() + 1U)
     {
+        for( size_t i=0; i<state.size(); i++) m_state[i] = 0.0F;
     }
-    
+
     void processBlock( const Array<f32>& input, Array<f32>& output )
     {
-        // TODO: Implement FIR filter function
-        // For now just copy input to output
-        for(size_t i=0; i<m_blockSize; i++) output[i] = input[i]-0.3;
+        /* Input samples are copied to the state buffer before MACs are computed.
+
+
+                    +-----+-----+-----+-----+-----+
+            input   |     |     |     |     |     |   Diagram for five samples and three taps. The actual
+                    +-----+-----+-----+-----+-----+   implementation is more generic.
+                       |     |     |     |     |
+                       v     v     v     v     v
+        +-----+-----+-----+-----+-----+-----+-----+
+        |     |     |     |     |     |     |     |
+        +-----+-----+-----+-----+-----+-----+-----+
+           |     |     |           |     |     |      Note: Only calculations for the first and final
+           |     v     v           |     v     v      outputs shown as ASCII art is limited.
+           '--->(+)-->(+)          '--->(+)-->(+)
+                       |                       |      y[0] = b[0]*s[2] + b[1]*s[1] + b[2]*s[0]
+                       v                       v      y[1] = b[0]*s[3] + b[1]*s[2] + b[2]*s[1]
+                    +-----+-----+-----+-----+-----+   y[2] = b[0]*s[4] + b[1]*s[3] + b[2]*s[2]
+            output  |     |     |     |     |     |   y[3] = b[0]*s[5] + b[1]*s[4] + b[2]*s[3]
+                    +-----+-----+-----+-----+-----+   y[4] = b[0]*s[6] + b[1]*s[5] + b[2]*s[4]
+        */
+
+        size_t order = m_coeffs.size() - 1U;
+        for( size_t i=0; i<m_blockSize; i++) m_state[i+order] = input[i];
+        for( size_t i=0; i<m_blockSize; i++)
+        {
+            f32 y = m_coeffs[0] * m_state[i+order];
+            for (size_t j=1; j<=order; j++) y = y + m_coeffs[j] * m_state[i+order-j];
+            output[i] = y;
+        }
+
+        // TODO: Implement circular buffer but for now shift the state buffer.
+        for( size_t i=0; i<order; i++) m_state[i] = m_state[i+m_blockSize];
     }
 
 private:
