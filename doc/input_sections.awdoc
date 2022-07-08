@@ -65,3 +65,12 @@ AW{"type":"awcppwasm","inputs":["params1"]}
     Parameters params("params1");
     plot(params["samples"]);
 
+AW{"type":"mjmd"}
+As the JavaScript code can access the wasm memory the conversion to and from JSON can be avoided. Instead a buffers
+interface is used.
+
+AW{"type":"awcppwasm","inputs":["params"]}
+    auto str_params = globals.inputs[0].str();
+    readParams(str_params);
+    plot(g_samples);
+

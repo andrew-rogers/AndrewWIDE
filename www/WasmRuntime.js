@@ -29,8 +29,24 @@ var WasmRuntime = function() {
     this.stack=0;
 };
 
+WasmRuntime.prototype.addInputString = function( string ) {
+    var size = string.length*4+1;
+    buf = this.allocInput( size );
+    this.writeString( string, buf );
+};
+
+WasmRuntime.prototype.allocInput = function( num_bytes ) {
+    var func = this.cfunc( "alloc_input" );
+    return func(num_bytes);
+};
+
 WasmRuntime.prototype.cfunc = function( func_name ) {
     return getCFunc( func_name );
+};
+
+WasmRuntime.prototype.clearBuffers = function() {
+    var func = this.cfunc( "clear_buffers" );
+    func();
 };
 
 WasmRuntime.prototype.readF32 = function( address, num ) {
@@ -53,3 +69,6 @@ WasmRuntime.prototype.writeF32 = function( arr, address ) {
     HEAPF32.set( arr, address >> 2 );
 };
 
+WasmRuntime.prototype.writeString = function( string, address ) {
+    stringToUTF8( string, address, string.length*4+1 );
+};
