@@ -1,5 +1,5 @@
 /*
- * AndrewWIDE - Buffer handling for interfacing C++ sections into JavaScript.
+ * AndrewWIDE - Named Values support class.
  * Copyright (C) 2022  Andrew Rogers
  *
  * SPDX-License-Identifier: MIT
@@ -23,19 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef WASM_BUFFERS_H
-#define WASM_BUFFERS_H
+#ifndef NAMED_VALUES_H
+#define NAMED_VALUES_H
 
 #include "Buffers.h"
-#include "NamedValues.h"
+#include <string_view>
 
-struct Globals
+class NamedValues
 {
-    BufferArray inputs;
-    BufferArray outputs;
-} extern globals;
+public:
+    NamedValues( const Buffer& buf );
+private:
+    std::string_view m_str;
+};
 
-NamedValues getNamedValues( const std::string input_name );
-
-#endif // WASM_BUFFERS_H
+#endif // NAMED_VALUES_H
 

@@ -69,3 +69,10 @@ extern "C" void* get_output( size_t index, size_t* size )
     return ptr;
 }
 
+NamedValues getNamedValues( const std::string input_name )
+{
+    Buffer& buf_names = globals.inputs[globals.inputs.size()-1];
+    // TODO: Get the referenced buffer.
+    return NamedValues( buf_names );
+}
+

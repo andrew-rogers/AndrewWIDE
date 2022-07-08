@@ -34,11 +34,11 @@ class Buffer
 {
 public:
     Buffer( void* ptr, size_t size );
-    void* data()
+    void* data() const
     {
         return m_ptr;
     }
-    size_t size()
+    size_t size() const
     {
         return m_size;
     }
