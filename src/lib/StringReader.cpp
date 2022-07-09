@@ -38,3 +38,13 @@ std::string_view StringReader::read()
     return m_input.substr(pos, found-pos);
 }
 
+std::vector<std::string_view> StringReader::readAll()
+{
+    std::vector<std::string_view> ret;
+    while (good())
+    {
+        ret.push_back(read());
+    }
+    return ret;
+}
+

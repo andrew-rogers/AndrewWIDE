@@ -27,14 +27,19 @@
 #define NAMED_VALUES_H
 
 #include "Buffers.h"
+#include "Array.h"
 #include <string_view>
 
 class NamedValues
 {
 public:
     NamedValues( const Buffer& buf );
+    size_t find( const std::string val_name );
+    std::vector<double> getF64( const std::string val_name );
 private:
     std::string_view m_str;
+    std::vector<std::string_view> m_names;
+    std::vector<std::string_view> m_vals;
 };
 
 #endif // NAMED_VALUES_H

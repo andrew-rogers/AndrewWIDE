@@ -39,6 +39,7 @@ public:
         return m_good;
     }
     std::string_view read();
+    std::vector<std::string_view> readAll();
 
 private:
     char m_delim;

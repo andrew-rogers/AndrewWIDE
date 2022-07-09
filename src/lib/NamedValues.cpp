@@ -24,8 +24,50 @@
  */
 
 #include "NamedValues.h"
+#include "StringReader.h"
 
 NamedValues::NamedValues( const Buffer& buf ) : m_str((char*)buf.data(), buf.size())
 {
+    // Get lines.
+    auto line_reader = StringReader(m_str, '\n');
+
+    // For each line, get the name and values string
+    while (line_reader.good())
+    {
+        auto line = line_reader.read();
+        auto name_reader = StringReader(line, ':');
+        auto name = name_reader.read();
+        auto vals = name_reader.read();
+        m_names.push_back(name);
+        m_vals.push_back(vals);
+    }
+}
+
+size_t NamedValues::find( const std::string val_name )
+{
+    for (size_t i=0; i<m_names.size(); i++)
+    {
+        if (m_names[i].compare(val_name) == 0) return i;
+    }
+    return std::string_view::npos;
+}
+
+std::vector<double> NamedValues::getF64( const std::string val_name )
+{
+    std::vector<double> ret;
+
+    // Lookup name to get values string.
+    size_t index = find( val_name );
+    if (index>=m_vals.size()) return ret;
+    auto val_str = m_vals[index];
+
+    // Convert values string to vector.
+    auto value_reader = StringReader(val_str, ',');
+    while (value_reader.good())
+    {
+        double val = stod(std::string(value_reader.read()));
+        ret.push_back(val);
+    }
+    return ret;
 }
 
