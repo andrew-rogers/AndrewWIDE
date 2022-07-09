@@ -13,6 +13,7 @@ endif
 
 ifeq '$(findstring emcc,$(CC))' 'emcc'
     OUTPUTS := wasm
+    LIB_OBJS = $(OUTPUTS)/lib/wasm_buffers.o
 else
     OUTPUTS := outputs
     LIB_OBJS = $(OUTPUTS)/cgi/filesystem.o
@@ -29,7 +30,6 @@ LIB_OBJS += \
  $(OUTPUTS)/aw_json/trace.o \
  $(OUTPUTS)/utils/Debug.o \
  $(OUTPUTS)/utils/LineReader.o \
- $(OUTPUTS)/lib/wasm_buffers.o \
  $(OUTPUTS)/lib/Buffers.o \
  $(OUTPUTS)/lib/NamedValues.o \
  $(OUTPUTS)/lib/StringReader.o

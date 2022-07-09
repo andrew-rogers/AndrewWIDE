@@ -31,18 +31,10 @@ StringReader::StringReader( std::string_view str, char delim ) : m_delim(delim),
 
 std::string_view StringReader::read()
 {
-    std::string_view ss;
     std::size_t found = m_input.find(m_delim, m_pos);
-    if (found != std::string::npos)
-    {
-        std::size_t i1 = found;
-        ss = m_input.substr(m_pos, i1-m_pos);
-        m_pos = found + 1;
-    }
-    else
-    {
-        m_good = false;
-    }
-    return ss;
+    if (found == std::string::npos) m_good = false;
+    std::size_t pos = m_pos;
+    m_pos = found+1;
+    return m_input.substr(pos, found-pos);
 }
 

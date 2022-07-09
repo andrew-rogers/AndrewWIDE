@@ -34,9 +34,10 @@ extern "C" void console_log(const char* str);
 class InputBufferVector : public BufferVector
 {
 public:
-    const Buffer& byName( const std::string name ) const;
+    const Buffer& byName( const std::string name );
+    void clear();
 private:
-    std::vector<std::string> m_names;
+    std::vector<std::string_view> m_names;
 };
 
 class OutputBufferVector : public std::vector<Buffer*>
@@ -49,6 +50,7 @@ struct Globals
     OutputBufferVector outputs;
 } extern globals;
 
+const Buffer& getInput( const std::string input_name );
 NamedValues getParameters( const std::string input_name );
 
 #endif // WASM_BUFFERS_H

@@ -33,6 +33,11 @@ EM_JS( void, console_log, (const char* str), {
     console.log(UTF8ToString(str))
 });
 
+void console_log(size_t n)
+{
+    console_log(std::to_string(n).c_str());
+}
+
 EMSCRIPTEN_KEEPALIVE
 extern "C" void* add_input( void* ptr, size_t num_bytes )
 {
@@ -84,15 +89,33 @@ NamedValues getParameters( const std::string input_name )
     return NamedValues( buf );
 }
 
-const Buffer& InputBufferVector::byName( const std::string key ) const
+const Buffer& InputBufferVector::byName( const std::string key )
 {
+    static const Buffer null(0,0);
 
     // TODO: Last buffer will be a string of buffer names. Extract the names and get named buffer.
     if (m_names.empty())
     {
         const Buffer& buf = (*this)[size()-1];
-        auto sr = StringReader( std::string_view( (char*)buf.data(), buf.size() ) );
+        auto sr = StringReader( std::string_view( (char*)buf.data() ) );
+        while (sr.good())
+        {
+            std::string_view n = sr.read();
+            m_names.push_back(n);
+        }
     }
-    return (*this)[0];
+    for (size_t i=0; i<m_names.size(); i++)
+    {
+        if (m_names[i].compare(key) == 0)
+        {
+            return (*this)[i];
+        }
+    }
+    return null;
 }
 
+void InputBufferVector::clear()
+{
+    BufferVector::clear();
+    m_names.clear();
+}
