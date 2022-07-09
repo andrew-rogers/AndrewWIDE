@@ -73,4 +73,6 @@ AW{"type":"awcppwasm","inputs":["params"]}
     auto str_params = globals.inputs[0].str();
     readParams(str_params);
     plot(g_samples);
+    auto p=NamedValues(globals.inputs.byName("params"));
+    auto p1=getParameters("params");
 

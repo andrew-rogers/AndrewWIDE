@@ -31,7 +31,8 @@ LIB_OBJS += \
  $(OUTPUTS)/utils/LineReader.o \
  $(OUTPUTS)/lib/wasm_buffers.o \
  $(OUTPUTS)/lib/Buffers.o \
- $(OUTPUTS)/lib/NamedValues.o
+ $(OUTPUTS)/lib/NamedValues.o \
+ $(OUTPUTS)/lib/StringReader.o
 
 all:	$(OUTPUTS) $(OUTPUTS)/libAw.a
 

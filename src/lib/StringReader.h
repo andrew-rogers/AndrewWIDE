@@ -1,5 +1,5 @@
 /*
- * AndrewWIDE - Convenience classes for handling memory buffers.
+ * AndrewWIDE - Read substrings from a comma delimited string.
  * Copyright (C) 2022  Andrew Rogers
  *
  * SPDX-License-Identifier: MIT
@@ -23,56 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef BUFFERS_H
-#define BUFFERS_H
+#ifndef STRING_READER_H
+#define STRING_READER_H
 
-#include <cstddef>
-#include <vector>
 #include <string>
+#include <string_view>
+#include <vector>
 
-class Buffer
+class StringReader
 {
 public:
-    Buffer( void* ptr, size_t size );
-    void* data() const
+    StringReader( std::string_view str, char delim=',' );
+    bool good() const
     {
-        return m_ptr;
+        return m_good;
     }
-    size_t size() const
-    {
-        return m_size;
-    }
-    std::string str() const
-    {
-        return std::string((char*)m_ptr, m_size); 
-    }
-protected:
-    void* m_ptr;
-    size_t m_size;
-};
+    std::string_view read();
 
-class AllocBuffer : public Buffer
-{
-public:
-    AllocBuffer( size_t num_bytes );
-    ~AllocBuffer();    
-};
-
-class BufferVector
-{
-public:
-    BufferVector();
-    Buffer& addBuffer( void* ptr, size_t size );
-    Buffer& allocBuffer( size_t num_bytes );
-    void clear();
-    size_t size() const
-    {
-        return m_buffers.size();
-    }
-    const Buffer& operator[]( const size_t index ) const;
 private:
-    std::vector<Buffer*> m_buffers;
+    char m_delim;
+    bool m_good;
+    std::string_view m_input;
+    size_t m_pos;
 };
 
-#endif // BUFFERS_H
+#endif // STRING_READER_H
 

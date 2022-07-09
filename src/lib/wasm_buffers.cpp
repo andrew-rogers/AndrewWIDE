@@ -24,24 +24,27 @@
  */
 
 #include "wasm_buffers.h"
+#include "StringReader.h"
 #include <emscripten.h>
 
 Globals globals;
 
+EM_JS( void, console_log, (const char* str), {
+    console.log(UTF8ToString(str))
+});
+
 EMSCRIPTEN_KEEPALIVE
 extern "C" void* add_input( void* ptr, size_t num_bytes )
 {
-    Buffer* buf = globals.inputs.addBuffer( ptr, num_bytes );
-    globals.outputs.clear();
-    return buf->data();
+    Buffer& buf = globals.inputs.addBuffer( ptr, num_bytes );
+    return buf.data();
 }
 
 EMSCRIPTEN_KEEPALIVE
 extern "C" void* alloc_input( size_t num_bytes )
 {
-    Buffer* buf = globals.inputs.allocBuffer( num_bytes );
-    globals.outputs.clear();
-    return buf->data();
+    Buffer& buf = globals.inputs.allocBuffer( num_bytes );
+    return buf.data();
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -57,9 +60,9 @@ extern "C" void* get_output( size_t index, size_t* size )
     void* ptr = 0;
     if (index<globals.outputs.size())
     {
-        Buffer& b=globals.outputs[index];
-        ptr = b.data();
-        *size = b.size();
+        Buffer* b=globals.outputs[index];
+        ptr = b->data();
+        *size = b->size();
     }
     else
     {
@@ -69,10 +72,27 @@ extern "C" void* get_output( size_t index, size_t* size )
     return ptr;
 }
 
-NamedValues getNamedValues( const std::string input_name )
+
+const Buffer& getInput( const std::string input_name )
 {
-    Buffer& buf_names = globals.inputs[globals.inputs.size()-1];
-    // TODO: Get the referenced buffer.
-    return NamedValues( buf_names );
+    return globals.inputs.byName( input_name );
+}
+
+NamedValues getParameters( const std::string input_name )
+{
+    const Buffer& buf = globals.inputs.byName( input_name );
+    return NamedValues( buf );
+}
+
+const Buffer& InputBufferVector::byName( const std::string key ) const
+{
+
+    // TODO: Last buffer will be a string of buffer names. Extract the names and get named buffer.
+    if (m_names.empty())
+    {
+        const Buffer& buf = (*this)[size()-1];
+        auto sr = StringReader( std::string_view( (char*)buf.data(), buf.size() ) );
+    }
+    return (*this)[0];
 }
 

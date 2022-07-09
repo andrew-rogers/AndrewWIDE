@@ -39,37 +39,31 @@ AllocBuffer::~AllocBuffer()
     delete[] p;
 }
 
-BufferArray::BufferArray()
+BufferVector::BufferVector()
 {
 }
 
-Buffer* BufferArray::addBuffer( void* ptr, size_t size )
+Buffer& BufferVector::addBuffer( void* ptr, size_t size )
 {
     Buffer* buf = new Buffer(ptr,size);
     m_buffers.push_back(buf);
-    return buf;
+    return *buf;
 }
 
-Buffer* BufferArray::allocBuffer( size_t num_bytes )
+Buffer& BufferVector::allocBuffer( size_t num_bytes )
 {
     Buffer* buf = new AllocBuffer( num_bytes );   
     m_buffers.push_back(buf);
-    return buf;
+    return *buf;
 }
 
-void BufferArray::clear()
+void BufferVector::clear()
 {
     m_buffers.clear();
 }
 
-Buffer& BufferArray::operator[]( const size_t index )
+const Buffer& BufferVector::operator[]( const size_t index ) const
 {
     return *m_buffers[index];
-}
-
-Buffer& BufferArray::operator[]( const std::string key )
-{
-    // TODO: Last buffer will be a string of buffer names. Extract the names and get named buffer.
-    return *m_buffers[0];
 }
 

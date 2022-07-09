@@ -29,13 +29,27 @@
 #include "Buffers.h"
 #include "NamedValues.h"
 
+extern "C" void console_log(const char* str);
+
+class InputBufferVector : public BufferVector
+{
+public:
+    const Buffer& byName( const std::string name ) const;
+private:
+    std::vector<std::string> m_names;
+};
+
+class OutputBufferVector : public std::vector<Buffer*>
+{
+};
+
 struct Globals
 {
-    BufferArray inputs;
-    BufferArray outputs;
+    InputBufferVector inputs;
+    OutputBufferVector outputs;
 } extern globals;
 
-NamedValues getNamedValues( const std::string input_name );
+NamedValues getParameters( const std::string input_name );
 
 #endif // WASM_BUFFERS_H
 
