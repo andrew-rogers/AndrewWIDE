@@ -25,32 +25,28 @@
  *
  */
 
-var pagejs = {};
-
 var JavaScriptRenderer = function(awdoc_renderer) {
     this.types = {
         "javascript": {},
         "javascript_run": {}
     };
     awdoc_renderer.registerTypes(this.types, this);
-    this.pagejs_vars = "var plot = pagejs.plot;\n";
+    this.jss = new JavaScriptScope();
     var that = this;
-    pagejs.plot = function( data ) {
+    this.addFunction( "plot", function( data ) {
         var section_in = that._input;
         var s = {"div": section_in.div, "callback": section_in.callback};
         s.obj = {"type": "plot", "data": [{"y":data}]};
         that._outputs.push(s);
-    };
+    });
+    this.src = {}; // Used to store src sections for later evalution.
 };
+
+JavaScriptRenderer.import = {}; // Used to store imported functions used by JavaScript sections.
 
 JavaScriptRenderer.prototype.addFunction = function( id, func ) {
-    this.pagejs_vars += "var " + id + "=pagejs." + id + ";\n";
-    pagejs[id] = func;
-};
-
-JavaScriptRenderer.prototype.addFunctionE = function( id, src ) {
-    this.pagejs_vars += "var " + id + "=pagejs." + id + ";\n";
-    pagejs[id] = Function(this.pagejs_vars + src);
+    JavaScriptRenderer.import[id] = func;
+    this.jss.addScope("var " + id + "=JavaScriptRenderer.import." + id + ";\n");
 };
 
 JavaScriptRenderer.prototype.renderSection = function( section_in, callback ) {
@@ -64,7 +60,7 @@ JavaScriptRenderer.prototype.renderSection = function( section_in, callback ) {
 };
 
 JavaScriptRenderer.prototype._addFunc = function( id, src ) {
-    pagejs[id] = Function(this.pagejs_vars + src);
+    this.src[id] = src;
 };
 
 JavaScriptRenderer.prototype._javascript = function( section_in, callback ) {
@@ -94,10 +90,9 @@ JavaScriptRenderer.prototype._javascript = function( section_in, callback ) {
 
 JavaScriptRenderer.prototype._run = function( section_in, callback ) {
     var id = section_in.obj.id;
-    var f = pagejs[id];
     this._input = section_in;
     this._outputs = [];
-    f();
+    this.jss.eval(this.src[id]);
     callback(this._outputs);
 };
 
@@ -109,5 +104,30 @@ JavaScriptRenderer.prototype._textArea = function( text, div ) {
     div.appendChild(ta);
     ta.style.height = (ta.scrollHeight+8)+"px";
     return ta;
+};
+
+var JavaScriptScope = function() {
+    this.scope_src = "";
+    this.pre_src=""; // Prefixed to the evaluated source.
+    this.post_src=""; // Suffixed to the evaluated source.
+    this.scope=null;
+};
+
+JavaScriptScope.prototype.addScope = function ( src ) {
+    this.scope_src += src;
+    this.scope=null; // Flag that the scope needs to be recompiled.
+};
+
+JavaScriptScope.prototype.eval = function(src) {
+    if (this.scope==null) this._createScope();
+    return this.scope( this.pre_src + src + this.post_src );
+};
+
+JavaScriptScope.prototype._createScope = function() {
+    // Create a function from the scope source.
+    this.scope_func = Function("\"use strict\";" + this.scope_src + "return function(src) {\neval(src);\n};\n");
+
+    // Run the scope function to instantiate the required scope variables.
+    this.scope = this.scope_func();
 };
 

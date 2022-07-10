@@ -23,6 +23,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef ARRAY_H
+#define ARRAY_H
+
 #include <cstddef>
 #include <initializer_list>
 
@@ -70,4 +73,6 @@ public:
 private:
     Type m_array[Size];
 };
+
+#endif // ARRAY_H
 
