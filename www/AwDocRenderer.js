@@ -384,15 +384,7 @@ Runnable.prototype.renderSection = function( section_in, callback ) {
         this._disable( section_in, callback );
     }
     else if (type == "run_section") {
-        this.runDeps( id );
-    }
-};
-
-Runnable.prototype.runDeps = function ( id ) {
-    var deps = this.input_sections[id].deps;
-    for (var i=0; i<deps.length; i++) {
-        var runnable_id = deps[i];
-        this.awdr.post( {"type": "run", "id": deps[i]}, null, callback);
+        this._runDeps( id );
     }
 };
 
@@ -434,5 +426,13 @@ Runnable.prototype._run = function ( section_in, callback ) {
     var obj = {"section_in": section_in, "callback": callback};
     this.queue.push(obj);
     if (Object.keys(this.disables).length == 0) this._dispatch();
+};
+
+Runnable.prototype._runDeps = function ( id ) {
+    var deps = this.input_sections[id].deps;
+    for (var i=0; i<deps.length; i++) {
+        var runnable_id = deps[i];
+        this.awdr.post( {"type": "run", "id": deps[i]}, null, callback);
+    }
 };
 

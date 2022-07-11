@@ -66,7 +66,30 @@ JavaScriptRenderer.prototype._addFunc = function( id, src ) {
 JavaScriptRenderer.prototype._javascript = function( section_in, callback ) {
     var obj = section_in.obj;
     var div = section_in.div;
-    this._textArea( obj.content, div );
+
+    // Create controls
+    var controls = new NavBar();
+    var butt_run = document.createElement("button");
+    butt_run.innerHTML="Run";
+    controls.addRight(butt_run);
+    controls.elem.hidden = true;
+    div.appendChild(controls.elem);
+
+    // Textarea
+    var ta = this._textArea( obj.content, div );
+
+    // Define event handler functions.
+    var that = this;
+    butt_run.onclick = function() {
+        // Update source from textarea;
+        that._addFunc( obj.id, ta.value );
+
+        // Queue the run.
+        var run = {};
+        run.obj = { "type": "run", "id": obj.id };
+        callback( [run] );
+    }
+    ta.oninput = function() {controls.elem.hidden = false;};
 
     this._addFunc( obj.id, obj.content );
 
