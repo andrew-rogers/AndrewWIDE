@@ -26,12 +26,14 @@
  */
 
 var JavaScriptRenderer = function(awdoc_renderer) {
-    this.types = {
-        "javascript": {},
-        "javascript_run": {}
-    };
-    awdoc_renderer.registerTypes(this.types, this);
     this.jss = new JavaScriptScope();
+
+    this.src = {}; // Used to store src sections for later evalution.
+    this.global_src = {}; // Used to store global refs for later evaluation.
+    this.global_ta = []; // Store the textareas with global code.
+    this.rescope = false;
+
+    // Setup plot function.
     var that = this;
     this.addFunction( "plot", function( data ) {
         var section_in = that._input;
@@ -39,14 +41,22 @@ var JavaScriptRenderer = function(awdoc_renderer) {
         s.obj = {"type": "plot", "data": [{"y":data}]};
         that._outputs.push(s);
     });
-    this.src = {}; // Used to store src sections for later evalution.
+
+    // Supported message types.
+    this.types = {
+        "javascript": {},
+        "javascript_run": {}
+    };
+    awdoc_renderer.registerTypes(this.types, this);
 };
 
 JavaScriptRenderer.import = {}; // Used to store imported functions used by JavaScript sections.
 
 JavaScriptRenderer.prototype.addFunction = function( id, func ) {
     JavaScriptRenderer.import[id] = func;
-    this.jss.addScope("var " + id + "=JavaScriptRenderer.import." + id + ";\n");
+    var src = "var " + id + "=JavaScriptRenderer.import." + id + ";\n";
+    this.global_src[id] = src;
+    this.rescope = true;
 };
 
 JavaScriptRenderer.prototype.renderSection = function( section_in, callback ) {
@@ -64,6 +74,11 @@ JavaScriptRenderer.prototype._addFunc = function( id, src ) {
 };
 
 JavaScriptRenderer.prototype._javascript = function( section_in, callback ) {
+    if (section_in.obj.id == "globals") this._render_global( section_in, callback );
+    else this._render_eval( section_in, callback );
+};
+
+JavaScriptRenderer.prototype._render_eval = function( section_in, callback ) {
     var obj = section_in.obj;
     var div = section_in.div;
 
@@ -111,7 +126,32 @@ JavaScriptRenderer.prototype._javascript = function( section_in, callback ) {
     callback( sections_out );
 };
 
+JavaScriptRenderer.prototype._render_global = function( section_in, callback ) {
+    var obj = section_in.obj;
+    var div = section_in.div;
+
+    // Textarea
+    var ta = this._textArea( obj.content, div );
+    this.global_ta.push(ta);
+    this.rescope = true;
+
+    // Define event handler functions.
+    var that = this;
+    ta.oninput = function() {that.rescope = true;};
+};
+
 JavaScriptRenderer.prototype._run = function( section_in, callback ) {
+    if (this.rescope) {
+        this.jss.clearScope();
+        for (var i=0; i<this.global_ta.length; i++) {
+            this.jss.addScope( this.global_ta[i].value );
+        }
+        var keys = Object.keys( this.global_src );
+        for (var i=0; i<keys.length; i++) {
+            this.jss.addScope( this.global_src[keys[i]] );
+        }
+        this.rescope = false;
+    }
     var id = section_in.obj.id;
     this._input = section_in;
     this._outputs = [];
@@ -140,6 +180,11 @@ JavaScriptScope.prototype.addScope = function ( src ) {
     this.scope_src += src;
     this.scope=null; // Flag that the scope needs to be recompiled.
 };
+
+JavaScriptScope.prototype.clearScope = function () {
+    this.scope_src = "";
+    this.scope = null;
+}
 
 JavaScriptScope.prototype.eval = function(src) {
     if (this.scope==null) this._createScope();
