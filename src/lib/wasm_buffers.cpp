@@ -63,11 +63,18 @@ EMSCRIPTEN_KEEPALIVE
 extern "C" void* get_output( size_t index, size_t* size )
 {
     void* ptr = 0;
-    if (index<globals.outputs.size())
+    if (index < globals.outputs.size())
     {
-        Buffer* b=globals.outputs[index];
-        ptr = b->data();
-        *size = b->size();
+        const Buffer& b=globals.outputs[index];
+        ptr = b.data();
+        *size = b.size();
+    }
+    else if (index == globals.outputs.size())
+    {
+        // Return the names.
+        std::string& names = globals.outputs.getNames();
+        ptr = &names[0];
+        *size = names.size();
     }
     else
     {
@@ -89,13 +96,18 @@ NamedValues getParameters( const std::string input_name )
     return NamedValues( buf );
 }
 
+void setOutput( const std::string output_name, const std::vector<double> vec )
+{
+    globals.outputs.addBuffer( output_name, (void*)&vec[0], vec.size() * sizeof(double) );
+}
+
 const Buffer& InputBufferVector::byName( const std::string key )
 {
     static const Buffer null(0,0);
 
-    // TODO: Last buffer will be a string of buffer names. Extract the names and get named buffer.
     if (m_names.empty())
     {
+        // Extract buffers names from last buffer.
         const Buffer& buf = (*this)[size()-1];
         auto sr = StringReader( std::string_view( (char*)buf.data() ) );
         while (sr.good())
@@ -118,4 +130,17 @@ void InputBufferVector::clear()
 {
     BufferVector::clear();
     m_names.clear();
+}
+
+Buffer& OutputBufferVector::addBuffer( const std::string name, void* ptr, size_t size )
+{
+    if (m_names.size()>0) m_names += ", ";
+    m_names += name;
+    return BufferVector::addBuffer( ptr, size );
+}
+
+void OutputBufferVector::clear()
+{
+    BufferVector::clear();
+    m_names = "";
 }

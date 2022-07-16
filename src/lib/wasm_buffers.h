@@ -40,8 +40,17 @@ private:
     std::vector<std::string_view> m_names;
 };
 
-class OutputBufferVector : public std::vector<Buffer*>
+class OutputBufferVector : public BufferVector
 {
+public:
+    Buffer& addBuffer( const std::string name, void* ptr, size_t size );
+    void clear();
+    std::string& getNames()
+    {
+        return m_names;
+    }
+private:
+    std::string m_names;
 };
 
 struct Globals
@@ -52,6 +61,7 @@ struct Globals
 
 const Buffer& getInput( const std::string input_name );
 NamedValues getParameters( const std::string input_name );
+void setOutput( const std::string output_name, const std::vector<double> vec );
 
 #endif // WASM_BUFFERS_H
 
