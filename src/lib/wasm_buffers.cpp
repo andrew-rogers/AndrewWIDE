@@ -84,6 +84,11 @@ extern "C" void* get_output( size_t index, size_t* size )
     return ptr;
 }
 
+EMSCRIPTEN_KEEPALIVE
+extern "C" void* get_return_values()
+{
+    return globals.return_values;
+}
 
 const Buffer& getInput( const std::string input_name )
 {

@@ -27,6 +27,7 @@
 
 var WasmRuntime = function() {
     this.stack=0;
+    this.return_values = 0;
 };
 
 WasmRuntime.prototype.addInputString = function( string ) {
@@ -65,8 +66,20 @@ WasmRuntime.prototype.getOutputs = function() {
     return bufs;
 };
 
+WasmRuntime.prototype.getReturnValues = function () {
+    if (this.return_values==0) {
+        var ptr = this.cfunc("get_return_values")();
+        this.return_values = this.readU32( ptr, 8);
+    }
+    return this.return_values;
+};
+
 WasmRuntime.prototype.readF32 = function( address, num ) {
     return Array.from(HEAPF32.slice(address>>2, (address>>2)+num));
+};
+
+WasmRuntime.prototype.readU8 = function( address, num ) {
+    return Array.from(HEAPU8.slice(address>>0, (address>>0)+num));
 };
 
 WasmRuntime.prototype.readU32 = function( address, num ) {
@@ -87,6 +100,10 @@ WasmRuntime.prototype.stackRestore = function() {
 
 WasmRuntime.prototype.writeF32 = function( arr, address ) {
     HEAPF32.set( arr, address >> 2 );
+};
+
+WasmRuntime.prototype.writeU8 = function( arr, address ) {
+    HEAPU8.set( arr, address >> 0 );
 };
 
 WasmRuntime.prototype.writeString = function( string, address ) {

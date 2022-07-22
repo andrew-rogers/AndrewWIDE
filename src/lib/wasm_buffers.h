@@ -57,6 +57,7 @@ struct Globals
 {
     InputBufferVector inputs;
     OutputBufferVector outputs;
+    size_t return_values[8];
 } extern globals;
 
 const Buffer& getInput( const std::string input_name );

@@ -147,6 +147,7 @@ AwCppWasmRenderer.prototype._run = function( section_in, callback ) {
     var resp = ccall("get_response","string",[],[])
     section_out = {"obj": JSON.parse(resp), "div": section_in.div, "callback": section_in.callback};
     callback( [section_out] );
+    wasm.getOutputs();
 };
 
 AwCppWasmRenderer.prototype._textArea = function( text, div ) {
