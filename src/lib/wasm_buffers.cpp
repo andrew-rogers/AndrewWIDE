@@ -28,6 +28,7 @@
 #include <emscripten.h>
 
 Globals globals;
+WasmVectors g_shared_vectors("shared_vectors");
 
 EM_JS( void, console_log, (const char* str), {
     console.log(UTF8ToString(str))
@@ -102,6 +103,26 @@ EMSCRIPTEN_KEEPALIVE
 extern "C" void* get_return_values()
 {
     return globals.return_values;
+}
+
+EMSCRIPTEN_KEEPALIVE
+extern "C" void* new_vector_uint8()
+{
+    return new std::vector<uint8_t>;
+}
+
+EMSCRIPTEN_KEEPALIVE
+extern "C" void vector_uint8_data(void* ptr)
+{
+    auto vec = static_cast<std::vector<uint8_t>*>(ptr);
+    globals.return_values[0] = (size_t)(vec->data());
+    globals.return_values[1] = vec->size();
+}
+
+EMSCRIPTEN_KEEPALIVE
+extern "C" void* wasm_vector_expand( void* p, size_t t, size_t e )
+{
+    return WasmVectors::expand( p, t, e );
 }
 
 const Buffer& getInput( const std::string input_name )

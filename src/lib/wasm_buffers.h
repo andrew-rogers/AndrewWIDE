@@ -98,6 +98,8 @@ struct Globals
     size_t return_values[8];
 } extern globals;
 
+extern WasmVectors g_shared_vectors;
+
 const Buffer& getInput( const std::string input_name );
 NamedValues getParameters( const std::string input_name );
 void setOutput( const std::string output_name, const std::vector<double> vec );
