@@ -30,6 +30,9 @@
 #include "NamedValues.h"
 
 extern "C" void console_log(const char* str);
+extern "C" void jsrt_add_wasm_vectors(const char* name, void* ptr);
+extern "C" void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type);
+extern "C" void* jsrt_wasm_vectors_get(void* p_wvs, const char* name);
 
 class InputBufferVector : public BufferVector
 {
@@ -52,6 +55,41 @@ public:
 private:
     std::string m_names;
 };
+
+class WasmVectors
+{
+public:
+    enum Type{ CHAR, INT8, UINT8 };
+
+    WasmVectors( const char* name )
+    {
+        jsrt_add_wasm_vectors( name, this );
+    }
+
+    void add(const char* name, std::vector<uint8_t>& vec)
+    {
+        add(name, &vec, UINT8);
+    }
+    std::vector<uint8_t>* createUint8( const char* name )
+    {
+        auto vec = new std::vector<uint8_t>;
+        add(name, vec, UINT8);
+        return vec;
+    }
+    static void* expand( void* p, size_t type, size_t e );
+
+    std::vector<uint8_t>* getUint8( const char* name )
+    {
+        void* ptr = jsrt_wasm_vectors_get( this, name );
+        return static_cast<std::vector<uint8_t>*>(ptr);
+    }
+private:
+    void add( const char* name, void* vec, Type t )
+    {
+        jsrt_wasm_vectors_add( this, name, vec, static_cast<size_t>(t) );
+    }
+};
+
 
 struct Globals
 {

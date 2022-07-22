@@ -27,7 +27,6 @@
 
 var WasmRuntime = function() {
     this.stack=0;
-    this.return_values = 0;
 };
 
 WasmRuntime.prototype.addInputString = function( string ) {
@@ -67,11 +66,8 @@ WasmRuntime.prototype.getOutputs = function() {
 };
 
 WasmRuntime.prototype.getReturnValues = function () {
-    if (this.return_values==0) {
-        var ptr = this.cfunc("get_return_values")();
-        this.return_values = this.readU32( ptr, 8);
-    }
-    return this.return_values;
+    var ptr = this.cfunc("get_return_values")();
+    return this.readU32( ptr, 8);
 };
 
 WasmRuntime.prototype.readF32 = function( address, num ) {

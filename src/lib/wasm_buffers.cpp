@@ -33,6 +33,20 @@ EM_JS( void, console_log, (const char* str), {
     console.log(UTF8ToString(str))
 });
 
+EM_JS( void, jsrt_add_wasm_vectors, (const char* name, void* ptr), {
+    new WasmVectors(UTF8ToString(name), ptr);
+});
+
+EM_JS( void, jsrt_wasm_vectors_add, (void* p_wvs, const char* name, void* ptr, size_t type), {
+    var wvs = WasmVectors.dict["p"+p_wvs];
+    return wvs.addPtr(UTF8ToString(name), ptr, type);
+});
+
+EM_JS( void*, jsrt_wasm_vectors_get, (void* p_wvs, const char* name), {
+    var wvs = WasmVectors.dict["p"+p_wvs];
+    return wvs.get(UTF8ToString(name)).ptr;
+});
+
 void console_log(size_t n)
 {
     console_log(std::to_string(n).c_str());
@@ -149,3 +163,32 @@ void OutputBufferVector::clear()
     BufferVector::clear();
     m_names = "";
 }
+
+void* WasmVectors::expand( void* p, size_t type, size_t e )
+{
+    auto t = static_cast<Type>(type);
+    void* ret = NULL;
+    switch (t)
+    {
+        case CHAR:
+        {
+            auto vec = static_cast<std::vector<char>*>(p);
+            vec->resize(vec->size()+e);
+            ret = &(*vec)[vec->size()-e];
+            break;
+        }
+        case UINT8:
+        {
+            auto vec = static_cast<std::vector<uint8_t>*>(p);
+            vec->resize(vec->size()+e);
+            ret = &(*vec)[vec->size()-e];
+            break;
+        }
+        default:
+        {
+            ret = NULL;
+        }
+    }
+    return ret;
+}
+
