@@ -29,13 +29,22 @@
 
 Globals globals;
 WasmVectors g_shared_vectors("shared_vectors");
+std::string g_javascript;
 
 EM_JS( void, console_log, (const char* str), {
     console.log(UTF8ToString(str))
 });
 
+EM_JS( void, jsrt_add_response_cmd, (const char* src), {
+    wasm.addResponseCommand(UTF8ToString(src));
+});
+
 EM_JS( void, jsrt_add_wasm_vectors, (const char* name, void* ptr), {
     new WasmVectors(UTF8ToString(name), ptr);
+});
+
+EM_JS( void, jsrt_set_meta, (void* ptr, const char* key, size_t value), {
+    wasm.setMeta( ptr, UTF8ToString(key), value );
 });
 
 EM_JS( void, jsrt_wasm_vectors_add, (void* p_wvs, const char* name, void* ptr, size_t type), {
@@ -134,6 +143,13 @@ NamedValues getParameters( const std::string input_name )
 {
     const Buffer& buf = globals.inputs.byName( input_name );
     return NamedValues( buf );
+}
+
+void plot(std::vector<uint8_t>* vec)
+{
+    // TODO: Check vector is globally accessible otherwise copy into a shared vector.
+    std::string js = "{\"cmd\":\"plot\",\"ptr\":" + std::to_string((size_t)vec) + "}";
+    jsrt_add_response_cmd(js.c_str());
 }
 
 void setOutput( const std::string output_name, const std::vector<double> vec )

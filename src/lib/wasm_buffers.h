@@ -30,7 +30,9 @@
 #include "NamedValues.h"
 
 extern "C" void console_log(const char* str);
+extern "C" void jsrt_add_response_cmd(const char* src);
 extern "C" void jsrt_add_wasm_vectors(const char* name, void* ptr);
+extern "C" void jsrt_set_meta(void* ptr, const char* key, size_t value);
 extern "C" void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type);
 extern "C" void* jsrt_wasm_vectors_get(void* p_wvs, const char* name);
 
@@ -86,6 +88,7 @@ public:
 private:
     void add( const char* name, void* vec, Type t )
     {
+        jsrt_set_meta( vec, "type", static_cast<size_t>(t) );
         jsrt_wasm_vectors_add( this, name, vec, static_cast<size_t>(t) );
     }
 };
@@ -102,6 +105,7 @@ extern WasmVectors g_shared_vectors;
 
 const Buffer& getInput( const std::string input_name );
 NamedValues getParameters( const std::string input_name );
+void plot(std::vector<uint8_t>* vec);
 void setOutput( const std::string output_name, const std::vector<double> vec );
 
 #endif // WASM_BUFFERS_H

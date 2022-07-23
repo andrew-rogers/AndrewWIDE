@@ -8,7 +8,7 @@ AW{"type":"awcppwasm"}
     y->push_back(20);
     y->push_back(38);
     y->push_back(24);
-    // plot(y); TODO: Implement plotting of WasmVector
+    plot(y);
 
 AW{"type":"javascript"}
     var yj = g_shared_vectors.get("jv");

@@ -144,9 +144,17 @@ AwCppWasmRenderer.prototype._run = function( section_in, callback ) {
     wasm.addInputString(keys.join(","));
     ccall("set_query","void",["string"],[JSON.stringify(section_in.obj.args)]);
     ccall(section_in.obj.id,"void",[],[]);
+
+    // Get JSON response
+    var sections_out = [];
     var resp = ccall("get_response","string",[],[])
-    section_out = {"obj": JSON.parse(resp), "div": section_in.div, "callback": section_in.callback};
-    callback( [section_out] );
+    var s = {"obj": JSON.parse(resp), "div": section_in.div, "callback": section_in.callback};
+    sections_out.push(s);
+
+    // Get response objects from WasmRuntime
+    wasm.getResponse( section_in, sections_out )
+
+    callback( sections_out );
     wasm.getOutputs();
 };
 

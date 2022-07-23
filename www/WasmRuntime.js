@@ -27,12 +27,19 @@
 
 var WasmRuntime = function() {
     this.stack=0;
+    this.meta = {};
+    this.response_cmds = []; // Response commands.
 };
 
 WasmRuntime.prototype.addInputString = function( string ) {
     var size = string.length*4+1;
     buf = this.allocInput( size );
     this.writeString( string, buf );
+};
+
+WasmRuntime.prototype.addResponseCommand = function( cmd ) {
+    var obj = JSON.parse(cmd);
+    this.response_cmds.push(obj);
 };
 
 WasmRuntime.prototype.allocInput = function( num_bytes ) {
@@ -65,6 +72,27 @@ WasmRuntime.prototype.getOutputs = function() {
     return bufs;
 };
 
+WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
+    console.log(this.response_cmds);
+    for (var i=0; i<this.response_cmds.length; i++) {
+        var obj = this.response_cmds[i];
+        var cmd = obj.cmd;
+        if (cmd == "plot") {
+            var meta = this.meta["p"+obj.ptr];
+            if (meta.type == 2) {
+                var vec = new WasmVectorUint8(obj.ptr);
+                var s = {"div": section_in.div, "callback": section_in.callback};
+                s.obj = {"type": "plot", "data": [{"y":vec.list()}]};
+                sections_out.push(s);
+            }
+            else {
+                console.log("Could not determine type for object at",obj.ptr);
+            }
+        }
+    }
+    this.response_cmds = [];
+};
+
 WasmRuntime.prototype.getReturnValues = function () {
     var ptr = this.cfunc("get_return_values")();
     return this.readU32( ptr, 8);
@@ -80,6 +108,13 @@ WasmRuntime.prototype.readU8 = function( address, num ) {
 
 WasmRuntime.prototype.readU32 = function( address, num ) {
     return Array.from(HEAPU32.slice(address>>2, (address>>2)+num));
+};
+
+WasmRuntime.prototype.setMeta = function( ptr, key, value )
+{
+    var objkey = "p"+ptr; // Convert pointer to string and prefix with p.
+    if (this.meta.hasOwnProperty(objkey) == false) this.meta[objkey] = {};
+    this.meta[objkey][key] = value;
 };
 
 WasmRuntime.prototype.stackAlloc = function( num_bytes ) {
@@ -105,3 +140,4 @@ WasmRuntime.prototype.writeU8 = function( arr, address ) {
 WasmRuntime.prototype.writeString = function( string, address ) {
     stringToUTF8( string, address, string.length*4+1 );
 };
+
