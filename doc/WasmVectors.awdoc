@@ -1,28 +1,23 @@
-
-
 AW{"type":"javascript"}
-
-// At the moment javascript sections are evaluated before the wasm module is initialised. Therefore define a function
-// that can be called from the console.
-window.myfunc = function() {
-    
-    var sv = WasmVectors.dict["nshared_vectors"];
     var p = new WasmVectorUint8();
     p.push([1,37,23]);
-    sv.add("p", p);
-    console.log(sv);
+    shared_vectors.add("p", p);
     console.log(p.list());
-    var y = sv.get("y");
-    console.log(y.list());
-    console.log(sv.get("x").list());
-};
 
 AW{"type":"awcppwasm"}
-auto x = g_shared_vectors.createUint8("x");
-x->push_back(0);
-auto y = g_shared_vectors.createUint8("y");
-y->push_back(34);
-y->push_back(23);
-auto x1 = g_shared_vectors.getUint8("p");
-(*x1)[0]=89;
+    auto x = g_shared_vectors.createUint8("x");
+    x->push_back(0);
+    auto y = g_shared_vectors.createUint8("y");
+    y->push_back(34);
+    y->push_back(23);
+    auto x1 = g_shared_vectors.getUint8("p");
+    (*x1)[0]=89;
+
+AW{"type":"javascript"}
+    var p = shared_vectors.get("p");
+    p.push([6,17,29]);
+    console.log(p.list());
+    var y = shared_vectors.get("y");
+    console.log(y.list());
+    console.log(shared_vectors.get("x").list());
 

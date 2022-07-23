@@ -28,6 +28,7 @@ SRCS = AwDocViewer.js \
  NavBar.js \
  PlotRenderer.js \
  WasmRuntime.js \
+ WasmVectors.js \
  XML.js \
  file.js \
  fileselector.js \

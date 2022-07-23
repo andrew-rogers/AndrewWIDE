@@ -67,9 +67,10 @@ CacheRenderer.prototype._createHash = function( str ) {
     return hash.toString();
 };
 
-function Queue(callback) {
+function Queue(callback, empty_callback) {
     this.queue = [];
     this.callback = callback;
+    this.empty_callback = empty_callback;
 }
 
 Queue.prototype.post = function ( obj ) {
@@ -94,6 +95,7 @@ Queue.prototype._dispatch= function () {
         obj = this.queue.shift();
         this.callback( obj );
     }
+    if (this.empty_callback) this.empty_callback();
 };
 
 function AwDocRenderer(docname, div) {
@@ -114,9 +116,11 @@ function AwDocRenderer(docname, div) {
     var that = this;
     this.queue = new Queue(function(obj){
         that._dispatch(obj);
+    }, function(){
+        that._queueEmpty();
     });
     this.cnt = 0;
-    this.running = false;
+    this.run_disabled = true;
     this.runnable = new Runnable(this);
     this.renderers["array"] = this;
     this.renderers["json"] = this;
@@ -177,6 +181,12 @@ AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
 };
 
 AwDocRenderer.prototype.render = function( awdoc ) {
+
+    // Disable running all runnable sections until queue is empty. This is to allow asynchronous compilation of code to
+    // complete before potential dependencies are run.
+    this.run_disabled = true;
+    this.post( {"type": "run_disable", "name": "awdocrenderer"} );
+
     var lines = awdoc.split('\n');
     var src = "";
     var obj={};
@@ -255,6 +265,7 @@ AwDocRenderer.prototype._assignId= function(obj) {
 }
 
 AwDocRenderer.prototype._dispatch = function(section) {
+    //console.log("Dispatch:", section.obj.type, section.obj);
     var that = this;
     section.doc = this.doc; // Document globals.
     this.cache.renderSection( section, function(sections_out) {
@@ -322,6 +333,13 @@ AwDocRenderer.prototype._processOutputs = function ( section_in, sections_out ) 
         }
     }
     this.postSections(sections_out);
+};
+
+AwDocRenderer.prototype._queueEmpty = function() {
+    if (this.run_disabled) {
+        this.run_disabled = false;
+        this.post( {"type": "run_enable", "name": "awdocrenderer"} );
+    }
 };
 
 AwDocRenderer.prototype._render = function( obj, src ) {

@@ -33,7 +33,6 @@ var WasmVectorUint8 = function(ptr) {
 WasmVectorUint8.prototype.list = function() {
     wasm.cfunc("vector_uint8_data")(this.ptr);
     var rv = wasm.getReturnValues();
-    console.log(rv);
     return wasm.readU8( rv[0], rv[1] );
 };
 
@@ -49,7 +48,7 @@ var WasmVectors = function( name, ptr ) {
     this.vectors = {};
     WasmVectors.dict["p"+ptr] = this;
     WasmVectors.dict["n"+name] = this;
-    this.return_values = wasm.getReturnValues();
+    if (name=="shared_vectors") window.shared_vectors = this;
 };
 
 WasmVectors.dict = {};
