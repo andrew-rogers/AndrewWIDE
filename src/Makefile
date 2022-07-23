@@ -18,18 +18,18 @@ else
     OUTPUTS := outputs
     LIB_OBJS = $(OUTPUTS)/cgi/filesystem.o
     LIB_OBJS += $(OUTPUTS)/cgi/cgi_post.o
+    LIB_OBJS += $(OUTPUTS)/aw_json/aw_json.o
+    LIB_OBJS += $(OUTPUTS)/aw_json/awmath.o
+    LIB_OBJS += $(OUTPUTS)/aw_json/json.o
+    LIB_OBJS += $(OUTPUTS)/aw_json/plot.o
+    LIB_OBJS += $(OUTPUTS)/aw_json/trace.o
+    LIB_OBJS += $(OUTPUTS)/utils/Debug.o
+    LIB_OBJS += $(OUTPUTS)/utils/LineReader.o
 endif
 
 CXXFLAGS += -fPIC
 
 LIB_OBJS += \
- $(OUTPUTS)/aw_json/aw_json.o \
- $(OUTPUTS)/aw_json/awmath.o \
- $(OUTPUTS)/aw_json/json.o \
- $(OUTPUTS)/aw_json/plot.o \
- $(OUTPUTS)/aw_json/trace.o \
- $(OUTPUTS)/utils/Debug.o \
- $(OUTPUTS)/utils/LineReader.o \
  $(OUTPUTS)/lib/Buffers.o \
  $(OUTPUTS)/lib/NamedValues.o \
  $(OUTPUTS)/lib/StringReader.o

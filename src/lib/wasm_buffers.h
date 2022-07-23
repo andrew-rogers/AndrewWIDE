@@ -28,6 +28,7 @@
 
 #include "Buffers.h"
 #include "NamedValues.h"
+#include <emscripten.h>
 
 extern "C" void console_log(const char* str);
 extern "C" void jsrt_add_response_cmd(const char* src);

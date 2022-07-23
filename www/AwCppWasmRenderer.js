@@ -41,7 +41,7 @@ var AwCppWasmRenderer = function(awdr) {
     awdr.registerRenderer("awcppwasm_build", this);
     awdr.registerRenderer("wasm", this);
     awdr.registerRenderer("awcppwasm_run", this);
-    this.header = "#include \"wasm.h\"\n#include \"wasm_buffers.h\"\n\n";
+    this.header = "#include \"wasm_buffers.h\"\n\n";
     this.module = "";
     this.interfaces = {};
     wasm = new WasmRuntime();
@@ -142,20 +142,14 @@ AwCppWasmRenderer.prototype._run = function( section_in, callback ) {
     wasm.clearBuffers();
     for (var i=0; i<keys.length; i++) wasm.addInputString(inputs[keys[i]]);
     wasm.addInputString(keys.join(","));
-    ccall("set_query","void",["string"],[JSON.stringify(section_in.obj.args)]);
+
     ccall(section_in.obj.id,"void",[],[]);
 
-    // Get JSON response
-    var sections_out = [];
-    var resp = ccall("get_response","string",[],[])
-    var s = {"obj": JSON.parse(resp), "div": section_in.div, "callback": section_in.callback};
-    sections_out.push(s);
-
     // Get response objects from WasmRuntime
+    var sections_out = [];
     wasm.getResponse( section_in, sections_out )
 
     callback( sections_out );
-    wasm.getOutputs();
 };
 
 AwCppWasmRenderer.prototype._textArea = function( text, div ) {

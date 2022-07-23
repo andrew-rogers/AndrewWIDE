@@ -25,7 +25,6 @@
 
 #include "wasm_buffers.h"
 #include "StringReader.h"
-#include <emscripten.h>
 
 Globals globals;
 WasmVectors g_shared_vectors("shared_vectors");
