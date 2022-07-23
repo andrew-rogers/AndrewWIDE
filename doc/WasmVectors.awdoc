@@ -1,23 +1,26 @@
 AW{"type":"javascript"}
-    var p = new WasmVectorUint8();
-    p.push([1,37,23]);
-    shared_vectors.add("p", p);
-    console.log(p.list());
+    var y = g_shared_vectors.createUint8("jv");
+    y.push([1,37,23]);
+    plot(y.list()); // TODO: Implement plotting of WasmVector
 
 AW{"type":"awcppwasm"}
-    auto x = g_shared_vectors.createUint8("x");
-    x->push_back(0);
-    auto y = g_shared_vectors.createUint8("y");
-    y->push_back(34);
-    y->push_back(23);
-    auto x1 = g_shared_vectors.getUint8("p");
-    (*x1)[0]=89;
+    auto y = g_shared_vectors.createUint8("cv");
+    y->push_back(20);
+    y->push_back(38);
+    y->push_back(24);
+    // plot(y); TODO: Implement plotting of WasmVector
 
 AW{"type":"javascript"}
-    var p = shared_vectors.get("p");
-    p.push([6,17,29]);
-    console.log(p.list());
-    var y = shared_vectors.get("y");
-    console.log(y.list());
-    console.log(shared_vectors.get("x").list());
+    var yj = g_shared_vectors.get("jv");
+    var yc = g_shared_vectors.get("cv");
+    plot(yj.list());
+    plot(yc.list()); // TODO: Plot both traces on same axes.
 
+AW{"type":"awcppwasm"}
+    auto y = g_shared_vectors.getUint8("jv");
+    (*y)[0]=89;
+    y->push_back(29);
+
+AW{"type":"javascript"}
+    var y = g_shared_vectors.get("jv");
+    plot(y.list());

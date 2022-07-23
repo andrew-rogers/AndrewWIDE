@@ -48,15 +48,15 @@ var WasmVectors = function( name, ptr ) {
     this.vectors = {};
     WasmVectors.dict["p"+ptr] = this;
     WasmVectors.dict["n"+name] = this;
-    if (name=="shared_vectors") window.shared_vectors = this;
+    if (name=="shared_vectors") window.g_shared_vectors = this;
 };
 
 WasmVectors.dict = {};
 
-WasmVectors.prototype.createUint8 = function ()
+WasmVectors.prototype.createUint8 = function (name)
 {
     var vec = new WasmVectorUint8();
-    wasm.cfunc("wasm_vectors_add_uint8")(this.ptr, vec.ptr);
+    this.add( name, vec );
     return vec;
 };
 
