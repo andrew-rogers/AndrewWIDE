@@ -56,22 +56,6 @@ WasmRuntime.prototype.clearBuffers = function() {
     func();
 };
 
-WasmRuntime.prototype.getOutputs = function() {
-    var func = this.cfunc( "get_output" );
-    var p_size = this.stackAlloc(4);
-
-    var bufs = [];
-    while (1) {
-        var p_buf = func(bufs.length, p_size)
-        if (p_buf == 0) break;
-        var size = this.readU32( p_size, 1)[0];
-        bufs.push({"ptr": p_buf, "size": size});
-    }
-
-    this.stackRestore();
-    return bufs;
-};
-
 WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
     console.log(this.response_cmds);
     for (var i=0; i<this.response_cmds.length; i++) {

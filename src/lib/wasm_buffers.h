@@ -46,19 +46,6 @@ private:
     std::vector<std::string_view> m_names;
 };
 
-class OutputBufferVector : public BufferVector
-{
-public:
-    Buffer& addBuffer( const std::string name, void* ptr, size_t size );
-    void clear();
-    std::string& getNames()
-    {
-        return m_names;
-    }
-private:
-    std::string m_names;
-};
-
 class WasmVectors
 {
 public:
@@ -98,7 +85,6 @@ private:
 struct Globals
 {
     InputBufferVector inputs;
-    OutputBufferVector outputs;
     size_t return_values[8];
 } extern globals;
 
@@ -107,7 +93,6 @@ extern WasmVectors g_shared_vectors;
 const Buffer& getInput( const std::string input_name );
 NamedValues getParameters( const std::string input_name );
 void plot(std::vector<uint8_t>* vec);
-void setOutput( const std::string output_name, const std::vector<double> vec );
 
 #endif // WASM_BUFFERS_H
 
