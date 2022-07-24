@@ -24,14 +24,14 @@
  */
 
 var WasmVectorUint8 = function(ptr) {
-    this.ptr = ptr | 0; // Address of the std::vector
+    this.ptr = ptr | 0; // Address of the WasmVector<uint8_t> instance.
     if (this.ptr == 0) {
         this.ptr = wasm.cfunc("new_vector_uint8")();
     }
 };
 
 WasmVectorUint8.prototype.list = function() {
-    wasm.cfunc("vector_uint8_data")(this.ptr);
+    wasm.cfunc("vector_data")(this.ptr);
     var rv = wasm.getReturnValues();
     return wasm.readU8( rv[0], rv[1] );
 };

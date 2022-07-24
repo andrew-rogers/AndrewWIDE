@@ -1,4 +1,8 @@
 *.o
 www/third-party/
 *.awtmp
+*.cgi
+src/outputs
+src/wasm
+www/AwAll.js
 

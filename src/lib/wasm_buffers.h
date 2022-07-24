@@ -46,10 +46,46 @@ private:
     std::vector<std::string_view> m_names;
 };
 
+class WasmVectorBase
+{
+public:
+    virtual void* buffer( size_t& size ) = 0;
+    virtual void* expand( size_t e ) = 0;
+protected:
+    void* m_ptr; // Pointer to std::vector
+};
+
+template <typename T>
+class WasmVector : public WasmVectorBase
+{
+public:
+    WasmVector()
+    {
+        m_ptr = new std::vector<T>;
+    }
+    virtual void* buffer( size_t& size )
+    {
+        auto vec = ptr();
+        size = vec->size();
+        return vec->data();
+    }
+    std::vector<T>* ptr()
+    {
+        return static_cast<std::vector<T>*>(m_ptr);
+    }
+    virtual void* expand( size_t e )
+    {
+        auto vec = ptr();
+        vec->resize(vec->size()+e);
+        void* ret = &(*vec)[vec->size()-e];
+        return ret;
+    }
+};
+
 class WasmVectors
 {
 public:
-    enum Type{ CHAR, INT8, UINT8 };
+    enum Type{ STRING, INT8, UINT8 };
 
     WasmVectors( const char* name )
     {
@@ -62,21 +98,25 @@ public:
     }
     std::vector<uint8_t>* createUint8( const char* name )
     {
-        auto vec = new std::vector<uint8_t>;
-        add(name, vec, UINT8);
+        auto wv = new WasmVector<uint8_t>;
+        auto vec = wv->ptr();
+        jsrt_set_meta( vec, "type", static_cast<size_t>(UINT8) );
+        jsrt_set_meta( vec, "wasm_vector_ptr", (size_t)(wv) );
+        add(name, wv, UINT8);
         return vec;
     }
     static void* expand( void* p, size_t type, size_t e );
 
     std::vector<uint8_t>* getUint8( const char* name )
     {
-        void* ptr = jsrt_wasm_vectors_get( this, name );
-        return static_cast<std::vector<uint8_t>*>(ptr);
+        void* vp_wv = jsrt_wasm_vectors_get( this, name );
+        auto p_wv = static_cast<WasmVector<uint8_t>*>(vp_wv);
+        return p_wv->ptr();
     }
+
 private:
     void add( const char* name, void* vec, Type t )
     {
-        jsrt_set_meta( vec, "type", static_cast<size_t>(t) );
         jsrt_wasm_vectors_add( this, name, vec, static_cast<size_t>(t) );
     }
 };

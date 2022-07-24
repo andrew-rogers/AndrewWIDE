@@ -42,6 +42,10 @@ EM_JS( void, jsrt_add_wasm_vectors, (const char* name, void* ptr), {
     new WasmVectors(UTF8ToString(name), ptr);
 });
 
+EM_JS( void, jsrt_get_input, (const char* name, void* ptr), {
+    new WasmVectors(UTF8ToString(name), ptr);
+});
+
 EM_JS( void, jsrt_set_meta, (void* ptr, const char* key, size_t value), {
     wasm.setMeta( ptr, UTF8ToString(key), value );
 });
@@ -90,7 +94,16 @@ extern "C" void* get_return_values()
 EMSCRIPTEN_KEEPALIVE
 extern "C" void* new_vector_uint8()
 {
-    return new std::vector<uint8_t>;
+    return new WasmVector<uint8_t>;
+}
+
+EMSCRIPTEN_KEEPALIVE
+extern "C" void vector_data(void* ptr)
+{
+    auto p_vec = static_cast<WasmVectorBase*>(ptr);
+    size_t size;
+    globals.return_values[0] = (size_t)(p_vec->buffer( size ));
+    globals.return_values[1] = size;
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -158,29 +171,7 @@ void InputBufferVector::clear()
 
 void* WasmVectors::expand( void* p, size_t type, size_t e )
 {
-    auto t = static_cast<Type>(type);
-    void* ret = NULL;
-    switch (t)
-    {
-        case CHAR:
-        {
-            auto vec = static_cast<std::vector<char>*>(p);
-            vec->resize(vec->size()+e);
-            ret = &(*vec)[vec->size()-e];
-            break;
-        }
-        case UINT8:
-        {
-            auto vec = static_cast<std::vector<uint8_t>*>(p);
-            vec->resize(vec->size()+e);
-            ret = &(*vec)[vec->size()-e];
-            break;
-        }
-        default:
-        {
-            ret = NULL;
-        }
-    }
-    return ret;
+    auto p_vec = static_cast<WasmVectorBase*>(p);
+    return p_vec->expand(e);
 }
 
