@@ -92,6 +92,12 @@ extern "C" void* get_return_values()
 }
 
 EMSCRIPTEN_KEEPALIVE
+extern "C" void* new_vector_double()
+{
+    return new WasmVector<double>;
+}
+
+EMSCRIPTEN_KEEPALIVE
 extern "C" void* new_vector_uint8()
 {
     return new WasmVector<uint8_t>;
@@ -104,14 +110,6 @@ extern "C" void vector_data(void* ptr)
     size_t size;
     globals.return_values[0] = (size_t)(p_vec->buffer( size ));
     globals.return_values[1] = size;
-}
-
-EMSCRIPTEN_KEEPALIVE
-extern "C" void vector_uint8_data(void* ptr)
-{
-    auto vec = static_cast<std::vector<uint8_t>*>(ptr);
-    globals.return_values[0] = (size_t)(vec->data());
-    globals.return_values[1] = vec->size();
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -131,13 +129,6 @@ NamedValues getParameters( const std::string input_name )
     return NamedValues( buf );
 }
 
-void plot(std::vector<uint8_t>* vec)
-{
-    // TODO: Check vector is globally accessible otherwise copy into a shared vector.
-    std::string js = "{\"cmd\":\"plot\",\"ptr\":" + std::to_string((size_t)vec) + "}";
-    jsrt_add_response_cmd(js.c_str());
-}
-
 const Buffer& InputBufferVector::byName( const std::string key )
 {
     static const Buffer null(0,0);
@@ -146,10 +137,10 @@ const Buffer& InputBufferVector::byName( const std::string key )
     {
         // Extract buffers names from last buffer.
         const Buffer& buf = (*this)[size()-1];
-        auto sr = StringReader( std::string_view( (char*)buf.data() ) );
+        auto sr = StringReader( StringView( (char*)buf.data(), buf.size() ) );
         while (sr.good())
         {
-            std::string_view n = sr.read();
+            StringView n = sr.read();
             m_names.push_back(n);
         }
     }

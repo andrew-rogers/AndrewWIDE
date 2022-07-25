@@ -43,7 +43,7 @@ public:
     const Buffer& byName( const std::string name );
     void clear();
 private:
-    std::vector<std::string_view> m_names;
+    std::vector<StringView> m_names;
 };
 
 class WasmVectorBase
@@ -85,7 +85,7 @@ public:
 class WasmVectors
 {
 public:
-    enum Type{ STRING, INT8, UINT8 };
+    enum Type{ STRING, INT8, UINT8, INT16, UINT16, INT32, UINT32, INT64, UINT64, FLOAT32, FLOAT64 };
 
     WasmVectors( const char* name )
     {
@@ -95,6 +95,15 @@ public:
     void add(const char* name, std::vector<uint8_t>& vec)
     {
         add(name, &vec, UINT8);
+    }
+    std::vector<double>* createFloat64( const char* name )
+    {
+        auto wv = new WasmVector<double>;
+        auto vec = wv->ptr();
+        jsrt_set_meta( vec, "type", static_cast<size_t>(FLOAT64) );
+        jsrt_set_meta( vec, "wasm_vector_ptr", (size_t)(wv) );
+        add(name, wv, FLOAT64);
+        return vec;
     }
     std::vector<uint8_t>* createUint8( const char* name )
     {
@@ -132,7 +141,13 @@ extern WasmVectors g_shared_vectors;
 
 const Buffer& getInput( const std::string input_name );
 NamedValues getParameters( const std::string input_name );
-void plot(std::vector<uint8_t>* vec);
+template <typename T>
+void plot(std::vector<T>* vec)
+{
+    // TODO: Check vector is globally accessible otherwise copy into a shared vector.
+    std::string js = "{\"cmd\":\"plot\",\"ptr\":" + std::to_string((size_t)vec) + "}";
+    jsrt_add_response_cmd(js.c_str());
+}
 
 #endif // WASM_BUFFERS_H
 

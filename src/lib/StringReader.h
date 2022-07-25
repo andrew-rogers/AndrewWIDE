@@ -26,25 +26,87 @@
 #ifndef STRING_READER_H
 #define STRING_READER_H
 
+#include <algorithm>
+#include <cstring>
 #include <string>
-#include <string_view>
 #include <vector>
+
+class StringView
+{
+public:
+    StringView( const std::string& str ) : m_ptr(str.c_str()), m_size(str.size())
+    {
+    }
+
+    StringView( const char* ptr, size_t size ) : m_ptr(ptr), m_size(size)
+    {
+    }
+
+    const char& operator[](size_t i) const
+    {
+        return m_ptr[i];
+    }
+
+    int compare( const StringView& sv ) const
+    {
+        size_t n = m_size;
+        if( n > sv.m_size ) n = sv.m_size;
+        int ret = std::strncmp( m_ptr, sv.m_ptr, n );
+        if (ret == 0)
+        {
+            if( m_size > sv.m_size ) return m_ptr[sv.m_size];
+            if( m_size < sv.m_size ) return sv.m_ptr[m_size];
+        }
+        return ret;
+    }
+
+    size_t find( char ch, size_t pos=0 ) const
+    {
+        const char* f = std::find(m_ptr + pos, m_ptr + m_size, ch);
+        if (f == (m_ptr + m_size)) return std::string::npos;
+        return f - m_ptr;
+    }
+
+    size_t size()
+    {
+        return m_size;
+    }
+
+    std::string str()
+    {
+        return std::string(m_ptr, m_size);
+    }
+
+    StringView substr( size_t pos, size_t count=std::string::npos )
+    {
+        auto ret = StringView(m_ptr, m_size);
+        if (pos > m_size) pos=m_size;
+        ret.m_ptr += pos;
+        if ((pos + count) > m_size) ret.m_size = m_size - pos;
+        else ret.m_size = count;
+        return ret;
+    }
+
+private:
+    const char* m_ptr;
+    size_t m_size;
+};
 
 class StringReader
 {
 public:
-    StringReader( std::string_view str, char delim=',' );
+    StringReader( StringView str, char delim=',' );
     bool good() const
     {
         return m_good;
     }
-    std::string_view read();
-    std::vector<std::string_view> readAll();
+    StringView read();
+    std::vector<StringView> readAll();
 
 private:
     char m_delim;
     bool m_good;
-    std::string_view m_input;
+    StringView m_input;
     size_t m_pos;
 };
 

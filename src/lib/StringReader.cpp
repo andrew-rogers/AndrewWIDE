@@ -25,11 +25,11 @@
 
 #include "StringReader.h"
 
-StringReader::StringReader( std::string_view str, char delim ) : m_delim(delim), m_good(true), m_input(str), m_pos(0U)
+StringReader::StringReader( StringView str, char delim ) : m_delim(delim), m_good(true), m_input(str), m_pos(0U)
 {
 }
 
-std::string_view StringReader::read()
+StringView StringReader::read()
 {
     std::size_t found = m_input.find(m_delim, m_pos);
     if (found == std::string::npos) m_good = false;
@@ -38,9 +38,9 @@ std::string_view StringReader::read()
     return m_input.substr(pos, found-pos);
 }
 
-std::vector<std::string_view> StringReader::readAll()
+std::vector<StringView> StringReader::readAll()
 {
-    std::vector<std::string_view> ret;
+    std::vector<StringView> ret;
     while (good())
     {
         ret.push_back(read());

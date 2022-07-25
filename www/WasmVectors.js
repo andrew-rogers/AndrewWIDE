@@ -23,6 +23,24 @@
  * THE SOFTWARE.
  */
 
+var WasmVectorFloat64 = function(ptr) {
+    this.ptr = ptr | 0; // Address of the WasmVector<uint8_t> instance.
+    if (this.ptr == 0) {
+        this.ptr = wasm.cfunc("new_vector_double")();
+    }
+};
+
+WasmVectorFloat64.prototype.list = function() {
+    wasm.cfunc("vector_data")(this.ptr);
+    var rv = wasm.getReturnValues();
+    return wasm.readF64( rv[0], rv[1] );
+};
+
+WasmVectorFloat64.prototype.push = function(list) {
+    var ptr = wasm.cfunc("wasm_vector_expand")(this.ptr, 10, list.length);
+    wasm.writeF64( list, ptr );
+};
+
 var WasmVectorUint8 = function(ptr) {
     this.ptr = ptr | 0; // Address of the WasmVector<uint8_t> instance.
     if (this.ptr == 0) {

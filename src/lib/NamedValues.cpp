@@ -49,7 +49,7 @@ size_t NamedValues::find( const std::string val_name )
     {
         if (m_names[i].compare(val_name) == 0) return i;
     }
-    return std::string_view::npos;
+    return std::string::npos;
 }
 
 std::vector<double> NamedValues::getF64( const std::string val_name )
@@ -65,7 +65,7 @@ std::vector<double> NamedValues::getF64( const std::string val_name )
     auto value_reader = StringReader(val_str, ',');
     while (value_reader.good())
     {
-        double val = stod(std::string(value_reader.read()));
+        double val = stod(value_reader.read().str());
         ret.push_back(val);
     }
     return ret;

@@ -69,6 +69,12 @@ WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
                 s.obj = {"type": "plot", "data": [{"y":vec.list()}]};
                 sections_out.push(s);
             }
+            else if (meta.type == 10) {
+                var vec = new WasmVectorFloat64(meta.wasm_vector_ptr);
+                var s = {"div": section_in.div, "callback": section_in.callback};
+                s.obj = {"type": "plot", "data": [{"y":vec.list()}]};
+                sections_out.push(s);
+            }
             else {
                 console.log("Could not determine type for object at",obj.ptr);
             }
@@ -84,6 +90,10 @@ WasmRuntime.prototype.getReturnValues = function () {
 
 WasmRuntime.prototype.readF32 = function( address, num ) {
     return Array.from(HEAPF32.slice(address>>2, (address>>2)+num));
+};
+
+WasmRuntime.prototype.readF64 = function( address, num ) {
+    return Array.from(HEAPF64.slice(address>>3, (address>>3)+num));
 };
 
 WasmRuntime.prototype.readU8 = function( address, num ) {
@@ -115,6 +125,10 @@ WasmRuntime.prototype.stackRestore = function() {
 
 WasmRuntime.prototype.writeF32 = function( arr, address ) {
     HEAPF32.set( arr, address >> 2 );
+};
+
+WasmRuntime.prototype.writeF64 = function( arr, address ) {
+    HEAPF64.set( arr, address >> 3 );
 };
 
 WasmRuntime.prototype.writeU8 = function( arr, address ) {

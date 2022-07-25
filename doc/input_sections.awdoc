@@ -28,51 +28,24 @@ A runnable section can reference input sections by use of the **inputs** attribu
 Examples
 --------
 
-The globals section below contains a **readParams()** function which processes the text from the user input section. It
-converts a comma separated set of values into an array which it stored in the global variable, **g_samples**.
+Define a set of samples
 
-AW{"type":"awcppwasm","id":"globals"}
-#include "LineReader.h"
+AW{"type":"mono","id":"some_samples"}
+samples: 0.4,-0.1,2.718,1.414
 
-AwVector<double> g_samples;
 
-void readParams(const std::string& str)
-{
-    LineReader lr(str);
-    auto line = lr.read();
-    auto parts = line.split(":");
-    auto vals = parts[1].split(",");
-    g_samples.clear();
-    for (auto v : vals) g_samples.push_back(stod(v));
-}
-
-AW{"type":"mono","id":"params"}
-samples: 1,5,3,9
-
-AW{"type":"awcppwasm","inputs":["params"]}
-    auto str_params = g_query["inputs"]["params"].str();
-    readParams(str_params);
-    plot(g_samples);
-    
-AW{"type":"mjmd"}
-The **LineReader** module also includes a **Parameters** class that can be used to extract named array variables from input
-sections.
-
-AW{"type":"mono","id":"params1"}
-samples: 1,5,7.5,9
-
-AW{"type":"awcppwasm","inputs":["params1"]}
-    Parameters params("params1");
-    plot(params["samples"]);
 
 AW{"type":"mjmd"}
-As the JavaScript code can access the wasm memory the conversion to and from JSON can be avoided. Instead a buffers
-interface is used.
 
-AW{"type":"awcppwasm","inputs":["params"]}
-    auto str_params = globals.inputs[0].str();
-    readParams(str_params);
-    plot(g_samples);
-    auto p=NamedValues(globals.inputs.byName("params"));
-    auto p1=getParameters("params");
+Use the **getParameters()** function to return a **NamedParameters** object and get the samples from this.
+
+AW{"type":"awcppwasm","inputs":["some_samples"]}
+    auto p=getParameters("some_samples");
+    auto yf = p.getF64("samples");
+    auto yf64 = g_shared_vectors.createFloat64("y64"); // Create a shared vector so that JS can find it when plotting.
+    for (size_t i=0; i<yf.size(); i++)
+    {
+        yf64->push_back(yf[i]);
+    }
+    plot(yf64);
 
