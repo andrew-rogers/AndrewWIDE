@@ -27,6 +27,7 @@
 #include "StringReader.h"
 
 Globals globals;
+WasmVectors g_output_vectors("output_vectors");
 WasmVectors g_shared_vectors("shared_vectors");
 std::string g_javascript;
 

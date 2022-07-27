@@ -88,6 +88,7 @@ WasmVectors.prototype.addPtr = function (name, ptr, type)
     // Create WasmVector wrapper from std::vector and type.
     var vec = null;
     if (type==2) vec = new WasmVectorUint8(ptr);
+    else if (type==10) vec = new WasmVectorFloat64(ptr);
 
     if (vec) this.vectors[name] = vec;
     return vec;

@@ -74,7 +74,6 @@ public:
         m_ptr = m_shptr.get();
         T dummy;
         m_type = type(dummy);
-        jsrt_set_meta( this, "type", static_cast<size_t>(m_type) );
     }
 
     virtual void* buffer( size_t& size )
@@ -121,19 +120,30 @@ public:
     }
 
     template <typename T>
+    std::string add(WasmVector<T>& vec)
+    {
+        // Copy vec into a new WasmVector as the reference will go out of scope.
+        auto wv = new WasmVector<T>;
+        std::string name = "wv@"+std::to_string((size_t)wv);
+        *wv = vec;
+        _add(name.c_str(), wv);
+        return name;
+    }
+
+    template <typename T>
     void add(const char* name, WasmVector<T>& vec)
     {
         // Copy vec into a new WasmVector as the reference will go out of scope.
         auto wv = new WasmVector<T>;
         *wv = vec;
-        add(name, wv);
+        _add(name, wv);
     }
 
     template <typename T>
     WasmVector<T>& create( const char* name )
     {
         auto wv = new WasmVector<T>;
-        add(name, wv);
+        _add(name, wv);
         return *wv;
     }
 
@@ -157,9 +167,11 @@ public:
     }
 
 private:
-    void add( const char* name, WasmVectorBase* vec)
+    std::vector<WasmVectorBase*> m_vec_ptrs;
+    void _add( const char* name, WasmVectorBase* vec)
     {
         jsrt_wasm_vectors_add( this, name, vec, static_cast<size_t>(vec->type()) );
+        m_vec_ptrs.push_back(vec);
     }
 };
 
@@ -170,6 +182,7 @@ struct Globals
     size_t return_values[8];
 } extern globals;
 
+extern WasmVectors g_output_vectors;
 extern WasmVectors g_shared_vectors;
 
 const Buffer& getInput( const std::string input_name );
@@ -178,9 +191,8 @@ NamedValues getParameters( const std::string input_name );
 template <typename T>
 void plot(WasmVector<T>& y)
 {
-    auto p_vec = new WasmVector<T>; // TODO: Put this in a container so it can be deleted later.
-    *p_vec =y;
-    std::string js = "{\"cmd\":\"plot\",\"ptr\":" + std::to_string((size_t)p_vec) + "}";
+    std::string name = g_output_vectors.add(y);
+    std::string js = "{\"cmd\":\"plot\",\"vec_name\":\"" + name + "\"}";
     jsrt_add_response_cmd(js.c_str());
 }
 
