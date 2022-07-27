@@ -64,13 +64,13 @@ WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
         if (cmd == "plot") {
             var meta = this.meta["p"+obj.ptr];
             if (meta.type == 2) {
-                var vec = new WasmVectorUint8(meta.wasm_vector_ptr);
+                var vec = new WasmVectorUint8(obj.ptr);
                 var s = {"div": section_in.div, "callback": section_in.callback};
                 s.obj = {"type": "plot", "data": [{"y":vec.list()}]};
                 sections_out.push(s);
             }
             else if (meta.type == 10) {
-                var vec = new WasmVectorFloat64(meta.wasm_vector_ptr);
+                var vec = new WasmVectorFloat64(obj.ptr);
                 var s = {"div": section_in.div, "callback": section_in.callback};
                 s.obj = {"type": "plot", "data": [{"y":vec.list()}]};
                 sections_out.push(s);

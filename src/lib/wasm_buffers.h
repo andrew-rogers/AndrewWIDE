@@ -29,6 +29,7 @@
 #include "Buffers.h"
 #include "NamedValues.h"
 #include <emscripten.h>
+#include <memory>
 
 extern "C" void console_log(const char* str);
 extern "C" void jsrt_add_response_cmd(const char* src);
@@ -49,30 +50,40 @@ private:
 class WasmVectorBase
 {
 public:
+    enum Type{ STRING, INT8, UINT8, INT16, UINT16, INT32, UINT32, INT64, UINT64, FLOAT32, FLOAT64 };
     virtual void* buffer( size_t& size ) = 0;
     virtual void* expand( size_t e ) = 0;
+    static Type type(uint8_t) {return UINT8;}
+    static Type type(double) {return FLOAT64;}
+    Type type() const
+    {
+        return m_type;
+    }
+
 protected:
     void* m_ptr; // Pointer to std::vector
+    Type m_type;
 };
 
 template <typename T>
 class WasmVector : public WasmVectorBase
 {
 public:
-    WasmVector()
+    WasmVector() : m_shptr( new std::vector<T> )
     {
-        m_ptr = new std::vector<T>;
+        m_ptr = m_shptr.get();
+        T dummy;
+        m_type = type(dummy);
+        jsrt_set_meta( this, "type", static_cast<size_t>(m_type) );
     }
+
     virtual void* buffer( size_t& size )
     {
         auto vec = ptr();
         size = vec->size();
         return vec->data();
     }
-    std::vector<T>* ptr()
-    {
-        return static_cast<std::vector<T>*>(m_ptr);
-    }
+
     virtual void* expand( size_t e )
     {
         auto vec = ptr();
@@ -80,53 +91,75 @@ public:
         void* ret = &(*vec)[vec->size()-e];
         return ret;
     }
+
+    std::vector<T>* ptr()
+    {
+        return static_cast<std::vector<T>*>(m_ptr);
+    }
+
+    void push_back( const T& value )
+    {
+        auto vec = ptr();
+        vec->push_back( value );
+    }
+
+    T& operator[]( size_t index)
+    {
+        auto vec = ptr();
+        return (*vec)[index];
+    }
+private:
+    std::shared_ptr<std::vector<T> > m_shptr;
 };
 
 class WasmVectors
 {
 public:
-    enum Type{ STRING, INT8, UINT8, INT16, UINT16, INT32, UINT32, INT64, UINT64, FLOAT32, FLOAT64 };
-
     WasmVectors( const char* name )
     {
         jsrt_add_wasm_vectors( name, this );
     }
 
-    void add(const char* name, std::vector<uint8_t>& vec)
+    template <typename T>
+    void add(const char* name, WasmVector<T>& vec)
     {
-        add(name, &vec, UINT8);
+        // Copy vec into a new WasmVector as the reference will go out of scope.
+        auto wv = new WasmVector<T>;
+        *wv = vec;
+        add(name, wv);
     }
-    std::vector<double>* createFloat64( const char* name )
+
+    template <typename T>
+    WasmVector<T>& create( const char* name )
     {
-        auto wv = new WasmVector<double>;
-        auto vec = wv->ptr();
-        jsrt_set_meta( vec, "type", static_cast<size_t>(FLOAT64) );
-        jsrt_set_meta( vec, "wasm_vector_ptr", (size_t)(wv) );
-        add(name, wv, FLOAT64);
-        return vec;
+        auto wv = new WasmVector<T>;
+        add(name, wv);
+        return *wv;
     }
-    std::vector<uint8_t>* createUint8( const char* name )
+
+    WasmVector<double>& createFloat64( const char* name )
     {
-        auto wv = new WasmVector<uint8_t>;
-        auto vec = wv->ptr();
-        jsrt_set_meta( vec, "type", static_cast<size_t>(UINT8) );
-        jsrt_set_meta( vec, "wasm_vector_ptr", (size_t)(wv) );
-        add(name, wv, UINT8);
-        return vec;
+        return create<double>( name );
     }
+
+    WasmVector<uint8_t>& createUint8( const char* name )
+    {
+        return create<uint8_t>( name );
+    }
+
     static void* expand( void* p, size_t type, size_t e );
 
-    std::vector<uint8_t>* getUint8( const char* name )
+    WasmVector<uint8_t>& getUint8( const char* name )
     {
         void* vp_wv = jsrt_wasm_vectors_get( this, name );
         auto p_wv = static_cast<WasmVector<uint8_t>*>(vp_wv);
-        return p_wv->ptr();
+        return *p_wv;
     }
 
 private:
-    void add( const char* name, void* vec, Type t )
+    void add( const char* name, WasmVectorBase* vec)
     {
-        jsrt_wasm_vectors_add( this, name, vec, static_cast<size_t>(t) );
+        jsrt_wasm_vectors_add( this, name, vec, static_cast<size_t>(vec->type()) );
     }
 };
 
@@ -141,11 +174,13 @@ extern WasmVectors g_shared_vectors;
 
 const Buffer& getInput( const std::string input_name );
 NamedValues getParameters( const std::string input_name );
+
 template <typename T>
-void plot(std::vector<T>* vec)
+void plot(WasmVector<T>& y)
 {
-    // TODO: Check vector is globally accessible otherwise copy into a shared vector.
-    std::string js = "{\"cmd\":\"plot\",\"ptr\":" + std::to_string((size_t)vec) + "}";
+    auto p_vec = new WasmVector<T>; // TODO: Put this in a container so it can be deleted later.
+    *p_vec =y;
+    std::string js = "{\"cmd\":\"plot\",\"ptr\":" + std::to_string((size_t)p_vec) + "}";
     jsrt_add_response_cmd(js.c_str());
 }
 

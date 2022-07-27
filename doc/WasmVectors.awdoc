@@ -1,3 +1,33 @@
+AW{"type":"awcppwasm","id":"globals"}
+
+#include <cmath>
+
+WasmVector<double> linspace( double a, double b, size_t N )
+{
+    WasmVector<double> ret;
+    auto p_vec = ret.ptr();
+    double m = (b-a) / (N-1);
+    double c = a;
+    for (size_t x=0; x<N; x++)
+    {
+        p_vec->push_back( m*x + c );
+    }
+    return ret;
+}
+
+WasmVector<double> sin( WasmVector<double>& theta )
+{
+    auto pv_theta = theta.ptr();
+    WasmVector<double> ret;
+    auto p_vec = ret.ptr();
+    p_vec->reserve(pv_theta->size());
+    for (size_t i=0; i<pv_theta->size(); i++)
+    {
+        p_vec->push_back( sin((*pv_theta)[i]) );
+    }
+    return ret;
+}
+
 AW{"type":"javascript"}
     var y = g_shared_vectors.createUint8("jv");
     y.push([1,37,23]);
@@ -5,9 +35,9 @@ AW{"type":"javascript"}
 
 AW{"type":"awcppwasm"}
     auto y = g_shared_vectors.createUint8("cv");
-    y->push_back(20);
-    y->push_back(38);
-    y->push_back(24);
+    y.push_back(20);
+    y.push_back(38);
+    y.push_back(24);
     plot(y);
 
 AW{"type":"javascript"}
@@ -18,9 +48,14 @@ AW{"type":"javascript"}
 
 AW{"type":"awcppwasm"}
     auto y = g_shared_vectors.getUint8("jv");
-    (*y)[0]=89;
-    y->push_back(29);
+    y[0]=89;
+    y.push_back(29);
 
 AW{"type":"javascript"}
     var y = g_shared_vectors.get("jv");
     plot(y.list());
+
+AW{"type":"awcppwasm"}
+    auto x = linspace(0,10,400);
+    auto y = sin(x);
+    plot(y);
