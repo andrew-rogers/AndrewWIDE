@@ -14,6 +14,8 @@ endif
 ifeq '$(findstring emcc,$(CC))' 'emcc'
     OUTPUTS := wasm
     LIB_OBJS = $(OUTPUTS)/lib/wasm_buffers.o
+    LIB_OBJS += $(OUTPUTS)/lib/WasmVectors.o
+    LIB_OBJS += $(OUTPUTS)/lib/vecmath.o
 else
     OUTPUTS := outputs
     LIB_OBJS = $(OUTPUTS)/cgi/filesystem.o

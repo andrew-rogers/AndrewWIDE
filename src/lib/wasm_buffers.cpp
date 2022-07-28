@@ -161,9 +161,3 @@ void InputBufferVector::clear()
     m_names.clear();
 }
 
-void* WasmVectors::expand( void* p, size_t type, size_t e )
-{
-    auto p_vec = static_cast<WasmVectorBase*>(p);
-    return p_vec->expand(e);
-}
-
