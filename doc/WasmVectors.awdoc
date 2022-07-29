@@ -4,10 +4,10 @@ AW{"type":"javascript"}
     plot(y.list()); // TODO: Implement plotting of WasmVector
 
 AW{"type":"awcppwasm"}
-    auto y = g_shared_vectors.createUint8("cv");
-    y.push_back(20);
-    y.push_back(38);
-    y.push_back(24);
+    auto y = g_shared_vectors.createFloat32("cv");
+    y.push_back(20.1);
+    y.push_back(38.2);
+    y.push_back(24.3);
     plot(y);
 
 AW{"type":"javascript"}

@@ -23,42 +23,30 @@
  * THE SOFTWARE.
  */
 
-var WasmVectorFloat64 = function(ptr) {
-    this.ptr = ptr | 0; // Address of the WasmVector<uint8_t> instance.
-    if (this.ptr == 0) {
-        this.ptr = wasm.cfunc("new_vector_double")();
+var WasmVector = function( ptr, type ) {
+    this.ptr = ptr; // Address of the WasmVector<T> instance.
+    this.type = type;
+    if (WasmVector.readers.length==0) {
+        WasmVector.readers = [0,0,wasm.readU8, 0,0,0,0,0,0,wasm.readF32, wasm.readF64];
+        WasmVector.writers = [0,0,wasm.writeU8,0,0,0,0,0,0,wasm.writeF32,wasm.writeF64];
     }
-};
+}
 
-WasmVectorFloat64.prototype.list = function() {
+WasmVector.readers = [];
+WasmVector.writers = [];
+
+WasmVector.prototype.list = function() {
     wasm.cfunc("vector_data")(this.ptr);
     var rv = wasm.getReturnValues();
-    return wasm.readF64( rv[0], rv[1] );
+    var reader_func = WasmVector.readers[this.type];
+    return reader_func( rv[0], rv[1] );
 };
 
-WasmVectorFloat64.prototype.push = function(list) {
-    var ptr = wasm.cfunc("wasm_vector_expand")(this.ptr, 10, list.length);
-    wasm.writeF64( list, ptr );
+WasmVector.prototype.push = function(list) {
+    var ptr = wasm.cfunc("wasm_vector_expand")(this.ptr, this.type, list.length);
+    var writer_func = WasmVector.writers[this.type];
+    writer_func( list, ptr );
 };
-
-var WasmVectorUint8 = function(ptr) {
-    this.ptr = ptr | 0; // Address of the WasmVector<uint8_t> instance.
-    if (this.ptr == 0) {
-        this.ptr = wasm.cfunc("new_vector_uint8")();
-    }
-};
-
-WasmVectorUint8.prototype.list = function() {
-    wasm.cfunc("vector_data")(this.ptr);
-    var rv = wasm.getReturnValues();
-    return wasm.readU8( rv[0], rv[1] );
-};
-
-WasmVectorUint8.prototype.push = function(list) {
-    var ptr = wasm.cfunc("wasm_vector_expand")(this.ptr, 2, list.length);
-    wasm.writeU8( list, ptr );
-};
-
 
 var WasmVectors = function( name, ptr ) {
     this.name = name;
@@ -71,11 +59,19 @@ var WasmVectors = function( name, ptr ) {
 
 WasmVectors.dict = {};
 
+WasmVectors.prototype.createFloat32 = function (name)
+{
+    return this._create( name, 9 );
+};
+
+WasmVectors.prototype.createFloat64 = function (name)
+{
+    return this._create( name, 10 );
+};
+
 WasmVectors.prototype.createUint8 = function (name)
 {
-    var vec = new WasmVectorUint8();
-    this.add( name, vec );
-    return vec;
+    return this._create( name, 2 );
 };
 
 WasmVectors.prototype.add = function( name, vec )
@@ -87,8 +83,7 @@ WasmVectors.prototype.addPtr = function (name, ptr, type)
 {
     // Create WasmVector wrapper from std::vector and type.
     var vec = null;
-    if (type==2) vec = new WasmVectorUint8(ptr);
-    else if (type==10) vec = new WasmVectorFloat64(ptr);
+    vec = new WasmVector( ptr, type );
 
     if (vec) this.vectors[name] = vec;
     return vec;
@@ -97,5 +92,13 @@ WasmVectors.prototype.addPtr = function (name, ptr, type)
 WasmVectors.prototype.get = function (name)
 {
     return this.vectors[name];
+};
+
+WasmVectors.prototype._create = function (name, type)
+{
+    var ptr = wasm.cfunc("new_vector")(type);
+    var vec = new WasmVector( ptr, type);
+    this.add( name, vec );
+    return vec;
 };
 

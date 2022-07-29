@@ -93,15 +93,9 @@ extern "C" void* get_return_values()
 }
 
 EMSCRIPTEN_KEEPALIVE
-extern "C" void* new_vector_double()
+extern "C" void* new_vector( size_t type)
 {
-    return new WasmVector<double>;
-}
-
-EMSCRIPTEN_KEEPALIVE
-extern "C" void* new_vector_uint8()
-{
-    return new WasmVector<uint8_t>;
+    return WasmVectorBase::newWasmVector( type );
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -116,7 +110,7 @@ extern "C" void vector_data(void* ptr)
 EMSCRIPTEN_KEEPALIVE
 extern "C" void* wasm_vector_expand( void* p, size_t t, size_t e )
 {
-    return WasmVectors::expand( p, t, e );
+    return WasmVectorBase::expand( p, t, e );
 }
 
 const Buffer& getInput( const std::string input_name )

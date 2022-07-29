@@ -26,9 +26,28 @@
 #include "WasmVectors.h"
 #include <emscripten.h>
 
-void* WasmVectors::expand( void* p, size_t type, size_t e )
+void* WasmVectorBase::expand( void* p, size_t type, size_t e )
 {
     auto p_vec = static_cast<WasmVectorBase*>(p);
     return p_vec->expand(e);
 }
 
+void* WasmVectorBase::newWasmVector( size_t size )
+{
+    switch (size)
+    {
+        case WasmVectorBase::UINT8:
+        {
+            return new WasmVector<uint8_t>;
+        }
+        case WasmVectorBase::FLOAT32:
+        {
+            return new WasmVector<float>;
+        }
+        case WasmVectorBase::FLOAT64:
+        {
+            return new WasmVector<double>;
+        }
+    }
+    return NULL;
+}

@@ -40,10 +40,16 @@ class WasmVectorBase
 {
 public:
     enum Type{ STRING, INT8, UINT8, INT16, UINT16, INT32, UINT32, INT64, UINT64, FLOAT32, FLOAT64 };
+
+    static void* expand( void* p, size_t type, size_t e );
+    static void* newWasmVector( size_t size );
+    static Type type(uint8_t) {return UINT8;}
+    static Type type(float) {return FLOAT32;}
+    static Type type(double) {return FLOAT64;}
+
     virtual void* buffer( size_t& size ) = 0;
     virtual void* expand( size_t e ) = 0;
-    static Type type(uint8_t) {return UINT8;}
-    static Type type(double) {return FLOAT64;}
+
     Type type() const
     {
         return m_type;
@@ -136,6 +142,11 @@ public:
         return *wv;
     }
 
+    WasmVector<float>& createFloat32( const char* name )
+    {
+        return create<float>( name );
+    }
+
     WasmVector<double>& createFloat64( const char* name )
     {
         return create<double>( name );
@@ -146,13 +157,27 @@ public:
         return create<uint8_t>( name );
     }
 
-    static void* expand( void* p, size_t type, size_t e );
+    template <typename T>
+    WasmVector<T>& get( const char* name )
+    {
+        void* vp_wv = jsrt_wasm_vectors_get( this, name );
+        auto p_wv = static_cast<WasmVector<T>*>(vp_wv);
+        return *p_wv;
+    }
+
+    WasmVector<float>& getFloat32( const char* name )
+    {
+        return get<float>( name );
+    }
+
+    WasmVector<double>& getFloat64( const char* name )
+    {
+        return get<double>( name );
+    }
 
     WasmVector<uint8_t>& getUint8( const char* name )
     {
-        void* vp_wv = jsrt_wasm_vectors_get( this, name );
-        auto p_wv = static_cast<WasmVector<uint8_t>*>(vp_wv);
-        return *p_wv;
+        return get<uint8_t>( name );
     }
 
 private:
