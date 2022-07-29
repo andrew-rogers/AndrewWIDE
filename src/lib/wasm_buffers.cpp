@@ -28,6 +28,7 @@
 
 Globals globals;
 WasmVectors g_output_vectors("output_vectors");
+std::vector<ResponseGenerator*> g_response_generators;
 WasmVectors g_shared_vectors("shared_vectors");
 std::string g_javascript;
 
@@ -84,6 +85,16 @@ EMSCRIPTEN_KEEPALIVE
 extern "C" void clear_buffers()
 {
     globals.inputs.clear();
+    g_response_generators.clear();
+}
+
+EMSCRIPTEN_KEEPALIVE
+extern "C" void generate_responses()
+{
+    for (size_t i=0; i<g_response_generators.size(); i++)
+    {
+        g_response_generators[i]->generate();
+    }
 }
 
 EMSCRIPTEN_KEEPALIVE

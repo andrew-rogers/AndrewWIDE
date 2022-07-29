@@ -91,6 +91,11 @@ public:
         return static_cast<std::vector<T>*>(m_ptr);
     }
 
+    const std::vector<T>* ptr() const
+    {
+        return static_cast<std::vector<T>*>(m_ptr);
+    }
+
     void push_back( const T& value )
     {
         auto vec = ptr();
@@ -115,7 +120,7 @@ public:
     }
 
     template <typename T>
-    std::string add(WasmVector<T>& vec)
+    std::string add(const WasmVector<T>& vec)
     {
         // Copy vec into a new WasmVector as the reference will go out of scope.
         auto wv = new WasmVector<T>;

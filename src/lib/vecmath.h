@@ -32,7 +32,7 @@ template <typename T>
 class WasmVector;
 
 WasmVector<double> linspace( double start, double finish, size_t N );
-WasmVector<double> sin( WasmVector<double>& theta );
+WasmVector<double> sin( const WasmVector<double>& theta );
 
 #endif //VECMATH_H
 

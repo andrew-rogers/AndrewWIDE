@@ -1,5 +1,5 @@
 /*
- * AndrewWIDE - Mathematical operations on vectors.
+ * AndrewWIDE - Generate JSON responses for graph plotting.
  * Copyright (C) 2022  Andrew Rogers
  *
  * SPDX-License-Identifier: MIT
@@ -23,33 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include "WasmVectors.h"
-#include "vecmath.h"
-#include <cmath>
+#include "PlotGenerator.h"
 
-WasmVector<double> linspace( double start, double finish, size_t N )
-{
-    WasmVector<double> ret;
-    auto p_vec = ret.ptr();
-    double m = (finish-start) / (N-1);
-    double c = start;
-    for (size_t x=0; x<N; x++)
-    {
-        p_vec->push_back( m*x + c );
-    }
-    return ret;
-}
-
-WasmVector<double> sin( const WasmVector<double>& theta )
-{
-    auto pv_theta = theta.ptr();
-    WasmVector<double> ret;
-    auto p_vec = ret.ptr();
-    p_vec->reserve(pv_theta->size());
-    for (size_t i=0; i<pv_theta->size(); i++)
-    {
-        p_vec->push_back( sin((*pv_theta)[i]) );
-    }
-    return ret;
-}
+PlotGenerator* PlotGenerator::m_current = NULL;
 

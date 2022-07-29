@@ -1,5 +1,6 @@
 /*
- * AndrewWIDE - Buffer handling for interfacing C++ sections into JavaScript.
+ * AndrewWIDE - Generate JSON strings to describe how responses from C++
+ *              sections should be handled in JavaScript.
  * Copyright (C) 2022  Andrew Rogers
  *
  * SPDX-License-Identifier: MIT
@@ -23,49 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef WASM_BUFFERS_H
-#define WASM_BUFFERS_H
+#ifndef RESPONSE_GENERATOR_H
+#define RESPONSE_GENERATOR_H
 
-#include "Buffers.h"
-#include "NamedValues.h"
-#include "PlotGenerator.h"
-#include "ResponseGenerator.h"
-#include "WasmVectors.h"
-#include "vecmath.h"
-#include <emscripten.h>
-#include <memory>
+#include <vector>
 
-extern "C" void console_log(const char* str);
+class ResponseGenerator;
+class WasmVectors;
+
 extern "C" void jsrt_add_response_cmd(const char* src);
-extern "C" void jsrt_add_wasm_vectors(const char* name, void* ptr);
-extern "C" void jsrt_set_meta(void* ptr, const char* key, size_t value);
-extern "C" void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type);
-extern "C" void* jsrt_wasm_vectors_get(void* p_wvs, const char* name);
-
-class InputBufferVector : public BufferVector
-{
-public:
-    const Buffer& byName( const std::string name );
-    void clear();
-private:
-    std::vector<StringView> m_names;
-};
-
-struct Globals
-{
-    InputBufferVector inputs;
-    size_t return_values[8];
-} extern globals;
-
 extern WasmVectors g_output_vectors;
 extern std::vector<ResponseGenerator*> g_response_generators;
-extern WasmVectors g_shared_vectors;
 
+class ResponseGenerator
+{
+public:
+    virtual void generate() = 0;
+    virtual ~ResponseGenerator()
+    {
+    }
+};
 
-const Buffer& getInput( const std::string input_name );
-NamedValues getParameters( const std::string input_name );
-
-
-
-#endif // WASM_BUFFERS_H
+#endif // RESPONSE_GENERATOR_H
 

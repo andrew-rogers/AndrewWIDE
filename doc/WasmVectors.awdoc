@@ -8,7 +8,7 @@ AW{"type":"awcppwasm"}
     y.push_back(20.1);
     y.push_back(38.2);
     y.push_back(24.3);
-    plot(y);
+    plot(y).name("Thing");
 
 AW{"type":"javascript"}
     var yj = g_shared_vectors.get("jv");
@@ -28,4 +28,6 @@ AW{"type":"javascript"}
 AW{"type":"awcppwasm"}
     auto x = linspace(0,10,400);
     auto y = sin(x);
-    plot(y);
+    plot(y).name("Sine wave");
+    plot(sin(linspace(0,30,400))).name("Another!");
+

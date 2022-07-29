@@ -57,15 +57,22 @@ WasmRuntime.prototype.clearBuffers = function() {
 };
 
 WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
+    var ptr = this.cfunc("generate_responses")();
     console.log(this.response_cmds);
     var output_vectors = WasmVectors.dict.noutput_vectors;
     for (var i=0; i<this.response_cmds.length; i++) {
         var obj = this.response_cmds[i];
         var cmd = obj.cmd;
         if (cmd == "plot") {
-            var vec = output_vectors.get(obj.vec_name);
             var s = {"div": section_in.div, "callback": section_in.callback};
-            s.obj = {"type": "plot", "data": [{"y":vec.list()}]};
+            s.obj = {"type": "plot", "data": obj.data};
+
+            // Get the vectors for each of the traces in data.
+            for (var i=0; i<obj.data.length; i++) {
+                var vec = output_vectors.get(obj.data[i].vecname_y);
+                s.obj.data[i]["y"] = vec.list();
+            }
+
             sections_out.push(s);
         }
     }
