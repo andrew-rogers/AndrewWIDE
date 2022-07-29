@@ -102,6 +102,11 @@ public:
         vec->push_back( value );
     }
 
+    size_t size()
+    {
+        return ptr()->size();
+    }
+
     T& operator[]( size_t index)
     {
         auto vec = ptr();

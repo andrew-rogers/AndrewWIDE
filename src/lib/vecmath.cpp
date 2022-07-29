@@ -53,3 +53,22 @@ WasmVector<double> sin( const WasmVector<double>& theta )
     return ret;
 }
 
+WasmVector<double> zeros( size_t size)
+{
+    WasmVector<double> ret;
+    ret.ptr()->resize(size);
+    return ret;
+}
+
+WasmVector<double> operator*(double a, const WasmVector<double>& vec)
+{
+    WasmVector<double> ret;
+    auto p_ret = ret.ptr();
+    auto p_vec = vec.ptr();
+    for (size_t i=0; i<p_vec->size(); i++)
+    {
+        p_ret->push_back( a * (*p_vec)[i] );
+    }
+    return ret;
+}
+

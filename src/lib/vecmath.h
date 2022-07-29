@@ -33,6 +33,8 @@ class WasmVector;
 
 WasmVector<double> linspace( double start, double finish, size_t N );
 WasmVector<double> sin( const WasmVector<double>& theta );
+WasmVector<double> zeros( size_t size);
+WasmVector<double> operator*(double a, const WasmVector<double>& vec);
 
 #endif //VECMATH_H
 
