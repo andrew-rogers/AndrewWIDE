@@ -28,7 +28,7 @@ AW{"type":"javascript"}
 AW{"type":"awcppwasm"}
     auto x = linspace(0,10,400);
     auto y = sin(x);
-    plot(y).name("Sine wave");
-    plot(sin(linspace(0,30,400))).name("Another!");
+    plot(x,y).name("Sine wave");
+    plot(x,sin(linspace(0,30,400))).name("Another!");
     xlabel("Sample (n)");
     ylabel("Amplitude");

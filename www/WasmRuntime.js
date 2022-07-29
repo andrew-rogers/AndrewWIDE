@@ -70,8 +70,17 @@ WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
 
             // Get the vectors for each of the traces in data.
             for (var i=0; i<obj.data.length; i++) {
-                var vec = output_vectors.get(obj.data[i].vecname_y);
-                s.obj.data[i]["y"] = vec.list();
+                var trace = s.obj.data[i];
+                if (trace.hasOwnProperty("vecname_x"))
+                {
+                    var vec = output_vectors.get(trace.vecname_x);
+                    trace["x"] = vec.list();
+                }
+                if (trace.hasOwnProperty("vecname_y"))
+                {
+                    var vec = output_vectors.get(trace.vecname_y);
+                    trace["y"] = vec.list();
+                }
             }
 
             sections_out.push(s);

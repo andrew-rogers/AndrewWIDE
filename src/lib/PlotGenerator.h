@@ -41,6 +41,12 @@ public:
         return *this;
     }
 
+    PlotTrace& setX( const std::string& str)
+    {
+        addMember("vecname_x", str);
+        return *this;
+    }
+
     PlotTrace& setY( const std::string& str)
     {
         addMember("vecname_y", str);
@@ -86,6 +92,17 @@ public:
         return *p_trace;
     }
 
+    template <typename T>
+    PlotTrace& addTrace(const WasmVector<T>& x, const WasmVector<T>& y)
+    {
+        std::string vec_name_x = g_output_vectors.add(x);
+        std::string vec_name_y = g_output_vectors.add(y);
+        auto p_trace = m_data.get()->createTrace();
+        p_trace->setX(vec_name_x);
+        p_trace->setY(vec_name_y);
+        return *p_trace;
+    }
+
     virtual void generate()
     {
         m_current = NULL;
@@ -114,12 +131,15 @@ template <typename T>
 PlotTrace& plot(const WasmVector<T>& y)
 {
     auto plot = PlotGenerator::current();
-    if (plot==NULL)
-    {
-        plot = new PlotGenerator;
-        g_response_generators.push_back(plot);
-    }
     PlotTrace& trace = plot->addTrace(y);
+    return trace;
+}
+
+template <typename T>
+PlotTrace& plot(const WasmVector<T>& x, const WasmVector<T>& y)
+{
+    auto plot = PlotGenerator::current();
+    PlotTrace& trace = plot->addTrace(x,y);
     return trace;
 }
 
