@@ -26,74 +26,46 @@
 #ifndef PLOT_GENERATOR_H
 #define PLOT_GENERATOR_H
 
+#include "Json.h"
 #include "ResponseGenerator.h"
 #include "WasmVectors.h"
 #include "wasm_buffers.h"
+#include <memory>
 
-class JsonStr
-{
-public:
-    static std::string pair(const std::string& key, const std::string& val)
-    {
-        return quoteString(key) + ":" + quoteString(val);
-    }
-
-    static std::string quoteString(const std::string& str)
-    {
-        std::string ret = "\"" + str + "\"";
-        return ret;
-    }
-};
-
-class PlotTrace
+class PlotTrace : public JsonObject
 {
 public:
     PlotTrace& name( const std::string& str)
     {
-        m_name = str;
+        addMember("name", str);
         return *this;
     }
 
     PlotTrace& setY( const std::string& str)
     {
-        m_vecname_y = str;
+        addMember("vecname_y", str);
         return *this;
     }
-
-    std::string toJson()
-    {
-        std::string ret = "{" + JsonStr::pair("name", m_name) + ",";
-        ret += JsonStr::pair("vecname_y", m_vecname_y);
-        return ret + "}";
-    }
-
-private:
-    std::string m_name;
-    std::string m_vecname_y;
 };
 
-class PlotInfo
+class PlotInfo : public JsonObject
 {
 public:
+    PlotInfo()
+    {
+        addMember("cmd","plot");
+        addMember("data",m_arr);
+    }
     PlotTrace* createTrace()
     {
         auto p_info = new PlotTrace;
         m_traces.push_back(p_info);
+        m_arr.addElement(*p_info);
         return p_info;
     }
 
-    std::string toJson()
-    {
-        std::string str="[";
-        for (size_t i=0; i<m_traces.size(); i++)
-        {
-            if (i>0) str+=",";
-            str+=m_traces[i]->toJson();
-        }
-        return str+"]";
-    }
-
 private:
+    JsonArray m_arr;
     std::vector<PlotTrace*> m_traces;
 };
 
@@ -116,16 +88,22 @@ public:
 
     virtual void generate()
     {
-        std::string data = m_data.get()->toJson();
-        std::string js = "{\"cmd\":\"plot\",\"data\":" + data + "}";
-        jsrt_add_response_cmd(js.c_str());
         m_current = NULL;
+        jsrt_add_response_cmd(m_data.get()->toJson().c_str());
     }
 
     static PlotGenerator* current()
     {
+        if (m_current == NULL)
+        {
+            m_current = new PlotGenerator;
+            g_response_generators.push_back(m_current);
+        }
         return m_current;
     }
+
+    void xlabel(const std::string& str);
+    void ylabel(const std::string& str);
 
 private:
     std::shared_ptr<PlotInfo> m_data;
@@ -144,6 +122,9 @@ PlotTrace& plot(const WasmVector<T>& y)
     PlotTrace& trace = plot->addTrace(y);
     return trace;
 }
+
+void xlabel( const std::string& str);
+void ylabel( const std::string& str);
 
 #endif // PLOT_GENERATOR_H
 

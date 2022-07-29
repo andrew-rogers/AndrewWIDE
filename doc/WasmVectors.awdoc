@@ -30,4 +30,5 @@ AW{"type":"awcppwasm"}
     auto y = sin(x);
     plot(y).name("Sine wave");
     plot(sin(linspace(0,30,400))).name("Another!");
-
+    xlabel("Sample (n)");
+    ylabel("Amplitude");

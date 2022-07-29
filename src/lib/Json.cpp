@@ -1,5 +1,5 @@
 /*
- * AndrewWIDE - Generate JSON responses for graph plotting.
+ * AndrewWIDE - Simple JSON.
  * Copyright (C) 2022  Andrew Rogers
  *
  * SPDX-License-Identifier: MIT
@@ -23,29 +23,39 @@
  * THE SOFTWARE.
  */
 
-#include "PlotGenerator.h"
+#include "Json.h"
 
-PlotGenerator* PlotGenerator::m_current = NULL;
+// https://www.json.org/json-en.html
 
-void PlotGenerator::xlabel(const std::string& str)
+void JsonObject::addMember( const std::string& key, const JsonArray& val )
 {
-    m_data.get()->addMember("xlabel", str);
+    m_keys.get()->push_back(new JsonString(key));
+    m_vals.get()->push_back(new JsonArray(val));
 }
 
-void PlotGenerator::ylabel(const std::string& str)
+void JsonObject::addMember( const std::string& key, const JsonObject& val )
 {
-    m_data.get()->addMember("ylabel", str);
+    m_keys.get()->push_back(new JsonString(key));
+    m_vals.get()->push_back(new JsonObject(val));
 }
 
-void xlabel( const std::string& str)
+void JsonObject::addMember( const std::string& key, const std::string& val )
 {
-    auto plot = PlotGenerator::current();
-    plot->xlabel(str);
+    m_keys.get()->push_back(new JsonString(key));
+    m_vals.get()->push_back(new JsonString(val));
 }
 
-void ylabel( const std::string& str)
+std::string JsonObject::toJson()
 {
-    auto plot = PlotGenerator::current();
-    plot->ylabel(str);
+    std::string str="{";
+    for (size_t i=0; i<m_keys.get()->size(); i++)
+    {
+        if (i>0) str += ",";
+        str += (*m_keys.get())[i]->toJson();
+        str += ":";
+        str += (*m_vals.get())[i]->toJson();
+    }
+    str += "}";
+    return str;
 }
 

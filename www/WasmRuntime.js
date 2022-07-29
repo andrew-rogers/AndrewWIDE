@@ -65,7 +65,8 @@ WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
         var cmd = obj.cmd;
         if (cmd == "plot") {
             var s = {"div": section_in.div, "callback": section_in.callback};
-            s.obj = {"type": "plot", "data": obj.data};
+            s.obj = obj;
+            s.obj["type"]="plot";
 
             // Get the vectors for each of the traces in data.
             for (var i=0; i<obj.data.length; i++) {
