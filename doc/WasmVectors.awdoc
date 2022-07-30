@@ -32,3 +32,9 @@ AW{"type":"awcppwasm"}
     plot(x,sin(linspace(0,30,400))).name("Another!");
     xlabel("Sample (n)");
     ylabel("Amplitude");
+
+AW{"type":"awcppwasm"}
+    auto x = zeros(6);
+    x[2]=4.5;
+    heatmap(x,2,3);
+

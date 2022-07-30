@@ -102,12 +102,18 @@ public:
         vec->push_back( value );
     }
 
-    size_t size()
+    size_t size() const
     {
         return ptr()->size();
     }
 
     T& operator[]( size_t index)
+    {
+        auto vec = ptr();
+        return (*vec)[index];
+    }
+
+    const T& operator[]( size_t index) const
     {
         auto vec = ptr();
         return (*vec)[index];

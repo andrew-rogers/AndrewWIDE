@@ -38,6 +38,37 @@ public:
     virtual std::string toJson() = 0;
 };
 
+class JsonBoolean : public JsonValue
+{
+public:
+    JsonBoolean( bool val )
+    {
+        m_val = val;
+    }
+    virtual std::string toJson()
+    {
+        if (m_val) return "true";
+        return "false";
+    }
+private:
+    bool m_val;
+};
+
+class JsonNumber : public JsonValue
+{
+public:
+    JsonNumber( size_t num )
+    {
+        m_num = num;
+    }
+    virtual std::string toJson()
+    {
+        return std::to_string(m_num);
+    }
+private:
+    double m_num;
+};
+
 class JsonString : public JsonValue
 {
 public:
@@ -64,6 +95,7 @@ public:
     void addMember( const std::string& key, const JsonArray& val );
     void addMember( const std::string& key, const JsonObject& val );
     void addMember( const std::string& key, const std::string& val );
+    void addTrue( const std::string& key );
     virtual std::string toJson();
 private:
     std::shared_ptr<std::vector<JsonString*> > m_keys;
@@ -83,6 +115,10 @@ public:
     void addElement( const JsonObject& val )
     {
         m_vals.get()->push_back(new JsonObject(val));
+    }
+    void addElement( size_t val )
+    {
+        m_vals.get()->push_back(new JsonNumber(val));
     }
     void addElement( const std::string& val )
     {

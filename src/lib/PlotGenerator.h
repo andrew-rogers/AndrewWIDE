@@ -61,7 +61,9 @@ public:
     {
         addMember("cmd","plot");
         addMember("data",m_arr);
+        addMember("wasmvectors", m_wvs);
     }
+
     PlotTrace* createTrace()
     {
         auto p_info = new PlotTrace;
@@ -70,8 +72,22 @@ public:
         return p_info;
     }
 
+    JsonObject createVector(const std::string& vec_name)
+    {
+        JsonObject vec;
+        vec.addMember("vec_name", vec_name);
+        m_wvs.addElement(vec);
+        return vec;
+    }
+
+    size_t size() const
+    {
+        return m_traces.size();
+    }
+
 private:
     JsonArray m_arr;
+    JsonArray m_wvs;
     std::vector<PlotTrace*> m_traces;
 };
 
@@ -81,6 +97,26 @@ public:
     PlotGenerator() : m_data( new PlotInfo )
     {
         m_current = this;
+    }
+
+    template <typename T>
+    PlotTrace& addHeatmap(const WasmVector<T>& z, size_t n_rows, size_t n_cols)
+    {
+        std::string vec_name = g_output_vectors.add(z);
+        auto index = m_data.get()->size();
+        auto p_trace = m_data.get()->createTrace();
+        auto p_vecinfo = m_data.get()->createVector(vec_name);
+        p_trace->addMember("type","heatmap");
+        p_trace->addTrue("transpose");
+        JsonArray dim;
+        dim.addElement( n_rows );
+        dim.addElement( n_cols );
+        p_vecinfo.addMember("dim", dim);
+        std::string member = "data[";
+        member += std::to_string(index);
+        member += "].z";
+        p_vecinfo.addMember("member", member);
+        return *p_trace;
     }
 
     template <typename T>
@@ -140,6 +176,14 @@ PlotTrace& plot(const WasmVector<T>& x, const WasmVector<T>& y)
 {
     auto plot = PlotGenerator::current();
     PlotTrace& trace = plot->addTrace(x,y);
+    return trace;
+}
+
+template <typename T>
+PlotTrace& heatmap(const WasmVector<T>& z, size_t n_rows, size_t n_cols)
+{
+    auto plot = PlotGenerator::current();
+    PlotTrace& trace = plot->addHeatmap(z, n_rows, n_cols);
     return trace;
 }
 

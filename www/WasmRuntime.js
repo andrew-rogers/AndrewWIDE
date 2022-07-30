@@ -83,6 +83,8 @@ WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
                 }
             }
 
+            if (obj.hasOwnProperty( "wasmvectors" )) this._getVectors( obj.wasmvectors, s.obj );
+
             sections_out.push(s);
         }
     }
@@ -143,5 +145,30 @@ WasmRuntime.prototype.writeU8 = function( arr, address ) {
 
 WasmRuntime.prototype.writeString = function( string, address ) {
     stringToUTF8( string, address, string.length*4+1 );
+};
+
+WasmRuntime.prototype._getVectors = function( vecs, obj ) {
+    var output_vectors = WasmVectors.dict.noutput_vectors;
+    for (var i=0; i<vecs.length; i++) {
+        var vec = output_vectors.get(vecs[i].vec_name);
+        var mat = this._toMatrix(vec, vecs[i].dim);
+        var str = "obj." + vecs[i].member + "=mat";
+        eval(str);
+    }
+};
+
+WasmRuntime.prototype._toMatrix = function( vec, dim ) {
+    var n_rows = dim[0];
+    var n_cols = dim[1];
+    var mat = [];
+    var l = vec.list();
+    for (var c=0; c<n_cols; c++) {
+        var col = [];
+        for (var r=0; r<n_rows; r++) {
+            col.push(l[c*n_rows+r]);
+        }
+        mat.push(col);
+    }
+    return mat;
 };
 
