@@ -1,42 +1,11 @@
 AW{"type":"awcppwasm","id":"mk"}
 
-KISS = ../../../kissfft
-
-CXXFLAGS += -I ${KISS}
-
-OBJS += ${KISS}/kiss_fft.c
+CXXFLAGS += -I ${AWSRC_DIR}/signal
+LDFLAGS += -lsignal
 
 AW{"type":"awcppwasm","id":"globals"}
 
-#include "kiss_fft.h"
-#include <complex>
-
-typedef std::vector< std::complex<float> > cvec_t;
-
-cvec_t fft( const cvec_t& in)
-{
-    size_t N = in.size();
-    cvec_t out(N);
-    const kiss_fft_cpx* cin = (kiss_fft_cpx*)(&in[0]);
-    kiss_fft_cpx* cout = (kiss_fft_cpx*)(&out[0]);
-    kiss_fft_cfg cfg = kiss_fft_alloc( N, 0, NULL, NULL );
-    kiss_fft( cfg, cin, cout );
-    return out;
-}
-
-void specgram( const WasmVector<double>& x, size_t N)
-{
-    size_t S = x.size();
-    auto y=zeros(S);
-    for (size_t s=0; s<S; s+=N)
-    {
-        cvec_t in(N);
-        for (size_t i=0; i<N; i++) in[i].real(x[s+i]);
-        auto out = fft(in);
-        for (size_t i=0; i<N; i++) y[s+i]=abs(out[i]);
-    }
-    heatmap(y,N,S/N);
-}
+#include "fft.h"
 
 WasmVector<double> operator+(const WasmVector<double>& a, const WasmVector<double>& b)
 {
