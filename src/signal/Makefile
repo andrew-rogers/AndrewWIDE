@@ -13,7 +13,8 @@ endif
 
 ifeq '$(findstring emcc,$(CC))' 'emcc'
     OUTPUTS := ../wasm
-    LIB_OBJS = $(OUTPUTS)/fft.o
+    LIB_OBJS = $(OUTPUTS)/biquad.o
+    LIB_OBJS += $(OUTPUTS)/fft.o
     LIB_OBJS += $(OUTPUTS)/kiss_fft.o
     LIB_OBJS += $(OUTPUTS)/xcorr.o
     CXXFLAGS += -I../../../kissfft -I ../lib

@@ -71,6 +71,13 @@ public:
         m_type = type(dummy);
     }
 
+    explicit WasmVector(size_t count) : m_shptr( new std::vector<T>(count) )
+    {
+        m_ptr = m_shptr.get();
+        T dummy;
+        m_type = type(dummy);
+    }
+
     virtual void* buffer( size_t& size )
     {
         auto vec = ptr();
