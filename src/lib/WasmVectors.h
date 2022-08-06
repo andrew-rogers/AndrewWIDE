@@ -102,6 +102,11 @@ public:
         vec->push_back( value );
     }
 
+    void resize( size_t count )
+    {
+        ptr()->resize(count);
+    }
+
     size_t size() const
     {
         return ptr()->size();
