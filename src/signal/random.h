@@ -32,6 +32,7 @@ class Random32
 {
 public:
     Random32(uint32_t seed=0U);
+    WasmVector<double> normal(size_t N);
     double uniform();
     WasmVector<double> uniform(size_t N);
 
