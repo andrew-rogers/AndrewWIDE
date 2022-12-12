@@ -26,6 +26,8 @@
 #include "random.h"
 #include "vecmath.h"
 
+#include <cmath>
+
 /* https://www.jstatsoft.org/index.php/jss/article/view/v008i14/916
 Xorshift RNGs - George Marsaglia 
 

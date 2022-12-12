@@ -41,11 +41,6 @@ Use the **getParameters()** function to return a **NamedParameters** object and 
 
 AW{"type":"awcppwasm","inputs":["some_samples"]}
     auto p=getParameters("some_samples");
-    auto yf = p.getF64("samples");
-    auto yf64 = g_shared_vectors.createFloat64("y64"); // Create a shared vector so that JS can find it when plotting.
-    for (size_t i=0; i<yf.size(); i++)
-    {
-        yf64->push_back(yf[i]);
-    }
-    plot(yf64);
+    WasmVector<double> y = p.getF64("samples");
+    plot(y);
 

@@ -7,8 +7,6 @@ The C++ code in this page is copied from [EarLevel Engineering](https://www.earl
 
 AW{"type":"awcppwasm","id":"globals","hidden":true}
 
-#include "LineReader.h"
-
 //
 //  Biquad.h
 //
@@ -258,13 +256,12 @@ possible in the future using [Clang in Browser](https://github.com/tbfleming/cib
 
 AW{"type":"awcppwasm","inputs":["params"]}
 
-Parameters params("params");
-
-double Fc=params["Fc"][0];
-double sampleRate=params["Fs"][0];
+auto p = getParameters("params");
+double Fc = p.getF64("Fc")[0];
+double sampleRate = p.getF64("Fs")[0];
 
 // Create the impulse input
-AwVector<float> in;
+WasmVector<float> in;
 for (int i=0; i<500; i++)
 {
     in.push_back(0);
