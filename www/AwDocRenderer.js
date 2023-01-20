@@ -55,7 +55,7 @@ CacheRenderer.prototype.setCache = function ( cache ) {
         var hash = cache[i].hash;
         this.cache_map[hash] = i;
     }
-}
+};
 
 CacheRenderer.prototype._createHash = function( str ) {
     var hash = 0;
@@ -249,12 +249,12 @@ AwDocRenderer.prototype.renderingComplete = function ( id ) {
         if (this.async[i].done == false) done = false;
     }
     if (done) this._prepareServerlessDoc();
-}
+};
 
 AwDocRenderer.prototype.setServerless = function ( ) {
     this.serverless = true;
     this.url_link.hidden = true;
-}
+};
 
 AwDocRenderer.prototype._assignId= function(obj) {
     if (obj.hasOwnProperty("id") == false) {
@@ -262,7 +262,7 @@ AwDocRenderer.prototype._assignId= function(obj) {
         obj.id = obj.type + "_" + this.cnt;
     }
     this.cnt++;
-}
+};
 
 AwDocRenderer.prototype._dispatch = function(section) {
     //console.log("Dispatch:", section.obj.type, section.obj);
@@ -316,7 +316,10 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
           type: "text/html"
         })
     );
-    this.download_link.setAttribute("download", "AwDoc.html");
+    var fn = this.docname.replace(/^.*\//,''); // Remove directories from path
+    fn = fn.replace(/\..*$/,''); // Remove extensions like .awdoc
+    fn += ".html"
+    this.download_link.setAttribute("download", fn);
     this.download_link.innerHTML="Download doc.";
     this.download_link.hidden = false;
 };
