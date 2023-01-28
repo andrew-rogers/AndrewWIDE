@@ -1,0 +1,44 @@
+AW{"type":"mjmd"}
+
+Running Python code in AndrewWIDE
+=================================
+
+Loading the Python packages and the imports are very slow, please be patient! Results are sent to the console and are not yet displayed in the page.
+
+AW{"type":"javascript"}
+var get_js = function (url, callback) {
+    var script = document.createElement('script');
+    script.setAttribute('src', url);
+    script.setAttribute('type', 'text/javascript');
+    script.onload = function() {
+        callback();
+    };
+    window.document.head.appendChild(script);
+};
+
+async function got_py() {
+    console.log("Got pyodide.js.");
+    let pyodide = await loadPyodide();
+    console.log("Pyodide loaded.");
+    await pyodide.loadPackage("scipy");
+
+    console.log("Running python script LPF.");
+    pyodide.runPython(`
+        from scipy.signal import butter
+        sos=butter(2,0.15,output='sos')
+        print(sos)
+    `);
+    
+    console.log("Running python script HPF.")
+    pyodide.runPython(`
+        sos=butter(2,0.15,btype='high', output='sos')
+        print(sos)
+    `);
+    
+    console.log("Done!");
+    window.pyodide = pyodide; // Put pyodide on global object so it can be used from console.
+    window.py = pyodide.runPython;
+};
+
+get_js("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js", got_py);
+
