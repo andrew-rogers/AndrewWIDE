@@ -32,35 +32,72 @@ std::vector<ResponseGenerator*> g_response_generators;
 WasmVectors g_shared_vectors("shared_vectors");
 std::string g_javascript;
 
-EM_JS( void, console_log, (const char* str), {
+// Log strings to the Javascript console
+EM_JS( void, emjs_console_log, (const char* str), {
     console.log(UTF8ToString(str))
 });
 
-EM_JS( void, jsrt_add_response_cmd, (const char* src), {
+void console_log(const char* str)
+{
+    emjs_console_log(str);
+}
+
+// Send commands to be run in javascript after wasm function is run. The src
+//   argument will be JSON.
+EM_JS( void, emjs_add_response_cmd, (const char* src), {
     wasm.addResponseCommand(UTF8ToString(src));
 });
 
-EM_JS( void, jsrt_add_wasm_vectors, (const char* name, void* ptr), {
+void jsrt_add_response_cmd(const char* src)
+{
+    return emjs_add_response_cmd(src);
+}
+
+// Create a new WasmVecotrs in Javscript
+EM_JS( void, emjs_add_wasm_vectors, (const char* name, void* ptr), {
     new WasmVectors(UTF8ToString(name), ptr);
 });
+
+void jsrt_add_wasm_vectors(const char* name, void* ptr)
+{
+    emjs_add_wasm_vectors(name, ptr);
+}
 
 EM_JS( void, jsrt_get_input, (const char* name, void* ptr), {
     new WasmVectors(UTF8ToString(name), ptr);
 });
 
-EM_JS( void, jsrt_set_meta, (void* ptr, const char* key, size_t value), {
+// Add a key value pair to the meta data.
+EM_JS( void, emjs_set_meta, (void* ptr, const char* key, size_t value), {
     wasm.setMeta( ptr, UTF8ToString(key), value );
 });
 
-EM_JS( void, jsrt_wasm_vectors_add, (void* p_wvs, const char* name, void* ptr, size_t type), {
-    var wvs = WasmVectors.dict["p"+p_wvs];
+void jsrt_set_meta(void* ptr, const char* key, size_t value)
+{
+    emjs_set_meta(ptr, key, value);
+}
+
+// Add WasmVector pointer to WasmVectors
+EM_JS( void, emjs_wasm_vectors_add, (void* p_wvs, const char* name, void* ptr, size_t type), {
+    var wvs = WasmVectors.dict["p"+p_wvs]; // Lookup the WasmVectors to add the WasmVector to.
     return wvs.addPtr(UTF8ToString(name), ptr, type);
 });
 
-EM_JS( void*, jsrt_wasm_vectors_get, (void* p_wvs, const char* name), {
+void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type)
+{
+    emjs_wasm_vectors_add(p_wvs, name, ptr, type);
+}
+
+// Get address of WasmVector stored in a WasmVectors by name
+EM_JS( void*, emjs_wasm_vectors_get, (void* p_wvs, const char* name), {
     var wvs = WasmVectors.dict["p"+p_wvs];
     return wvs.get(UTF8ToString(name)).ptr;
 });
+
+void* jsrt_wasm_vectors_get(void* p_wvs, const char* name)
+{
+    return emjs_wasm_vectors_get(p_wvs, name);
+}
 
 void console_log(size_t n)
 {

@@ -35,12 +35,12 @@
 #include <emscripten.h>
 #include <memory>
 
-extern "C" void console_log(const char* str);
-extern "C" void jsrt_add_response_cmd(const char* src);
-extern "C" void jsrt_add_wasm_vectors(const char* name, void* ptr);
-extern "C" void jsrt_set_meta(void* ptr, const char* key, size_t value);
-extern "C" void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type);
-extern "C" void* jsrt_wasm_vectors_get(void* p_wvs, const char* name);
+void console_log(const char* str);
+void jsrt_add_response_cmd(const char* src);
+void jsrt_add_wasm_vectors(const char* name, void* ptr);
+void jsrt_set_meta(void* ptr, const char* key, size_t value);
+void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type);
+void* jsrt_wasm_vectors_get(void* p_wvs, const char* name);
 
 class InputBufferVector : public BufferVector
 {

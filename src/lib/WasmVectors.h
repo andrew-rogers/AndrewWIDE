@@ -32,9 +32,9 @@
 #include <string>
 #include <vector>
 
-extern "C" void jsrt_add_wasm_vectors(const char* name, void* ptr);
-extern "C" void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type);
-extern "C" void* jsrt_wasm_vectors_get(void* p_wvs, const char* name);
+void jsrt_add_wasm_vectors(const char* name, void* ptr);
+void jsrt_wasm_vectors_add(void* p_wvs, const char* name, void* ptr, size_t type);
+void* jsrt_wasm_vectors_get(void* p_wvs, const char* name);
 
 class WasmVectorBase
 {
