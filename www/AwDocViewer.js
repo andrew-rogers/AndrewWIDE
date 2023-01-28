@@ -83,6 +83,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof JavaScriptRenderer === 'undefined') scripts.push("JavaScriptRenderer.js");
     if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
     if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
+    if (typeof PythonRenderer === 'undefined') scripts.push("PythonRenderer.js");
 
     asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);
@@ -93,6 +94,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         that.awdr.registerRenderer("diagram", new DiagramRenderer());
         new PlotRenderer(that.awdr);
         var jsr = new JavaScriptRenderer(that.awdr);
+        var pyr = new PythonRenderer(that.awdr);
         var fi = new FilterInterface(jsr);
         cppwasm.addInterface("filter", fi);
         callback();
