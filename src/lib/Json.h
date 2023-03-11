@@ -57,6 +57,10 @@ private:
 class JsonNumber : public JsonValue
 {
 public:
+    JsonNumber( double num )
+    {
+        m_num = num;
+    }
     JsonNumber( size_t num )
     {
         m_num = num;
@@ -95,6 +99,7 @@ public:
     void addMember( const std::string& key, const JsonArray& val );
     void addMember( const std::string& key, const JsonObject& val );
     void addMember( const std::string& key, const std::string& val );
+    void addMember( const std::string& key, double val );
     void addTrue( const std::string& key );
     virtual std::string toJson();
 private:

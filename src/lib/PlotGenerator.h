@@ -35,6 +35,8 @@
 class PlotTrace : public JsonObject
 {
 public:
+    PlotTrace& marker( const std::string& str );
+
     PlotTrace& name( const std::string& str)
     {
         addMember("name", str);
@@ -155,6 +157,7 @@ public:
         return m_current;
     }
 
+    void unitCircle(const std::string& linestyle = "");
     void xlabel(const std::string& str);
     void ylabel(const std::string& str);
 
@@ -187,6 +190,7 @@ PlotTrace& heatmap(const WasmVector<T>& z, size_t n_rows, size_t n_cols)
     return trace;
 }
 
+void unitCircle(const std::string& linestyle = "");
 void xlabel( const std::string& str);
 void ylabel( const std::string& str);
 

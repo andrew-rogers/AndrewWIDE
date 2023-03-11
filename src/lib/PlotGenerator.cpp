@@ -25,7 +25,50 @@
 
 #include "PlotGenerator.h"
 
+PlotTrace& PlotTrace::marker( const std::string& str )
+{
+    JsonObject marker;
+    std::string sym=str;
+    if (str=="o")
+    {
+        sym="circle-open";
+    }
+    marker.addMember("symbol", sym);
+    addMember("marker", marker);
+    addMember("mode", "markers"); // https://plotly.com/javascript/line-and-scatter/
+    return *this;
+}
+
 PlotGenerator* PlotGenerator::m_current = NULL;
+
+void PlotGenerator::unitCircle(const std::string& linestyle)
+{
+    JsonObject circle;
+    circle.addMember("type","circle");
+    circle.addMember("x0",-1.0);
+    circle.addMember("x1",1.0);
+    circle.addMember("y0",-1.0);
+    circle.addMember("y1",1.0);
+    circle.addMember("xref","x");
+    circle.addMember("yref","y");
+    circle.addMember("opacity",0.2);
+
+    JsonArray shapes;
+    shapes.addElement(circle);
+
+    JsonObject xaxis;
+    xaxis.addMember("constrain","domain");
+
+    JsonObject yaxis;
+    yaxis.addMember("scaleanchor","x");
+
+    JsonObject layout;
+    layout.addMember("shapes",shapes);
+    layout.addMember("xaxis",xaxis);
+    layout.addMember("yaxis",yaxis);
+
+    m_data.get()->addMember("layout",layout);
+}
 
 void PlotGenerator::xlabel(const std::string& str)
 {
@@ -35,6 +78,12 @@ void PlotGenerator::xlabel(const std::string& str)
 void PlotGenerator::ylabel(const std::string& str)
 {
     m_data.get()->addMember("ylabel", str);
+}
+
+void unitCircle(const std::string& linestyle)
+{
+    auto plot = PlotGenerator::current();
+    plot->unitCircle(linestyle);
 }
 
 void xlabel( const std::string& str)

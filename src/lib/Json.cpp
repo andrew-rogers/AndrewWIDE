@@ -45,6 +45,12 @@ void JsonObject::addMember( const std::string& key, const std::string& val )
     m_vals.get()->push_back(new JsonString(val));
 }
 
+void JsonObject::addMember( const std::string& key, double val )
+{
+    m_keys.get()->push_back(new JsonString(key));
+    m_vals.get()->push_back(new JsonNumber(val));
+}
+
 void JsonObject::addTrue( const std::string& key )
 {
     m_keys.get()->push_back(new JsonString(key));

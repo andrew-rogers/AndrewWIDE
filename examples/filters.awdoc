@@ -1,11 +1,15 @@
 AW{"type":"awcppwasm","id":"globals","hidden":true}
 
-#include "LineReader.h"
 #include <complex>
+#include <cmath>
+
+const std::complex<double> PI = M_PI;
+const std::complex<double> j2pi(0,2.0 * M_PI);
 
 double g_zp;
 
-typedef AwVector<double> vec_t;
+typedef WasmVector<double> vec_t;
+typedef std::complex<double> complex_t;
 
 AW{"type":"mjmd"}
 
@@ -27,21 +31,21 @@ server back-end is required to compile the C++ to WebAssembly. This might be pos
 
 AW{"type":"awcppwasm","inputs":["params"]}
 
-    Parameters params("params");
-    double RC = params["R"][0] * params["C"][0];
-    double Fs = params["Fs"][0];
+    auto p=getParameters("params");
+    double RC = p.getF64("R")[0] * p.getF64("C")[0];
+    double Fs = p.getF64("Fs")[0];
 
     auto f = linspace(0,Fs/2,1000);
-    auto h = 0.0 * f; // Create zero initialised vector same length as f for response
+    auto ah = 0.0 * f; // Create zero initialised vector same length as f for response
 
     for (int i=0; i<f.size(); i++)
     {
-        complex<double> s = 1i * 2.0 * PI * f[i];
-        complex<double> H = 1.0 / ( 1.0 + s * RC );
-        h[i] = abs(H);
+        complex_t s = j2pi * f[i];
+        complex_t H = 1.0 / ( 1.0 + s * RC );
+        ah[i] = abs(H);
     }
 
-    plot(f,h).name("Analogue").unitCircle();
+    plot(f,ah).name("Analogue");
     xlabel("Frequency (Hz)");
     ylabel("|H(f)|");
 
@@ -59,27 +63,31 @@ AW{"type":"awcppwasm","inputs":["params"]}
     // Pass-band scaling
     double K = (1.0-zp)/(1.0-zz);
 
+    auto dh = 0.0 * f; // Create zero initialised vector same length as f for response
     for (int i=0; i<f.size(); i++)
     {
-        complex<double> z = exp(1i * 2.0 * PI * f[i] * T);
-        complex<double> H = K*(z-zz)/(z-zp);
-        h[i] = abs(H);
+        complex_t s = j2pi * f[i];
+        complex_t z = exp(s * T);
+        complex_t H = K*(z-zz)/(z-zp);
+        dh[i] = abs(H);
     }
 
-    plot(f,h).name("Digital");
+    plot(f,dh).name("Digital");
 
 AW{"type":"awcppwasm","inputs":["params"]}
 
     // Input params not used.
 
-    vec_t x,y;
+    vec_t zx,zy,px,py;
 
     // Plot the zeros.
-    x.push_back(-1);
-    y.push_back(0);
-    plot(x,y).unitCircle().name("zeros");
+    zx.push_back(-1);
+    zy.push_back(0);
+    unitCircle();
+    plot(zx,zy).marker("o").name("zeros");
 
     // Plot the poles.
-    x[0] = g_zp;
-    plot(x,y).crosses().name("poles");
+    px.push_back(g_zp);
+    py.push_back(0.0);
+    plot(px,py).marker("x").name("poles");
 
