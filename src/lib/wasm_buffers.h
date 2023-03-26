@@ -29,6 +29,7 @@
 #include "Buffers.h"
 #include "NamedValues.h"
 #include "PlotGenerator.h"
+#include "PrintGenerator.h"
 #include "ResponseGenerator.h"
 #include "WasmVectors.h"
 #include "vecmath.h"

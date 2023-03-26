@@ -1,7 +1,6 @@
 /*
- * AndrewWIDE - Generate JSON strings to describe how responses from C++
- *              sections should be handled in JavaScript.
- * Copyright (C) 2022  Andrew Rogers
+ * AndrewWIDE - Generate JSON responses for print strings.
+ * Copyright (C) 2023  Andrew Rogers
  *
  * SPDX-License-Identifier: MIT
  *
@@ -24,26 +23,52 @@
  * THE SOFTWARE.
  */
 
-#ifndef RESPONSE_GENERATOR_H
-#define RESPONSE_GENERATOR_H
+#ifndef PRINT_GENERATOR_H
+#define PRINT_GENERATOR_H
 
-#include <vector>
+#include "Json.h"
+#include "ResponseGenerator.h"
 
-class ResponseGenerator;
-class WasmVectors;
-
-extern "C" void jsrt_add_response_cmd(const char* src);
-extern WasmVectors g_output_vectors;
-extern std::vector<ResponseGenerator*> g_response_generators;
-
-class ResponseGenerator
+class PrintGenerator : public ResponseGenerator
 {
 public:
-    virtual JsonValue* generate() = 0;
-    virtual ~ResponseGenerator()
+    PrintGenerator() : m_obj( new JsonObject )
     {
+        m_current = this;
+        JsonObject* obj = m_obj.get();
+        obj->addMember("cmd","print");
     }
+
+    void print(const std::string& str)
+    {
+        m_str+=str;
+    }
+
+    virtual JsonValue* generate()
+    {
+        m_current = NULL;
+        JsonObject* obj = m_obj.get();
+        obj->addMember("str",m_str);
+        return obj;
+    }
+
+    static PrintGenerator* current()
+    {
+        if (m_current == NULL)
+        {
+            m_current = new PrintGenerator;
+            g_response_generators.push_back(m_current);
+        }
+        return m_current;
+    }
+
+private:
+    std::shared_ptr<JsonObject> m_obj;
+    std::string m_str;
+    static PrintGenerator* m_current;
 };
 
-#endif // RESPONSE_GENERATOR_H
+void print(const std::string& str);
+
+#endif // PRINT_GENERATOR_H
 

@@ -1,7 +1,6 @@
 /*
- * AndrewWIDE - Generate JSON strings to describe how responses from C++
- *              sections should be handled in JavaScript.
- * Copyright (C) 2022  Andrew Rogers
+ * AndrewWIDE - Generate JSON responses for print strings.
+ * Copyright (C) 2023  Andrew Rogers
  *
  * SPDX-License-Identifier: MIT
  *
@@ -24,26 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef RESPONSE_GENERATOR_H
-#define RESPONSE_GENERATOR_H
+#include "PrintGenerator.h"
 
-#include <vector>
-
-class ResponseGenerator;
-class WasmVectors;
-
-extern "C" void jsrt_add_response_cmd(const char* src);
-extern WasmVectors g_output_vectors;
-extern std::vector<ResponseGenerator*> g_response_generators;
-
-class ResponseGenerator
+void print(const std::string& str)
 {
-public:
-    virtual JsonValue* generate() = 0;
-    virtual ~ResponseGenerator()
-    {
-    }
-};
-
-#endif // RESPONSE_GENERATOR_H
+    auto print = PrintGenerator::current();
+    print->print(str);
+}
 

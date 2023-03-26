@@ -141,10 +141,10 @@ public:
         return *p_trace;
     }
 
-    virtual void generate()
+    virtual JsonValue* generate()
     {
         m_current = NULL;
-        jsrt_add_response_cmd(m_data.get()->toJson().c_str());
+        return m_data.get();
     }
 
     static PlotGenerator* current()

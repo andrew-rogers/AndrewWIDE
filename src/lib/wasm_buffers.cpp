@@ -130,7 +130,8 @@ extern "C" void generate_responses()
 {
     for (size_t i=0; i<g_response_generators.size(); i++)
     {
-        g_response_generators[i]->generate();
+        JsonValue* json=g_response_generators[i]->generate();
+        jsrt_add_response_cmd(json->toJson().c_str());
     }
 }
 

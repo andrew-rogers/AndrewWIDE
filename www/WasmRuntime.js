@@ -87,6 +87,12 @@ WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
 
             sections_out.push(s);
         }
+        else if (cmd == "print") {
+            var s = {"div": section_in.div, "callback": section_in.callback};
+            s.obj = obj;
+            s.obj["type"]="print";
+            sections_out.push(s);
+        }
     }
     this.response_cmds = [];
 };
