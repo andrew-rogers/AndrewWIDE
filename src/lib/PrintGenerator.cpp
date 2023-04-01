@@ -25,6 +25,8 @@
 
 #include "PrintGenerator.h"
 
+PrintGenerator* PrintGenerator::m_current = NULL;
+
 void print(const std::string& str)
 {
     auto print = PrintGenerator::current();

@@ -15,6 +15,7 @@ ifeq '$(findstring emcc,$(CC))' 'emcc'
     OUTPUTS := wasm
     LIB_OBJS = $(OUTPUTS)/lib/Json.o
     LIB_OBJS += $(OUTPUTS)/lib/PlotGenerator.o
+    LIB_OBJS += $(OUTPUTS)/lib/PrintGenerator.o
     LIB_OBJS += $(OUTPUTS)/lib/WasmVectors.o
     LIB_OBJS += $(OUTPUTS)/lib/vecmath.o
     LIB_OBJS += $(OUTPUTS)/lib/wasm_buffers.o
