@@ -80,10 +80,8 @@ public:
     {
         m_str = str;
     }
-    virtual std::string toJson()
-    {
-        return "\"" + m_str + "\"";
-    }
+    virtual std::string toJson();
+
 private:
     std::string m_str;
 };

@@ -27,6 +27,31 @@
 
 // https://www.json.org/json-en.html
 
+std::string JsonString::toJson()
+{
+    std::string str = "\"";
+    for (size_t i = 0U; i<m_str.length(); i++)
+    {
+        char c = m_str[i];
+        switch (c)
+        {
+        case '\\':
+            str += "\\\\";
+            break;
+        case '\n':
+            str += "\\n";
+            break;
+        case '\t':
+            str += "\\t";
+            break;
+        default:
+            str += c;
+        }
+    }
+    str += '"';
+    return str;
+}
+
 void JsonObject::addMember( const std::string& key, const JsonArray& val )
 {
     m_keys.get()->push_back(new JsonString(key));
