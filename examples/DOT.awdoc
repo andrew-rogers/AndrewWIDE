@@ -1,0 +1,12 @@
+AW{"type":"dot"}
+
+digraph {
+  a -> b;
+}
+
+AW{"type":"dot"}
+
+digraph {
+  c -> d;
+}
+

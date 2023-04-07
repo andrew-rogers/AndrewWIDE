@@ -149,6 +149,27 @@ function AwDocRenderer(docname, div) {
     div.appendChild(this.ta_log);
 }
 
+AwDocRenderer.prototype.loadScriptsSeq = function ( urls, callback ) {
+
+    var cnt = 0;
+
+    function loaded() {
+        cnt = cnt + 1;
+        if (cnt < urls.length) next();
+        else if (callback) callback();
+    }
+
+    function next() {
+        var script = document.createElement('script');
+        script.setAttribute('src', urls[cnt]);
+        script.setAttribute('type', 'text/javascript');
+        script.onload = loaded;
+        document.head.appendChild(script);
+    }
+
+    next();
+};
+
 AwDocRenderer.prototype.postSections = function( sections ) {
     for (var i=0; i<sections.length; i++) {
         this._assignId( sections[i].obj );
@@ -169,6 +190,11 @@ AwDocRenderer.prototype.registerAsync = function( renderer ) {
 
 AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
     this.renderers[name]=renderer;
+};
+
+AwDocRenderer.prototype.registerType = function( name, attributes, func ) {
+    this.renderers[name] = func;
+    this.attributes[name] = attributes;
 };
 
 AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
@@ -286,8 +312,11 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
                 that._processOutputs( section, sections_out );
             });
         }
-        else {
+        else if (typeof renderer.renderObj === 'function'){
             renderer.renderObj( section.obj, section.div, section.callback );
+        }
+        else {
+            renderer( section );
         }
     }
     else {

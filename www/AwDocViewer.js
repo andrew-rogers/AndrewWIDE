@@ -85,6 +85,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
     if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
     if (typeof PythonRenderer === 'undefined') scripts.push("PythonRenderer.js");
+    if (typeof DOTRenderer === 'undefined') scripts.push("DOTRenderer.js");
 
     asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);
@@ -97,6 +98,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         new PrintRenderer(that.awdr);
         var jsr = new JavaScriptRenderer(that.awdr);
         var pyr = new PythonRenderer(that.awdr);
+        var dotr = new DOTRenderer(that.awdr);
         var fi = new FilterInterface(jsr);
         cppwasm.addInterface("filter", fi);
         callback();
