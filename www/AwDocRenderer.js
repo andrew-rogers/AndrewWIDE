@@ -388,15 +388,20 @@ AwDocRenderer.prototype._queueEmpty = function() {
 
 AwDocRenderer.prototype._render = function( obj ) {
 
+    // Store for creating serverless page later.
+    this.aw_json.push(obj);
+    this.aw_objs[obj.id] = obj;
+
     // Create a div for the section.
     var div = document.createElement("div");
     this.div.appendChild(div);
 
     // Display content source.
-    if (obj["hidden"]!=true) this._textarea(obj.content, div);
+    var attributes = this.attributes[obj.type] || {};
+    var hidden = attributes["hidden"] || false;
+    if (obj.hasOwnProperty("hidden")) hidden = obj.hidden;
+    if (!hidden) this._textarea(obj.content, div);
 
-    this.aw_json.push(obj);
-    this.aw_objs[obj.id] = obj;
     callback = function() {
         console.log(obj.type+" "+obj.id+" done!");
     };

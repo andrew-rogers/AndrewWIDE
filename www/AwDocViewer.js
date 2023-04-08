@@ -92,11 +92,11 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         var cppwasm = new AwCppWasmRenderer(that.awdr);
         var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", that.awdr);
         that.awdr.registerRenderer("awcppwasm", cppwasm);
-        that.awdr.registerRenderer("mjmd", new MathJaxMarkdownRenderer());
         that.awdr.registerRenderer("diagram", new DiagramRenderer());
         new PlotRenderer(that.awdr);
         new PrintRenderer(that.awdr);
         var jsr = new JavaScriptRenderer(that.awdr);
+        new MathJaxMarkdownRenderer(that.awdr);
         var pyr = new PythonRenderer(that.awdr);
         var dotr = new DOTRenderer(that.awdr);
         var fi = new FilterInterface(jsr);

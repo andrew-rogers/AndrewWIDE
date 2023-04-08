@@ -25,15 +25,14 @@
  *
  */
 
-// Dependencies:
-//   https://github.com/mathjax/MathJax/archive/2.7.8.zip
-//   https://github.com/markedjs/marked/raw/master/lib/marked.js
-
 asyncLoader.load( [
         "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js",
         "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG" ] );
 
-var MathJaxMarkdownRenderer = function() {
+var MathJaxMarkdownRenderer = function(awdoc_renderer) {
+    this.awdr = awdoc_renderer
+    var that = this;
+    awdoc_renderer.registerType("mjmd", {"hidden":true}, function(section){ that._mjmd(section); });
 
     MathJax.Hub.Config({
         tex2jax: {
@@ -45,20 +44,7 @@ var MathJaxMarkdownRenderer = function() {
 
 };
 
-MathJaxMarkdownRenderer.prototype.renderObj = function( obj, div, callback ) {
-    this.render( obj.content, div, callback );
-};
-
-MathJaxMarkdownRenderer.prototype.render = function(mjmd, div, callback) {
-    div.innerHTML=mjmd; // MathJax processes in-place so copy the input markdown into the div.
-    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
-    var that=this;
-    MathJax.Hub.Queue(function() {
-        that._mathjaxDoneHandler(div, callback);
-    });
-};
-
-MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(div, callback) {
+MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(div) {
 
     // --- Handle code sections without '>' displaying as '&gt;' ---
     // https://github.com/chjj/marked/issues/160#issuecomment-18611040
@@ -79,8 +65,17 @@ MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(div, callback) 
     // -------------------------------------------------------------
 
     this._processMathJaxOutput(div);
+};
 
-    if( callback ) callback();
+MathJaxMarkdownRenderer.prototype._mjmd = function(section_in) {
+    var div_mjmd = document.createElement("div");
+    section_in.div.appendChild(div_mjmd);
+    div_mjmd.innerHTML = section_in.obj.content; // MathJax processes in-place so copy the input markdown into the div.
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div_mjmd]);
+    var that = this;
+    MathJax.Hub.Queue(function() {
+        that._mathjaxDoneHandler(div_mjmd);
+    });
 };
 
 MathJaxMarkdownRenderer.prototype._processMathJaxOutput = function(div) {
