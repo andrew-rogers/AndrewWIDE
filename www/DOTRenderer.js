@@ -60,10 +60,10 @@ DOTRenderer.prototype._loadJs = function( callback ) {
 };
 
 DOTRenderer.prototype._render = function( section_in ) {
-    var div_result = document.createElement("div");
-    section_in.div.appendChild(div_result);
-    var id = section_in.obj.id + "_dot";
-    div_result.id = id;
-    d3.select("#" + id).graphviz().renderDot(section_in.obj.content);
+    var d3_div = d3.create("div");
+    var div = d3_div.node();
+    section_in.div.appendChild(div);
+    div.style['text-align'] = 'center';
+    d3_div.graphviz().renderDot(section_in.obj.content);
 };
 
