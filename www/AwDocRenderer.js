@@ -224,7 +224,10 @@ AwDocRenderer.prototype.render = function( awdoc ) {
         if (line.startsWith("AW{") && line.trim().endsWith("}")) {
 
             // Render the previous section
-            if (cnt>0) this._render( obj, src );
+            if (cnt>0) {
+                obj.content = src;
+                this._render(obj);
+            }
 
             // Get attributes of this new section
             obj = JSON.parse(line.slice(2));
@@ -237,8 +240,17 @@ AwDocRenderer.prototype.render = function( awdoc ) {
     }
 
     // Render remaining content
-    if (cnt>0) this._render( obj, src );
-    else this._render( {"type":"json"}, src, 0 ); // The doc may have just JSON.
+    if (cnt>0) {
+        obj.content = src;
+        this._render(obj);
+    }
+    else {
+        // If no AW{...} tags then assume the doc is a JSON array.
+        var array = JSON.parse(src);
+        for (var i=0; i<array.length; i++) {
+            this._render(array[i])
+        }
+    }
 };
 
 AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
@@ -374,14 +386,15 @@ AwDocRenderer.prototype._queueEmpty = function() {
     }
 };
 
-AwDocRenderer.prototype._render = function( obj, src ) {
+AwDocRenderer.prototype._render = function( obj ) {
 
-    // Create a div for the rendered output.
+    // Create a div for the section.
     var div = document.createElement("div");
-    if (obj["hidden"]==true) div.hidden = true;
     this.div.appendChild(div);
 
-    obj.content = src;
+    // Display content source.
+    if (obj["hidden"]!=true) this._textarea(obj.content, div);
+
     this.aw_json.push(obj);
     this.aw_objs[obj.id] = obj;
     callback = function() {
@@ -389,6 +402,15 @@ AwDocRenderer.prototype._render = function( obj, src ) {
     };
 
     this.post( obj, div, callback );
+};
+
+AwDocRenderer.prototype._textarea = function(text, div) {
+    var ta = document.createElement("textarea");
+    ta.style.width = "100%";
+    ta.value = text;
+    div.appendChild(ta);
+    ta.style.height = (ta.scrollHeight+8)+"px";
+    return ta
 };
 
 function Runnable(awdr) {

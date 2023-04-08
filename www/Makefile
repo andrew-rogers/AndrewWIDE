@@ -15,6 +15,7 @@ SRCS = AwDocViewer.js \
  AwCppRenderer.js \
  AwCppWasmRenderer.js \
  AwDocRenderer.js \
+ DOTRenderer.js \
  DSPInterfaces.js \
  Diagram/Geometry.js \
  Diagram/Plot/Plot.js \

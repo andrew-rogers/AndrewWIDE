@@ -71,7 +71,6 @@ AwCppWasmRenderer.prototype.renderSection = function( section_in, callback ) {
 AwCppWasmRenderer.prototype._awcppwasm = function( section_in, callback ) {
     var obj = section_in.obj;
     var div = section_in.div;
-    this._textArea( obj.content, div );
     var sections_out = [];
 
     var id = obj.id;
@@ -150,16 +149,6 @@ AwCppWasmRenderer.prototype._run = function( section_in, callback ) {
     wasm.getResponse( section_in, sections_out )
 
     callback( sections_out );
-};
-
-AwCppWasmRenderer.prototype._textArea = function( text, div ) {
-    // Put the text into a textarea
-    var ta = document.createElement("textarea");
-    ta.style.width = "100%";
-    ta.value = text;
-    div.appendChild(ta);
-    ta.style.height = (ta.scrollHeight+8)+"px";
-    return ta
 };
 
 AwCppWasmRenderer.prototype._wasm = function( section_in, callback) {
