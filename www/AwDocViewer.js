@@ -59,6 +59,7 @@ function AwDocViewer( docname ) {
     this.docname = docname;
     this._disableDrop();
     this.ta_awjson = document.getElementById("ta_awjson");
+    this.serverless = false;
     if (this.ta_awjson == null) this._selectDoc();
     else this._renderFromHTML();
 }
@@ -90,7 +91,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);
         var cppwasm = new AwCppWasmRenderer(that.awdr);
-        var xhr = new XhrRenderer("/cgi-bin/awcpp.cgi", that.awdr);
+        if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", that.awdr);
         that.awdr.registerRenderer("awcppwasm", cppwasm);
         that.awdr.registerRenderer("diagram", new DiagramRenderer());
         new PlotRenderer(that.awdr);
@@ -118,10 +119,11 @@ AwDocViewer.prototype._openDoc = function( fn ) {
 
 AwDocViewer.prototype._renderFromHTML = function( fn ) {
     var that = this;
+    this.serverless = true;
     this._instantiateRenderers( function() {
         that.awdr.setServerless();
         var ta_cache = document.getElementById("ta_cache");
-        that.awdr.cache.setCache(JSON.parse(ta_cache.value));
+        that.awdr.cache.fromObj(JSON.parse(ta_cache.value));
         that.awdr.render(ta_awjson.value);
     });
 };

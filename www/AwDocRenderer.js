@@ -28,33 +28,47 @@
 function CacheRenderer() {
     this.cache = [];
     this.cache_map = {};
+    this.attributes = {};
 }
 
 CacheRenderer.prototype.add = function ( section_in, section_out ) {
-    var key = section_out.hash_key;
+    var key = this.attributes[section_in.obj.type].hash_key;
     var hash = this._createHash(JSON.stringify(section_in.obj[key]));
     this.cache_map[hash] = this.cache.length;
-    this.cache.push({"in_type": section_in.obj.type, "hash": hash, "hash_key": key, "out": section_out.obj});
+    this.cache.push({"type": section_in.obj.type, "hash": hash, "out": section_out.obj});
+};
+
+CacheRenderer.prototype.fromObj = function ( obj ) {
+    this.cache = obj.cache;
+    this.attributes = obj.attributes;
+    for (var i=0; i<obj.cache.length; i++) {
+        var hash = obj.cache[i].hash;
+        this.cache_map[hash] = i;
+    }
+};
+
+CacheRenderer.prototype.registerType = function (type, attributes) {
+    this.attributes[type] = attributes;
 };
 
 CacheRenderer.prototype.renderSection = function( section_in, callback ) {
     sections_out = [];
-    if (section_in.obj.hasOwnProperty("src")) {
-        var hash = this._createHash(JSON.stringify(section_in.obj.src));
-        if (this.cache_map.hasOwnProperty(hash)) {
-            var cache = this.cache[this.cache_map[hash]];
-            sections_out.push({"obj": cache.out, "div": section_in.div, "callback": section_in.callback});
+    var type = section_in.obj.type;
+    if (this.attributes.hasOwnProperty(type)) {
+        var key = this.attributes[type].hash_key;
+        if (section_in.obj.hasOwnProperty(key)) {
+            var hash = this._createHash(JSON.stringify(section_in.obj[key]));
+            if (this.cache_map.hasOwnProperty(hash)) {
+                var cache = this.cache[this.cache_map[hash]];
+                sections_out.push({"obj": cache.out, "div": section_in.div, "callback": section_in.callback});
+            }
         }
     }
     if (callback) callback(sections_out);
 };
 
-CacheRenderer.prototype.setCache = function ( cache ) {
-    this.cache = cache;
-    for (var i=0; i<cache.length; i++) {
-        var hash = cache[i].hash;
-        this.cache_map[hash] = i;
-    }
+CacheRenderer.prototype.toObj = function() {
+    return {"attributes": this.attributes, "cache": this.cache};
 };
 
 CacheRenderer.prototype._createHash = function( str ) {
@@ -67,9 +81,32 @@ CacheRenderer.prototype._createHash = function( str ) {
     return hash.toString();
 };
 
+function Lock(callback) {
+    this.locks = [];
+    this.callback = callback;
+}
+
+Lock.prototype.lock = function() {
+    var id = this.locks.length;
+    this.locks.push( {"done": false} );
+    return id;
+};
+
+Lock.prototype.release = function ( id ) {
+    this.locks[id]["done"] = true;
+
+    // Check if all locks released
+    var done = true;
+    for (var i=0; i<this.locks.length; i++) {
+        if (this.locks[i].done == false) done = false;
+    }
+    if (done && this.callback) this.callback();
+};
+
 function Queue(callback) {
     this.queue = [];
     this.callback = callback;
+    this.dispatch_enabled = true;
 }
 
 Queue.prototype.post = function ( obj ) {
@@ -81,15 +118,31 @@ Queue.prototype.post = function ( obj ) {
     else {
         this.queue.push(obj);
     }
-    var that = this;
+
+    if (this.dispatch_enabled) {
+        // Dispatch on the next event cycle.
+        var that = this;
+        setTimeout( function(){
+            that._dispatch();
+        });
+    }
+};
+
+Queue.prototype.disableDispatch = function () {
+    this.dispatch_enabled = false;
+};
+
+Queue.prototype.enableDispatch = function () {
+    this.dispatch_enabled = true;
 
     // Dispatch on the next event cycle.
+    var that = this;
     setTimeout( function(){
         that._dispatch();
     });
 };
 
-Queue.prototype._dispatch= function () {
+Queue.prototype._dispatch = function () {
     var queue = this.queue;
     this.queue = [];
     while( queue.length > 0 ) {
@@ -144,7 +197,17 @@ function AwDocRenderer(docname, div) {
     this.ta_log.style.width = "100%";
     this.ta_log.hidden = true;
     div.appendChild(this.ta_log);
+
+    // Lock for disabling rendering until all types registered.
+    var that = this;
+    this.rendering_lock = new Lock(function() {
+        that.queue.enableDispatch();
+    });
 }
+
+AwDocRenderer.prototype.doneTypes = function(id) {
+    this.rendering_lock.release(id);
+};
 
 AwDocRenderer.prototype.loadScriptsSeq = function ( urls, callback ) {
 
@@ -292,6 +355,10 @@ AwDocRenderer.prototype.setServerless = function ( ) {
     this.url_link.hidden = true;
 };
 
+AwDocRenderer.prototype.waitTypes = function () {
+    return this.rendering_lock.lock();
+};
+
 AwDocRenderer.prototype._assignId= function(obj) {
     if (obj.hasOwnProperty("id") == false) {
         // Create a default ID if one is not given
@@ -326,7 +393,10 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
             renderer.renderObj( section.obj, section.div, section.callback );
         }
         else {
-            renderer( section );
+            var that = this;
+            renderer( section, function(sections_out) {
+                that._processOutputs( section, sections_out );
+            });
         }
     }
     else {
@@ -344,7 +414,7 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     html += "\t\t<script src=\"AwAll.js\"></script>\n";
     html += "\t</head>\n\t<body>\n"
     html += "\t\t<textarea id=\"ta_awjson\" hidden>\n" + JSON.stringify(this.aw_json) + "\n\t\t</textarea>\n";
-    html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache.cache) + "\n\t\t</textarea>\n";
+    html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache.toObj()) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
     html += "new AwDocViewer( \"" + this.docname + "\" );\n";
     html += "\t\t</script>\n";
@@ -365,15 +435,19 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
 
 AwDocRenderer.prototype._processOutputs = function ( section_in, sections_out ) {
     var type_in = section_in.obj.type;
+
+    // Cache-able types have a hash_key attribute.
     var attributes = this.attributes[type_in] || {};
     var hash_key = attributes["hash_key"] || null;
-    for (var i=0; i < sections_out.length; i++) {
-        var s = sections_out[i];
-        if (hash_key) {
-            s.hash_key = hash_key;
+    if (hash_key) {
+        //  Cache-able - Add outputs to cache.
+        this.cache.registerType(type_in, attributes);
+        for (var i=0; i < sections_out.length; i++) {
+            var s = sections_out[i];
             this.cache.add( section_in, s);
         }
     }
+
     this.postSections(sections_out);
 };
 

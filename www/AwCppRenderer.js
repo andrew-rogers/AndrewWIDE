@@ -31,17 +31,17 @@ var XhrRenderer = function(url, awdoc_renderer) {
     this.waiting = false;
     this.queue = [];
     this.renderer_id = awdoc_renderer.registerAsync(this);
-    this.types = {
-        "func_src": {},
-        "func": {},
-        "awcppwasm_src": {"hash_key": "src"}
-    };
-    awdoc_renderer.registerTypes(this.types, this);
+    this._getTypes();
 };
 
-XhrRenderer.prototype.renderSection = function( section, callback ) {
-    this.queue.push({"in": section, "callback": callback});
-    this._next();
+XhrRenderer.prototype._getTypes = function() {
+    var section = {"obj": {"type": "get_types"}, "div" : {}};
+    var lock_id = this.awdoc_renderer.waitTypes();
+    var that = this;
+    this._render(section, function(types) {
+        that._types(types[0]);
+        that.awdoc_renderer.doneTypes(lock_id);
+    });
 };
 
 XhrRenderer.prototype._next = function() {
@@ -69,6 +69,21 @@ XhrRenderer.prototype._query = function( section, callback ) {
 		that._next();
 	};
 	xhr.send(JSON.stringify(section.obj));
+};
+
+XhrRenderer.prototype._render = function( section, callback ) {
+    this.queue.push({"in": section, "callback": callback});
+    this._next();
+};
+
+XhrRenderer.prototype._types = function(section) {
+    var types = section.obj.types;
+    var that = this;
+    for (var i = 0; i < types.length; i++) {
+        this.awdoc_renderer.registerType(types[i].type, types[i].attributes, function(section, callback){
+            that._render(section, callback);
+        });
+    }
 };
 
 var MonoRenderer = function( awdoc_renderer ) {

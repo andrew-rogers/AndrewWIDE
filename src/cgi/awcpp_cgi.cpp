@@ -30,6 +30,7 @@ int build();
 std::string cppFunc( const std::string& dir, const std::string& func, const std::string& cpp );
 std::string cppFuncHdr( const std::string& dir, const std::string& func );
 void buildWasm();
+void getTypes();
 int make( const std::string& makefile, const std::string& cgi );
 int emmake( const std::string& awdir );
 string base64Encode(vector<char>& data);
@@ -50,7 +51,11 @@ void processQuery( Json& query )
 {
     string type = query["type"].str();
 
-    if( type == "func_src" )
+    if( type == "get_types" )
+    {
+        getTypes();
+    }
+    else if( type == "func_src" )
     {
         auto dir = filesystem::absPath(query["module"].str());
         dir += ".awtmp";
@@ -294,6 +299,29 @@ void buildWasm()
         g_response["type"] = "log";
         g_response["msg"] = err;
     }
+}
+
+void getTypes()
+{
+    Json types;
+
+    Json awcppwasm_src;
+    awcppwasm_src["type"] = "awcppwasm_src";
+    Json awcppwasm_src_attr;
+    awcppwasm_src_attr["hash_key"] = "src";
+    awcppwasm_src["attributes"] = awcppwasm_src_attr;
+    types.push_back(awcppwasm_src);
+
+    Json func;
+    func["type"] = "func";
+    types.push_back(func);
+
+    Json func_src;
+    func_src["type"] = "func_src";
+    types.push_back(func_src);
+
+    g_response["type"] = "types";
+    g_response["types"] = types;
 }
 
 int make( const std::string& awdir, const std::string& cgi )
