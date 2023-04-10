@@ -356,6 +356,7 @@ AwDocRenderer.prototype.setServerless = function ( ) {
 };
 
 AwDocRenderer.prototype.waitTypes = function () {
+    this.queue.disableDispatch();
     return this.rendering_lock.lock();
 };
 
