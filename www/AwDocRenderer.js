@@ -32,10 +32,11 @@ function CacheRenderer() {
 }
 
 CacheRenderer.prototype.add = function ( section_in, section_out ) {
-    var key = this.attributes[section_in.obj.type].hash_key;
-    var hash = this._createHash(JSON.stringify(section_in.obj[key]));
-    this.cache_map[hash] = this.cache.length;
-    this.cache.push({"type": section_in.obj.type, "hash": hash, "out": section_out.obj});
+    // Only add objects that have a hash.
+    if (section_in.hasOwnProperty("hash")) {
+        this.cache_map[section_in.hash] = this.cache.length;
+        this.cache.push({"type": section_in.obj.type, "hash": section_in.hash, "out": section_out.obj});
+    }
 };
 
 CacheRenderer.prototype.fromObj = function ( obj ) {
@@ -48,23 +49,28 @@ CacheRenderer.prototype.fromObj = function ( obj ) {
 };
 
 CacheRenderer.prototype.registerType = function (type, attributes) {
-    this.attributes[type] = attributes;
+    // Only store types with a hash_key.
+    var attr = attributes || {};
+    var hash_key = attr["hash_key"] || null;
+    if (hash_key) this.attributes[type] = attr;
 };
 
-CacheRenderer.prototype.renderSection = function( section_in, callback ) {
-    sections_out = [];
-    var type = section_in.obj.type;
+CacheRenderer.prototype.searchSection = function( section, post, notFound ) {
+    var found = false;;
+    var type = section.obj.type;
     if (this.attributes.hasOwnProperty(type)) {
         var key = this.attributes[type].hash_key;
-        if (section_in.obj.hasOwnProperty(key)) {
-            var hash = this._createHash(JSON.stringify(section_in.obj[key]));
+        if (section.obj.hasOwnProperty(key)) {
+            var hash = this._createHash(JSON.stringify(section.obj[key]));
+            section.hash = hash;
             if (this.cache_map.hasOwnProperty(hash)) {
                 var cache = this.cache[this.cache_map[hash]];
-                sections_out.push({"obj": cache.out, "div": section_in.div, "callback": section_in.callback});
+                found = true;
+                post({"obj": cache.out, "div": section.div});
             }
         }
     }
-    if (callback) callback(sections_out);
+    if (!found) notFound(section);
 };
 
 CacheRenderer.prototype.toObj = function() {
@@ -255,6 +261,7 @@ AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
 AwDocRenderer.prototype.registerType = function( name, attributes, func ) {
     this.renderers[name] = func;
     this.attributes[name] = attributes;
+    this.cache.registerType(name, attributes);
 };
 
 AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
@@ -369,14 +376,16 @@ AwDocRenderer.prototype._assignId= function(obj) {
 };
 
 AwDocRenderer.prototype._dispatch = function(section) {
-    //console.log("Dispatch:", section.obj.type, section.obj);
     var that = this;
     section.doc = this.doc; // Document globals.
-    this.cache.renderSection( section, function(sections_out) {
-        if (sections_out.length == 0) {
-            that._dispatchRenderer(section);
-        }
-        else that.postSections(sections_out);
+    this.cache.searchSection( section, function(section) {
+        // Found in cache.
+        that.postSections([section]);
+        that._assignId(section.obj);
+        that.queue.post(section);
+    }, function(section) {
+        // Not in cache.
+        that._dispatchRenderer(section);
     });
 };
 
@@ -387,7 +396,7 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
         if (typeof renderer.renderSection === 'function') {
             var that = this;
             renderer.renderSection( section, function(sections_out) {
-                that._processOutputs( section, sections_out );
+                that.postSections( sections_out );
             });
         }
         else if (typeof renderer.renderObj === 'function'){
@@ -395,8 +404,10 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
         }
         else {
             var that = this;
-            renderer( section, function(sections_out) {
-                that._processOutputs( section, sections_out );
+            renderer( section, function(section_out) {
+                that.cache.add(section, section_out);
+                that._assignId(section_out.obj);
+                that.queue.post(section_out);
             });
         }
     }
@@ -432,24 +443,6 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     this.download_link.setAttribute("download", fn);
     this.download_link.innerHTML="Download doc.";
     this.download_link.hidden = false;
-};
-
-AwDocRenderer.prototype._processOutputs = function ( section_in, sections_out ) {
-    var type_in = section_in.obj.type;
-
-    // Cache-able types have a hash_key attribute.
-    var attributes = this.attributes[type_in] || {};
-    var hash_key = attributes["hash_key"] || null;
-    if (hash_key) {
-        //  Cache-able - Add outputs to cache.
-        this.cache.registerType(type_in, attributes);
-        for (var i=0; i < sections_out.length; i++) {
-            var s = sections_out[i];
-            this.cache.add( section_in, s);
-        }
-    }
-
-    this.postSections(sections_out);
 };
 
 AwDocRenderer.prototype._render = function( obj ) {

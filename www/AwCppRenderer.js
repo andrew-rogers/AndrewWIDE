@@ -39,7 +39,7 @@ XhrRenderer.prototype._getTypes = function() {
     var lock_id = this.awdoc_renderer.waitTypes();
     var that = this;
     this._render(section, function(types) {
-        that._types(types[0]);
+        that._types(types);
         that.awdoc_renderer.doneTypes(lock_id);
     });
 };
@@ -48,7 +48,7 @@ XhrRenderer.prototype._next = function() {
     if (this.waiting==false) {
         if (this.queue.length > 0) {
             var obj = this.queue.shift();
-            this._query( obj.in, obj.callback );
+            this._query( obj.in, obj.post);
         }
         else {
             this.awdoc_renderer.renderingComplete(this.renderer_id);
@@ -56,23 +56,23 @@ XhrRenderer.prototype._next = function() {
     }
 };
 
-XhrRenderer.prototype._query = function( section, callback ) {
+XhrRenderer.prototype._query = function( section, post ) {
     this.waiting = true;
     var that = this;
     var xhr = new XMLHttpRequest();
 	xhr.open("POST", this.url, true);
 	xhr.onload = function (event) {
 	    that.waiting = false;
-	    section_out = {"div": section.div, "callback": section.callback};
+	    section_out = {"div": section.div};
 		section_out.obj=JSON.parse(xhr.response);
-		callback( [section_out] );
+		post(section_out);
 		that._next();
 	};
 	xhr.send(JSON.stringify(section.obj));
 };
 
-XhrRenderer.prototype._render = function( section, callback ) {
-    this.queue.push({"in": section, "callback": callback});
+XhrRenderer.prototype._render = function( section, post ) {
+    this.queue.push({"in": section, "post": post});
     this._next();
 };
 
@@ -80,8 +80,8 @@ XhrRenderer.prototype._types = function(section) {
     var types = section.obj.types;
     var that = this;
     for (var i = 0; i < types.length; i++) {
-        this.awdoc_renderer.registerType(types[i].type, types[i].attributes, function(section, callback){
-            that._render(section, callback);
+        this.awdoc_renderer.registerType(types[i].type, types[i].attributes, function(section, post){
+            that._render(section, post);
         });
     }
 };
