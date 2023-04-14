@@ -380,7 +380,6 @@ AwDocRenderer.prototype._dispatch = function(section) {
     section.doc = this.doc; // Document globals.
     this.cache.searchSection( section, function(section) {
         // Found in cache.
-        that.postSections([section]);
         that._assignId(section.obj);
         that.queue.post(section);
     }, function(section) {

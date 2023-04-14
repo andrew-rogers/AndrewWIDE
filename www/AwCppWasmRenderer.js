@@ -41,6 +41,7 @@ var AwCppWasmRenderer = function(awdr) {
     awdr.registerRenderer("awcppwasm_build", this);
     awdr.registerRenderer("wasm", this);
     awdr.registerRenderer("awcppwasm_run", this);
+    this.async_id = awdr.registerAsync(this);
     this.header = "#include \"wasm_buffers.h\"\n\n";
     this.module = "";
     this.interfaces = {};
@@ -170,5 +171,6 @@ AwCppWasmRenderer.prototype._wasm = function( section_in, callback) {
     scr.innerText = this.runtime_js;
     document.head.appendChild(scr);
     this.build_pending = false;
+    this.awdr.renderingComplete(this.async_id);
 };
 
