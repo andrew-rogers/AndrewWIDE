@@ -280,9 +280,8 @@ void buildWasm()
             e = filesystem::readFile("src.wasm", wasmbytes);
             if (e.size()) err += e+"\n";
 
-            // Read the runtime JavaScript
+            // Read the runtime JavaScript (optional)
             e = filesystem::readFile("src.js", rt_js);
-            if (e.size()) err += e+"\n";
         }
     }
 

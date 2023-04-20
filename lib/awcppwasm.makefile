@@ -11,7 +11,7 @@ else
     FixPath = $1
 endif
 
-JS=src.js
+TARGET = src.js
 
 OBJS = src.o
 
@@ -23,11 +23,11 @@ LDFLAGS=-L$(AWLIB_DIR)
 
 -include includes.mk
 
-all: $(JS)
+all: $(TARGET)
 	
-$(JS): $(OBJS)
+$(TARGET): $(OBJS)
 	$(CXX) $(OBJS) $(LDFLAGS) -lAw -o $@ -s EXPORTED_RUNTIME_METHODS="['ccall']" -Oz --minify=0
 
 clean:
-	$(RM) $(call FixPath,$(JS))
+	$(RM) $(call FixPath,$(TARGET))
 	$(RM) $(call FixPath,$(OBJS))
