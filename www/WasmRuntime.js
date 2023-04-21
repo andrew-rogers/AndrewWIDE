@@ -137,12 +137,18 @@ WasmRuntime.prototype.initialise = function (binary, postInit) {
     });
 };
 
+WasmRuntime.prototype.read = function( type, address, num ) {
+    if (type === "F32") return this.readF32(address, num);
+    if (type === "F64") return this.readF64(address, num);
+    if (tpye === "U8" ) return this.readU8 (address, num);
+};
+
 WasmRuntime.prototype.readF32 = function( address, num ) {
     return Array.from(HEAPF32.slice(address>>2, (address>>2)+num));
 };
 
 WasmRuntime.prototype.readF64 = function( address, num ) {
-    var mem = wasm.module.memFloat64; // TODO: Use 'this' not 'wasm'. Need to fix reader_func.
+    var mem = this.module.memFloat64;
     var index = address >> 3;
     return Array.from(mem.slice(index, index + num));
 };

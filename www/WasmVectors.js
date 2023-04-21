@@ -26,26 +26,24 @@
 var WasmVector = function( ptr, type ) {
     this.ptr = ptr; // Address of the WasmVector<T> instance.
     this.type = type;
-    if (WasmVector.readers.length==0) {
-        WasmVector.readers = [0,0,wasm.readU8, 0,0,0,0,0,0,wasm.readF32, wasm.readF64];
-        WasmVector.writers = [0,0,wasm.writeU8,0,0,0,0,0,0,wasm.writeF32,wasm.writeF64];
+    if (WasmVector.types.length==0) {
+        WasmVector.types = [0,0,"U8", 0,0,0,0,0,0,"F32", "F64"];
     }
 }
 
-WasmVector.readers = [];
-WasmVector.writers = [];
+WasmVector.types = [];
 
 WasmVector.prototype.list = function() {
     wasm.cfunc("vector_data")(this.ptr);
     var rv = wasm.getReturnValues();
-    var reader_func = WasmVector.readers[this.type];
-    return reader_func( rv[0], rv[1] );
+    var type = WasmVector.types[this.type];
+    return wasm.read( type, rv[0], rv[1] );
 };
 
 WasmVector.prototype.push = function(list) {
     var ptr = wasm.cfunc("wasm_vector_expand")(this.ptr, this.type, list.length);
-    var writer_func = WasmVector.writers[this.type];
-    writer_func( list, ptr );
+    var type = WasmVector.types[this.type];
+    wasm.write( type, list, ptr );
 };
 
 var WasmVectors = function( name, ptr ) {
