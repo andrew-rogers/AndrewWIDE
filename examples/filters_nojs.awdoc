@@ -16,65 +16,6 @@ double g_zp;
 typedef WasmVector<double> vec_t;
 typedef std::complex<double> complex_t;
 
-AW{"type":"javascript"}
-let wrt = {};
-window.wrt = wrt;
-
-let CStringToJS = function(cstr) {
-    let buf = wrt.exports.memory.buffer;
-    let heap = new Uint8Array(buf);
-    let str = "";
-    if (cstr==0) return "";
-    let i=cstr;
-    while (heap[i] > 0) str += String.fromCharCode(heap[i++]);
-    return str;
-};
-
-let env = {};
-env.emjs_add_response_cmd = function(src) {
-    wasm.addResponseCommand(CStringToJS(src));
-};
-
-env.emjs_add_wasm_vectors = function(name, ptr) {
-    new WasmVectors(CStringToJS(name), ptr);
-};
-
-env.emjs_wasm_vectors_add = function(p_wvs, name, ptr, type) {
-    var wvs = WasmVectors.dict["p"+p_wvs]; // Lookup the WasmVectors to add the WasmVector to.
-    wvs.addPtr(CStringToJS(name), ptr, type);
-};
-
-let wsp = {};
-
-wsp.fd_close = function() {
-    console.log("Not yet implemented");
-};
-
-wsp.fd_write = function() {
-    console.log("Not yet implemented");
-};
-
-wsp.fd_seek = function() {
-    console.log("Not yet implemented");
-};
-
-wsp.proc_exit = function() {
-    console.log("Not yet implemented");
-};
-
-wrt.imports = {env: env, wasi_snapshot_preview1: wsp};
-wrt.wasm_binary = Module.wasmBinary;
-wrt.init = function() {
-    wrt.wasm_binary = window.Module.wasmBinary;
-    WebAssembly.instantiate(wrt.wasm_binary, wrt.imports)
-    .then((result) => {
-        wrt.exports = result.instance.exports;
-        wrt.exports._initialize();
-        wrt.exports.awcppwasm_7();
-    });
-};
-
-
 AW{"type":"mjmd"}
 
 A low-pass RC filter has the [Laplace](https://en.wikipedia.org/wiki/Laplace_transform) transfer function

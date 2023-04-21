@@ -28,7 +28,9 @@
 var WasmRuntime = function() {
     this.stack=0;
     this.meta = {};
+    this.module = {};
     this.response_cmds = []; // Response commands.
+    this._createImports();
 };
 
 WasmRuntime.prototype.addInputString = function( string ) {
@@ -45,6 +47,10 @@ WasmRuntime.prototype.addResponseCommand = function( cmd ) {
 WasmRuntime.prototype.allocInput = function( num_bytes ) {
     var func = this.cfunc( "alloc_input" );
     return func(num_bytes);
+};
+
+WasmRuntime.prototype.callCFunc = function( func_name ) {
+    ccall(func_name,"void",[],[]);
 };
 
 WasmRuntime.prototype.cfunc = function( func_name ) {
@@ -102,12 +108,52 @@ WasmRuntime.prototype.getReturnValues = function () {
     return this.readU32( ptr, 8);
 };
 
+WasmRuntime.prototype.initialise = function (binary, postInit) {
+
+    // Re-assign the C function lookup function.
+    var mod = this.module;
+    this.cfunc = function (func_name) {
+        return mod.exports[func_name];
+    };
+    this.callCFunc = function (func_name) {
+        var func = mod.exports[func_name];
+        func();
+    }
+
+    // Instantiate the wasm.
+    WebAssembly.instantiate(binary, mod.imports)
+    .then((result) => {
+        mod.exports = result.instance.exports;
+
+        // Typed array representations for memory.
+        var buf = mod.exports.memory.buffer;
+        mod.memFloat64 = new Float64Array(buf);
+        mod.memUint8   = new Uint8Array(buf);
+        mod.memUint32  = new Uint32Array(buf);
+
+        // Initialise the wasm.
+        mod.exports._initialize();
+        if (postInit) postInit();
+    });
+};
+
 WasmRuntime.prototype.readF32 = function( address, num ) {
     return Array.from(HEAPF32.slice(address>>2, (address>>2)+num));
 };
 
 WasmRuntime.prototype.readF64 = function( address, num ) {
-    return Array.from(HEAPF64.slice(address>>3, (address>>3)+num));
+    var mem = wasm.module.memFloat64; // TODO: Use 'this' not 'wasm'. Need to fix reader_func.
+    var index = address >> 3;
+    return Array.from(mem.slice(index, index + num));
+};
+
+WasmRuntime.prototype.readString = function( cstr ) {
+    var heap = this.module.memUint8;
+    var str = "";
+    if (cstr==0) return "";
+    var i = cstr;
+    while (heap[i] > 0) str += String.fromCharCode(heap[i++]);
+    return str
 };
 
 WasmRuntime.prototype.readU8 = function( address, num ) {
@@ -115,7 +161,9 @@ WasmRuntime.prototype.readU8 = function( address, num ) {
 };
 
 WasmRuntime.prototype.readU32 = function( address, num ) {
-    return Array.from(HEAPU32.slice(address>>2, (address>>2)+num));
+    var mem = this.module.memUint32;
+    var index = address >> 2;
+    return Array.from(mem.slice(index, index + num));
 };
 
 WasmRuntime.prototype.setMeta = function( ptr, key, value )
@@ -137,6 +185,12 @@ WasmRuntime.prototype.stackRestore = function() {
     this.stack=0; 
 };
 
+WasmRuntime.prototype.useEmJs = function() {
+    this.module.memFloat64 = HEAPF64;
+    this.module.memUint8   = HEAPU8;
+    this.module.memUint32  = HEAPU32;
+};
+
 WasmRuntime.prototype.writeF32 = function( arr, address ) {
     HEAPF32.set( arr, address >> 2 );
 };
@@ -150,7 +204,50 @@ WasmRuntime.prototype.writeU8 = function( arr, address ) {
 };
 
 WasmRuntime.prototype.writeString = function( string, address ) {
-    stringToUTF8( string, address, string.length*4+1 );
+    //stringToUTF8( string, address, string.length*4+1 );
+    var index = address;
+    var mem = this.module.memUint8;
+    for (var i = 0; i < string.length; i++) {
+        mem[index++] = string.charCodeAt(i);
+    }
+    mem[index] = 0; // C strings are null terminated.
+};
+
+WasmRuntime.prototype._createImports = function() {
+    var env = {};
+    var that = this;
+    env.emjs_add_response_cmd = function(src) {
+        wasm.addResponseCommand(that.readString(src));
+    };
+
+    env.emjs_add_wasm_vectors = function(name, ptr) {
+        new WasmVectors(that.readString(name), ptr);
+    };
+
+    env.emjs_wasm_vectors_add = function(p_wvs, name, ptr, type) {
+        var wvs = WasmVectors.dict["p"+p_wvs]; // Lookup the WasmVectors to add the WasmVector to.
+        wvs.addPtr(that.readString(name), ptr, type);
+    };
+
+    var wsp = {};
+
+    wsp.fd_close = function() {
+        console.log("Not yet implemented");
+    };
+
+    wsp.fd_write = function() {
+        console.log("Not yet implemented");
+    };
+
+    wsp.fd_seek = function() {
+        console.log("Not yet implemented");
+    };
+
+    wsp.proc_exit = function() {
+        console.log("Not yet implemented");
+    };
+
+    this.module.imports = {env: env, wasi_snapshot_preview1: wsp};
 };
 
 WasmRuntime.prototype._getVectors = function( vecs, obj ) {

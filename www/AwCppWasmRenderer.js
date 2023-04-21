@@ -24,11 +24,8 @@
  * for the JavaScript code in this page.
  *
  */
- 
-// The Emscripten generated runtime uses a global Module object
-Module = {};
 
-// Use our own runtime also.
+// Global runtime support.
 wasm = null;
 
 var AwCppWasmRenderer = function(awdr) {
@@ -143,8 +140,8 @@ AwCppWasmRenderer.prototype._run = function( section_in, callback ) {
     for (var i=0; i<keys.length; i++) wasm.addInputString(inputs[keys[i]]);
     wasm.addInputString(keys.join(","));
 
-    ccall(section_in.obj.id,"void",[],[]);
-
+    //ccall(section_in.obj.id,"void",[],[]);
+    wasm.callCFunc(section_in.obj.id);
     // Get response objects from WasmRuntime
     var sections_out = [];
     wasm.getResponse( section_in, sections_out )
@@ -154,11 +151,10 @@ AwCppWasmRenderer.prototype._run = function( section_in, callback ) {
 
 AwCppWasmRenderer.prototype._wasm = function( section_in, callback) {
     var obj = section_in.obj;
-    Module.wasmBinary = Uint8Array.from(atob(obj.b64), c => c.charCodeAt(0)).buffer;
-    this.runtime_js = obj.rt_js;
+    var binary = Uint8Array.from(atob(obj.b64), c => c.charCodeAt(0)).buffer;
+    this.runtime_js = obj.rt_js || "";
 
-    that = this;
-    Module.onRuntimeInitialized = function() {
+    var postInit = function() {
 
         // Enable run
         var s = {};
@@ -166,10 +162,24 @@ AwCppWasmRenderer.prototype._wasm = function( section_in, callback) {
         callback( [s] );
     }
 
-    // Create script element and inject the JavaScript
-    scr = document.createElement("script");
-    scr.innerText = this.runtime_js;
-    document.head.appendChild(scr);
+    var postInitEmJs = function() {
+        wasm.useEmJs();
+        postInit();
+    }
+
+    if (this.runtime_js === "") {
+        wasm.initialise(binary, postInit);
+    }
+    else {
+        // Setup Module object for Emscripten JS runtime.
+        window.Module = {wasmBinary: binary, onRuntimeInitialized: postInitEmJs};
+
+        // Create script element and inject the JavaScript
+        scr = document.createElement("script");
+        scr.innerText = this.runtime_js;
+        document.head.appendChild(scr);
+    }
+
     this.build_pending = false;
     this.awdr.renderingComplete(this.async_id);
 };
