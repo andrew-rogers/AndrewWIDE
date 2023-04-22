@@ -163,7 +163,7 @@ AwCppWasmRenderer.prototype._wasm = function( section_in, callback) {
     }
 
     var postInitEmJs = function() {
-        wasm.useEmJs();
+        wasm.setMemory(window.buffer);
         postInit();
     }
 

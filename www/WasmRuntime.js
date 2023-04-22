@@ -121,15 +121,13 @@ WasmRuntime.prototype.initialise = function (binary, postInit) {
     }
 
     // Instantiate the wasm.
+    var that = this;
     WebAssembly.instantiate(binary, mod.imports)
     .then((result) => {
         mod.exports = result.instance.exports;
 
         // Typed array representations for memory.
-        var buf = mod.exports.memory.buffer;
-        mod.memFloat64 = new Float64Array(buf);
-        mod.memUint8   = new Uint8Array(buf);
-        mod.memUint32  = new Uint32Array(buf);
+        that.setMemory(mod.exports.memory.buffer);
 
         // Initialise the wasm.
         mod.exports._initialize();
@@ -138,9 +136,9 @@ WasmRuntime.prototype.initialise = function (binary, postInit) {
 };
 
 WasmRuntime.prototype.read = function( type, address, num ) {
-    if (type === "F32") return this.readF32(address, num);
-    if (type === "F64") return this.readF64(address, num);
-    if (tpye === "U8" ) return this.readU8 (address, num);
+    var mem = this.module.mem[type];
+    var index = address >> mem.address_shift;
+    return Array.from(mem.buf.slice(index, index + num));
 };
 
 WasmRuntime.prototype.readF32 = function( address, num ) {
@@ -172,6 +170,19 @@ WasmRuntime.prototype.readU32 = function( address, num ) {
     return Array.from(mem.slice(index, index + num));
 };
 
+WasmRuntime.prototype.setMemory = function(buffer) {
+    var mod = this.module;
+    mod.memFloat64 = new Float64Array(buffer);
+    mod.memUint8   = new Uint8Array  (buffer);
+    mod.memUint32  = new Uint32Array (buffer);
+
+    mod.mem = {
+        F64: {buf: mod.memFloat64, address_shift: 3},
+        U8:  {buf: mod.memUint8,   address_shift: 0},
+        U32: {buf: mod.memUint32,  address_shift: 2}
+    };
+};
+
 WasmRuntime.prototype.setMeta = function( ptr, key, value )
 {
     var objkey = "p"+ptr; // Convert pointer to string and prefix with p.
@@ -189,12 +200,6 @@ WasmRuntime.prototype.stackAlloc = function( num_bytes ) {
 WasmRuntime.prototype.stackRestore = function() {
     if (this.stack!=0) stackRestore( this.stack );
     this.stack=0; 
-};
-
-WasmRuntime.prototype.useEmJs = function() {
-    this.module.memFloat64 = HEAPF64;
-    this.module.memUint8   = HEAPU8;
-    this.module.memUint32  = HEAPU32;
 };
 
 WasmRuntime.prototype.writeF32 = function( arr, address ) {
