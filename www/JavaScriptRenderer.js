@@ -44,8 +44,8 @@ var JavaScriptRenderer = function(awdoc_renderer) {
 
     // Supported message types.
     this.types = {
-        "javascript": {},
-        "javascript_run": {}
+        "jss": {},
+        "jss_run": {}
     };
     awdoc_renderer.registerTypes(this.types, this);
 };

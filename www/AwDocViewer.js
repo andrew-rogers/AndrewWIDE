@@ -25,6 +25,8 @@
  *
  */
 
+window.AndrewWIDE = {};
+
 function AsyncLoader() {
     this.cnt = 0;
     this.urls = [];
@@ -87,6 +89,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
     if (typeof PythonRenderer === 'undefined') scripts.push("PythonRenderer.js");
     if (typeof DOTRenderer === 'undefined') scripts.push("DOTRenderer.js");
+    if (typeof AndrewWIDE.modules === 'undefined') scripts.push("modules.js");
 
     asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);
@@ -102,6 +105,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         var dotr = new DOTRenderer(that.awdr);
         var fi = new FilterInterface(jsr);
         cppwasm.addInterface("filter", fi);
+        that._registerModules(AndrewWIDE.modules);
         callback();
     };
     asyncLoader.load( scripts );
@@ -115,6 +119,31 @@ AwDocViewer.prototype._openDoc = function( fn ) {
             that.awdr.render(content);
         });
     });
+};
+
+AwDocViewer.prototype._registerModules = function(m) {
+    let renderers = this.awdr.renderers;
+
+    function registerTypes(types) {
+        let keys = Object.keys(types);
+        for (let i=0; i<keys.length; i++) {
+            let name = keys[i];
+            renderers[name] = function(section) {
+                types[name](section);
+                // TODO: The module will add a run() function to the section object. Create a Runnable that calls it.
+            };
+        }
+    }
+
+    let keys = Object.keys(m);
+    for (let i=0; i<keys.length; i++) {
+        let module = m[keys[i]];
+        module.aw.render = function(obj, div) {
+            this.awdr.post(obj, div);
+        };
+        let types = module.types;
+        registerTypes(types);
+    }
 };
 
 AwDocViewer.prototype._renderFromHTML = function( fn ) {
