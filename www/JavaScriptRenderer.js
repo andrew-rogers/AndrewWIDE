@@ -61,10 +61,10 @@ JavaScriptRenderer.prototype.addFunction = function( id, func ) {
 
 JavaScriptRenderer.prototype.renderSection = function( section_in, callback ) {
     var type = section_in.obj.type;
-    if (type == "javascript") {
+    if (type == "jss") {
         this._javascript(section_in, callback);
     }
-    else if (type == "javascript_run") {
+    else if (type == "jss_run") {
         this._run(section_in, callback);
     }
 };
@@ -115,7 +115,7 @@ JavaScriptRenderer.prototype._render_eval = function( section_in, callback ) {
     div.appendChild(div_result);
     if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
     s = {"div": div_result, "callback": section_in.callback};
-    s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "javascript_run"};
+    s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "jss_run"};
     sections_out.push(s);
 
     // Queue the run

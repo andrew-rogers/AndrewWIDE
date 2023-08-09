@@ -1,0 +1,20 @@
+AW{"type":"awcppwasm","id":"mk","hidden":true}
+
+TARGET = src.wasm
+LDFLAGS += --no-entry
+
+AW{"type":"awcppwasm", "id":"globals"}
+
+EMSCRIPTEN_KEEPALIVE
+extern "C" void* allocBuffer(size_t n)
+{
+    return malloc(n);
+}
+
+AW{"type":"jss"}
+
+function loop() {
+    AndrewWIDE.wasm ? console.log(AndrewWIDE.wasm.exports.allocBuffer(9)) : setTimeout(loop, 250);
+}
+
+loop();

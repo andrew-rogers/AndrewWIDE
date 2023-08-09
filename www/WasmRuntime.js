@@ -131,6 +131,7 @@ WasmRuntime.prototype.initialise = function (binary, postInit) {
 
         // Initialise the wasm.
         mod.exports._initialize();
+        AndrewWIDE.wasm = mod;
         if (postInit) postInit();
     });
 };
