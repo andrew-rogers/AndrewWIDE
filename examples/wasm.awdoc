@@ -13,8 +13,5 @@ extern "C" void* allocBuffer(size_t n)
 
 AW{"type":"jss"}
 
-function loop() {
-    AndrewWIDE.wasm ? console.log(AndrewWIDE.wasm.exports.allocBuffer(9)) : setTimeout(loop, 250);
-}
+console.log(AndrewWIDE.wasm.exports.allocBuffer(9));
 
-loop();

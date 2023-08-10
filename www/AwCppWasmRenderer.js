@@ -71,6 +71,11 @@ AwCppWasmRenderer.prototype._awcppwasm = function( section_in, callback ) {
     var div = section_in.div;
     var sections_out = [];
 
+    // Disable run
+    var s = {"div": div_result, "callback": section_in.callback};
+    s.obj = {"type": "run_disable", "name": "awcppwasm"};
+    sections_out.push(s);
+
     var id = obj.id;
     if (id == "globals") {
         this.globals_block += obj.content;
@@ -89,11 +94,6 @@ AwCppWasmRenderer.prototype._awcppwasm = function( section_in, callback ) {
         var div_result = document.createElement("div");
         div.appendChild(div_result);
         if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-
-        // Disable run
-        var s = {"div": div_result, "callback": section_in.callback};
-        s.obj = {"type": "run_disable", "name": "awcppwasm"};
-        sections_out.push(s);
 
         // Create a runnable for this C++ function.
         var s = {"div": div_result, "callback": section_in.callback};
