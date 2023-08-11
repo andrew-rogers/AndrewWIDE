@@ -18,6 +18,7 @@ console.log(AndrewWIDE.wasm.exports.allocBuffer(9));
 AW{"type":"jss"}
 
 let dir = "external/WasmDSP/";
+let suspend_id = AndrewWIDE.suspend("Waiting for WasmDSP imports.");
 
 function gotWasm(e) {
     WasmDSP.importModules([dir + "modules/signal.js"]).then(gotSignal);
@@ -27,7 +28,9 @@ function gotSignal() {
     let bq = new WasmDSP.modules.signal.Biquad(1,0,1,0.5,0.6);
     let resp = bq.process([1,0,0,0,0,0,0]);
     console.log("resp ",resp);
+    AndrewWIDE.resume(suspend_id);
 }
+
 
 let scr = document.createElement("script");
 scr.src = dir + "WasmDSP.js";
@@ -36,7 +39,6 @@ document.head.appendChild(scr);
 
 AW{"type":"jss"}
 
-// Does not run because WasmDSP importing in asynchronous.
 let bq = new WasmDSP.modules.signal.Biquad(1,0,1,0.5,0.6);
 let resp = bq.process([1,0,0,0,0,0,0]);
 console.log("resp ",resp);

@@ -177,6 +177,7 @@ function AwDocRenderer(docname, div) {
         that._dispatch(obj);
     });
     this.cnt = 0;
+    this.suspend_cnt = 0;
     this.runnable = new Runnable(this);
     this.renderers["array"] = this;
     this.renderers["json"] = this;
@@ -209,6 +210,21 @@ function AwDocRenderer(docname, div) {
     this.rendering_lock = new Lock(function() {
         that.queue.enableDispatch();
     });
+
+    // Export suspend and resume functions
+    AndrewWIDE.suspend = function(reason){
+        let id = that.suspend_cnt;
+        let name = "suspend_" + id;
+        let s = {obj: {type:"run_disable", name:name}};
+        that.suspend_cnt++;
+        that.runnable._disable(s);
+        return id;
+    };
+    AndrewWIDE.resume = function(id){
+        let name = "suspend_" + id;
+        let s = {obj: {type:"run_enable", name:name}};
+        that.runnable._enable(s);
+    };
 }
 
 AwDocRenderer.prototype.doneTypes = function(id) {
@@ -529,7 +545,7 @@ Runnable.prototype._disable = function ( section_in, callback ) {
 };
 
 Runnable.prototype._dispatch = function () {
-    while( this.queue.length > 0 ) {
+    while( (this.queue.length > 0) && (Object.keys(this.disables).length == 0) ) {
         obj = this.queue.shift();
         var section_in = obj.section_in;
         var callback = obj.callback;
@@ -537,7 +553,7 @@ Runnable.prototype._dispatch = function () {
         var args = this._generateCallArgs(runnable.inputs);
         var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
         section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
-        callback( [section_out] );
+        this.awdr._dispatchRenderer(section_out);
     }
 };
 

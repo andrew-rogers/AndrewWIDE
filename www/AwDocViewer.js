@@ -25,7 +25,7 @@
  *
  */
 
-window.AndrewWIDE = {};
+window.AndrewWIDE = window.AndrewWIDE || {};
 
 function AsyncLoader() {
     this.cnt = 0;
