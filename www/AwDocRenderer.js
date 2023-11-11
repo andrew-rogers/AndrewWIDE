@@ -553,7 +553,7 @@ Runnable.prototype._dispatch = function () {
         var args = this._generateCallArgs(runnable.inputs);
         var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
         section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
-        this.awdr._dispatchRenderer(section_out);
+        this.awdr._dispatch(section_out);
     }
 };
 
