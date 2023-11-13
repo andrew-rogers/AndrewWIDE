@@ -173,11 +173,13 @@ WasmRuntime.prototype.readU32 = function( address, num ) {
 
 WasmRuntime.prototype.setMemory = function(buffer) {
     var mod = this.module;
+    mod.memFloat32 = new Float32Array(buffer);
     mod.memFloat64 = new Float64Array(buffer);
     mod.memUint8   = new Uint8Array  (buffer);
     mod.memUint32  = new Uint32Array (buffer);
 
     mod.mem = {
+        F32: {buf: mod.memFloat32, address_shift: 2},
         F64: {buf: mod.memFloat64, address_shift: 3},
         U8:  {buf: mod.memUint8,   address_shift: 0},
         U32: {buf: mod.memUint32,  address_shift: 2}
@@ -216,7 +218,6 @@ WasmRuntime.prototype.writeU8 = function( arr, address ) {
 };
 
 WasmRuntime.prototype.writeString = function( string, address ) {
-    //stringToUTF8( string, address, string.length*4+1 );
     var index = address;
     var mem = this.module.memUint8;
     for (var i = 0; i < string.length; i++) {
@@ -239,6 +240,10 @@ WasmRuntime.prototype._createImports = function() {
     env.emjs_wasm_vectors_add = function(p_wvs, name, ptr, type) {
         var wvs = WasmVectors.dict["p"+p_wvs]; // Lookup the WasmVectors to add the WasmVector to.
         wvs.addPtr(that.readString(name), ptr, type);
+    };
+
+    env.emjs_console_log = function(p_str) {
+        console.log(that.readString(p_str));
     };
 
     var wsp = {};

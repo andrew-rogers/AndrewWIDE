@@ -5,4 +5,5 @@ www/third-party/
 src/outputs
 src/wasm
 www/AwAll.js
+www/modules.js
 www/external/
