@@ -1,0 +1,26 @@
+AW{"type":"javascript"}
+
+var arr_cnt=0;
+var myglobals={};
+myglobals.myarr=[];
+open_arrays=[[]];
+
+AndrewWIDE.addWasmImport("openArray", function(a) {
+    var name = AndrewWIDE.UTF8ToString(a);
+    open_arrays.push(myglobals[name]);
+    return open_arrays.length-1;
+});
+
+
+AndrewWIDE.addWasmImport("arrayWrite", function(arr,ptr,cnt) {
+    vals = AndrewWIDE.FloatToArray(ptr,cnt);
+    open_arrays[arr].push(...vals);
+});
+
+
+AW{"type":"awcppwasm"}
+int vec = openArray("myarr");
+std::vector<float> buf;
+buf.push_back(M_PI);
+buf.push_back(3.2);
+arrayWrite(vec, &buf[0], buf.size());
