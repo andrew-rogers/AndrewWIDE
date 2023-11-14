@@ -246,6 +246,10 @@ WasmRuntime.prototype._createImports = function() {
         console.log(that.readString(p_str));
     };
 
+    env.emjs_js_eval = function(p_evalstr, ptr) {
+        return eval(that.readString(p_evalstr));
+    };
+
     var wsp = {};
 
     wsp.fd_close = function() {

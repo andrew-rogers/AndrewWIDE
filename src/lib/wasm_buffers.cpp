@@ -42,6 +42,16 @@ void console_log(const char* str)
     emjs_console_log(str);
 }
 
+// Eval javascript with ptr to args.
+EM_JS( void, emjs_js_eval, (const char* evalstr, const char* ptr), {
+    // Body defined in runtime.
+});
+
+void js_eval(const char* evalstr, const char* ptr)
+{
+    emjs_js_eval(evalstr, ptr);
+}
+
 // Send commands to be run in javascript after wasm function is run. The src
 //   argument will be JSON.
 EM_JS( void, emjs_add_response_cmd, (const char* src), {
