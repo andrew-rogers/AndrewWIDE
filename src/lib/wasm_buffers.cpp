@@ -32,6 +32,26 @@ std::vector<ResponseGenerator*> g_response_generators;
 WasmVectors g_shared_vectors("shared_vectors");
 std::string g_javascript;
 
+// Add a javascript function.
+EM_JS( void, emjs_add_js_func, (const char* name, const char* code), {
+    // Body defined in runtime.
+});
+
+void add_js_func(const char* name, const char* code)
+{
+    emjs_add_js_func(name, code);
+}
+
+// Call a javascript function.
+EM_JS( void*, emjs_call_js_func, (const char* name, const void* ptr), {
+    // Body defined in runtime.
+});
+
+void* call_js_func(const char* name, const void* ptr)
+{
+    return emjs_call_js_func(name, ptr);
+}
+
 // Log strings to the Javascript console
 EM_JS( void, emjs_console_log, (const char* str), {
     console.log(UTF8ToString(str))
@@ -40,16 +60,6 @@ EM_JS( void, emjs_console_log, (const char* str), {
 void console_log(const char* str)
 {
     emjs_console_log(str);
-}
-
-// Eval javascript with ptr to args.
-EM_JS( void, emjs_js_eval, (const char* evalstr, const char* ptr), {
-    // Body defined in runtime.
-});
-
-void js_eval(const char* evalstr, const char* ptr)
-{
-    emjs_js_eval(evalstr, ptr);
 }
 
 // Send commands to be run in javascript after wasm function is run. The src

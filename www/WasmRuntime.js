@@ -31,6 +31,7 @@ var WasmRuntime = function() {
     this.module = {};
     this.response_cmds = []; // Response commands.
     this._createImports();
+    AndrewWIDE.wasm_rt = this;
 };
 
 WasmRuntime.prototype.addInputString = function( string ) {
@@ -229,12 +230,21 @@ WasmRuntime.prototype.writeString = function( string, address ) {
 WasmRuntime.prototype._createImports = function() {
     var env = {};
     var that = this;
+    env.emjs_add_js_func = function(name, src) {
+        AndrewWIDE.js_funcs = AndrewWIDE.js_funcs || {};
+        AndrewWIDE.js_funcs[that.readString(name)] = new Function('ptr', that.readString(src));
+    };
+
     env.emjs_add_response_cmd = function(src) {
         wasm.addResponseCommand(that.readString(src));
     };
 
     env.emjs_add_wasm_vectors = function(name, ptr) {
         new WasmVectors(that.readString(name), ptr);
+    };
+
+    env.emjs_call_js_func = function(name, ptr) {
+        return AndrewWIDE.js_funcs[that.readString(name)](ptr);
     };
 
     env.emjs_wasm_vectors_add = function(p_wvs, name, ptr, type) {
@@ -244,10 +254,6 @@ WasmRuntime.prototype._createImports = function() {
 
     env.emjs_console_log = function(p_str) {
         console.log(that.readString(p_str));
-    };
-
-    env.emjs_js_eval = function(p_evalstr, ptr) {
-        return eval(that.readString(p_evalstr));
     };
 
     var wsp = {};

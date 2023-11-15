@@ -36,8 +36,9 @@
 #include <emscripten.h>
 #include <memory>
 
+void add_js_func(const char* name, const char* code);
+void* call_js_func(const char* name, const void* ptr);
 void console_log(const char* str);
-void js_eval(const char* evalstr, const char* ptr);
 void jsrt_add_response_cmd(const char* src);
 void jsrt_add_wasm_vectors(const char* name, void* ptr);
 void jsrt_set_meta(void* ptr, const char* key, size_t value);

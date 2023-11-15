@@ -1,0 +1,63 @@
+AW{"type":"awcppwasm","id":"mk","hidden":true}
+
+TARGET = src.wasm
+LDFLAGS += --no-entry
+
+AW{"type":"javascript"}
+
+AndrewWIDE.addArray = function(name, arr) {
+    AndrewWIDE.arrays = AndrewWIDE.arrays || {};
+    AndrewWIDE.arrays[name] = arr;
+};
+
+AndrewWIDE.js_funcs = AndrewWIDE.js_funcs || {};
+AndrewWIDE.js_funcs.arrayOpen = function(ptr) {
+    var name = AndrewWIDE.wasm_rt.readString(ptr);
+    AndrewWIDE.arrays = AndrewWIDE.arrays || {};
+    AndrewWIDE.arrays[name]= AndrewWIDE.arrays[name] || [];
+    AndrewWIDE.array_ids = AndrewWIDE.array_ids || [];
+    AndrewWIDE.array_ids.push(name);
+    return AndrewWIDE.array_ids.length - 1;
+};
+
+AndrewWIDE.js_funcs.arrayWrite = function(ptr) {
+    var args = AndrewWIDE.wasm_rt.readU32(ptr, 3);
+    var name = AndrewWIDE.array_ids[args[0]];
+    var arr = AndrewWIDE.arrays[name];
+    var vals = AndrewWIDE.wasm_rt.read("F32", args[1], args[2]);
+    arr.push(...vals);
+};
+
+
+AndrewWIDE.addArray("myarr", [4,3,2]);
+
+AW{"type":"awcppwasm","id":"globals","hidden":true}
+
+class JSArray
+{
+public:
+    JSArray(const char* name)
+    {
+    	m_id = (int32_t) call_js_func("arrayOpen",name);
+    }
+    
+    void write(const float* ptr, size_t cnt)
+    {
+    	int32_t args[3];
+    	args[0] = m_id;
+    	args[1] = (int32_t)ptr;
+    	args[2] = (int32_t)cnt;
+    	call_js_func("arrayWrite", &args[0]);
+    }
+private:
+    int32_t m_id;
+};
+
+AW{"type":"awcppwasm"}
+int32_t arr_id = (int32_t)call_js_func("arrayOpen","myarr");
+JSArray arr2("arr2");
+std::vector<float> vec;
+vec.push_back(5.4);
+vec.push_back(M_PI);
+arr2.write(&vec[0], vec.size());
+
