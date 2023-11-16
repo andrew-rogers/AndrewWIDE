@@ -1,8 +1,3 @@
-AW{"type":"awcppwasm","id":"mk","hidden":true}
-
-TARGET = src.wasm
-LDFLAGS += --no-entry
-
 AW{"type":"javascript"}
 
 AndrewWIDE.addArray = function(name, arr) {
@@ -21,10 +16,11 @@ AndrewWIDE.js_funcs.arrayOpen = function(ptr) {
 };
 
 AndrewWIDE.js_funcs.arrayWrite = function(ptr) {
-    var args = AndrewWIDE.wasm_rt.readU32(ptr, 3);
-    var name = AndrewWIDE.array_ids[args[0]];
+    var argss = AndrewWIDE.wasm_rt.read("S32", ptr, 3);
+    var argsu = AndrewWIDE.wasm_rt.read("U32", ptr, 3);
+    var name = AndrewWIDE.array_ids[argss[0]];
     var arr = AndrewWIDE.arrays[name];
-    var vals = AndrewWIDE.wasm_rt.read("F32", args[1], args[2]);
+    var vals = AndrewWIDE.wasm_rt.read("F32", argsu[1], argsu[2]);
     arr.push(...vals);
 };
 

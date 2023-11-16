@@ -11,7 +11,7 @@ else
     FixPath = $1
 endif
 
-TARGET = src.js
+TARGET = src.wasm
 
 OBJS = src.o
 
@@ -19,7 +19,7 @@ AWSRC_DIR=$(AW_DIR)/src
 AWLIB_DIR=$(AW_DIR)/src/wasm
 
 CXXFLAGS += -I.. -I$(AWSRC_DIR)/lib
-LDFLAGS=-L$(AWLIB_DIR)
+LDFLAGS = -L$(AWLIB_DIR) --no-entry
 
 -include includes.mk
 

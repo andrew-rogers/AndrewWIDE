@@ -106,7 +106,7 @@ WasmRuntime.prototype.getResponse = function ( section_in, sections_out ) {
 
 WasmRuntime.prototype.getReturnValues = function () {
     var ptr = this.cfunc("get_return_values")();
-    return this.readU32( ptr, 8);
+    return this.read("U32", ptr, 8);
 };
 
 WasmRuntime.prototype.initialise = function (binary, postInit) {
@@ -143,16 +143,6 @@ WasmRuntime.prototype.read = function( type, address, num ) {
     return Array.from(mem.buf.slice(index, index + num));
 };
 
-WasmRuntime.prototype.readF32 = function( address, num ) {
-    return Array.from(HEAPF32.slice(address>>2, (address>>2)+num));
-};
-
-WasmRuntime.prototype.readF64 = function( address, num ) {
-    var mem = this.module.memFloat64;
-    var index = address >> 3;
-    return Array.from(mem.slice(index, index + num));
-};
-
 WasmRuntime.prototype.readString = function( cstr ) {
     var heap = this.module.memUint8;
     var str = "";
@@ -162,26 +152,18 @@ WasmRuntime.prototype.readString = function( cstr ) {
     return str
 };
 
-WasmRuntime.prototype.readU8 = function( address, num ) {
-    return Array.from(HEAPU8.slice(address>>0, (address>>0)+num));
-};
-
-WasmRuntime.prototype.readU32 = function( address, num ) {
-    var mem = this.module.memUint32;
-    var index = address >> 2;
-    return Array.from(mem.slice(index, index + num));
-};
-
 WasmRuntime.prototype.setMemory = function(buffer) {
     var mod = this.module;
     mod.memFloat32 = new Float32Array(buffer);
     mod.memFloat64 = new Float64Array(buffer);
+    mod.memInt32   = new Int32Array  (buffer);
     mod.memUint8   = new Uint8Array  (buffer);
     mod.memUint32  = new Uint32Array (buffer);
 
     mod.mem = {
         F32: {buf: mod.memFloat32, address_shift: 2},
         F64: {buf: mod.memFloat64, address_shift: 3},
+        S32: {buf: mod.memInt32,   address_shift: 2},
         U8:  {buf: mod.memUint8,   address_shift: 0},
         U32: {buf: mod.memUint32,  address_shift: 2}
     };
@@ -206,16 +188,10 @@ WasmRuntime.prototype.stackRestore = function() {
     this.stack=0; 
 };
 
-WasmRuntime.prototype.writeF32 = function( arr, address ) {
-    HEAPF32.set( arr, address >> 2 );
-};
-
-WasmRuntime.prototype.writeF64 = function( arr, address ) {
-    HEAPF64.set( arr, address >> 3 );
-};
-
-WasmRuntime.prototype.writeU8 = function( arr, address ) {
-    HEAPU8.set( arr, address >> 0 );
+WasmRuntime.prototype.write = function( type, arr, address ) {
+    var mem = this.module.mem[type];
+    var index = address >> mem.address_shift;
+    mem.set( arr, index );
 };
 
 WasmRuntime.prototype.writeString = function( string, address ) {
