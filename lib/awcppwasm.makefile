@@ -26,7 +26,7 @@ LDFLAGS = -L$(AWLIB_DIR) --no-entry
 all: $(TARGET)
 	
 $(TARGET): $(OBJS)
-	$(CXX) $(OBJS) $(LDFLAGS) -lAw -o $@ -s EXPORTED_RUNTIME_METHODS="['ccall']" -Oz --minify=0
+	$(CXX) $(OBJS) $(LDFLAGS) -lAw -o $@ -Oz
 
 clean:
 	$(RM) $(call FixPath,$(TARGET))

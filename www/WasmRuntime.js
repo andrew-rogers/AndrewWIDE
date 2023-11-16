@@ -51,11 +51,11 @@ WasmRuntime.prototype.allocInput = function( num_bytes ) {
 };
 
 WasmRuntime.prototype.callCFunc = function( func_name ) {
-    ccall(func_name,"void",[],[]);
+    console.log("Wasm not initialised."); // Re-defined in initialise().
 };
 
 WasmRuntime.prototype.cfunc = function( func_name ) {
-    return getCFunc( func_name );
+    console.log("Wasm not initialised."); // Re-defined in initialise().
 };
 
 WasmRuntime.prototype.clearBuffers = function() {
