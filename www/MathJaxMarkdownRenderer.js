@@ -26,12 +26,8 @@
  */
 
 asyncLoader.load( [
-        "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js"] );
-
-AndrewWIDE.require("https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG",
-function() {
-    new MathJaxMarkdownRenderer(AndrewWIDE.awdr);
-});
+        "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"] );
 
 var MathJaxMarkdownRenderer = function(awdoc_renderer) {
     this.awdr = awdoc_renderer
