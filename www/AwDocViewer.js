@@ -80,6 +80,8 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     this.awdr = new AwDocRenderer(this.docname);
     var that = this;
     var scripts = [];
+    this.require_urls = [];
+    this.require_callbacks = [];
     if (typeof MathJaxMarkdownRenderer === 'undefined') scripts.push("MathJaxMarkdownRenderer.js");
     if (typeof PlotRenderer === 'undefined') scripts.push("PlotRenderer.js");
     if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
@@ -89,7 +91,13 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
     if (typeof PythonRenderer === 'undefined') scripts.push("PythonRenderer.js");
     if (typeof DOTRenderer === 'undefined') scripts.push("DOTRenderer.js");
-    if (typeof AndrewWIDE.modules === 'undefined') scripts.push("modules.js");
+
+    AndrewWIDE.require = function(url, callback) {
+        that.require_urls.push(url);
+        that.require_callbacks.push(callback);
+    };
+
+    AndrewWIDE.awdr = this.awdr;
 
     asyncLoader.onload = function() {
         new AwCppRenderer(that.awdr);
@@ -100,13 +108,11 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         new PlotRenderer(that.awdr);
         new PrintRenderer(that.awdr);
         var jsr = new JavaScriptRenderer(that.awdr);
-        new MathJaxMarkdownRenderer(that.awdr);
         var pyr = new PythonRenderer(that.awdr);
         var dotr = new DOTRenderer(that.awdr);
         var fi = new FilterInterface(jsr);
         cppwasm.addInterface("filter", fi);
-        that._registerModules(AndrewWIDE.modules);
-        callback();
+        that._requireModules(callback);
     };
     asyncLoader.load( scripts );
 };
@@ -155,6 +161,32 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
         that.awdr.cache.fromObj(JSON.parse(ta_cache.value));
         that.awdr.render(ta_awjson.value);
     });
+};
+
+AwDocViewer.prototype._requireDone = function() {
+    for (var i=0; i < this.require_callbacks.length; i++) {
+        var cb = this.require_callbacks[i];
+        if (cb) cb();
+    }
+};
+
+AwDocViewer.prototype._requireModules = function( callback ) {
+    // Get require.js
+    var script = document.createElement('script');
+    script.setAttribute('src', 'require.js');
+    script.setAttribute('type', 'text/javascript');
+
+    this.require_urls.push("./modules");
+    var that = this;
+    script.onload = function() {
+        var modules = require(that.require_urls, function() {
+            AndrewWIDE.modules = require("./modules");
+            that._requireDone();
+            that._registerModules(AndrewWIDE.modules);
+            if( callback ) callback();
+        });
+    };
+    document.head.appendChild(script);
 };
 
 AwDocViewer.prototype._selectDoc = function( fn ) {
