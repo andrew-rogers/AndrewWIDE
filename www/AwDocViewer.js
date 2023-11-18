@@ -80,7 +80,6 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     this.awdr = new AwDocRenderer(this.docname);
     var that = this;
     var scripts = [];
-    if (typeof MathJaxMarkdownRenderer === 'undefined') scripts.push("MathJaxMarkdownRenderer.js");
     if (typeof PlotRenderer === 'undefined') scripts.push("PlotRenderer.js");
     if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
     if (typeof FilterInterface === 'undefined') scripts.push("DSPInterfaces.js");
@@ -89,7 +88,6 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
     if (typeof PythonRenderer === 'undefined') scripts.push("PythonRenderer.js");
     if (typeof DOTRenderer === 'undefined') scripts.push("DOTRenderer.js");
-    if (typeof AndrewWIDE.modules === 'undefined') scripts.push("modules.js");
 
     AndrewWIDE.awdr = this.awdr;
 
@@ -101,14 +99,12 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         that.awdr.registerRenderer("diagram", new DiagramRenderer());
         new PlotRenderer(that.awdr);
         new PrintRenderer(that.awdr);
-        new MathJaxMarkdownRenderer(that.awdr);
         var jsr = new JavaScriptRenderer(that.awdr);
         var pyr = new PythonRenderer(that.awdr);
         var dotr = new DOTRenderer(that.awdr);
         var fi = new FilterInterface(jsr);
         cppwasm.addInterface("filter", fi);
-        that._registerModules(AndrewWIDE.modules);
-        if (callback) callback();;
+        that._requireModules(callback);
     };
     asyncLoader.load( scripts );
 };
@@ -157,6 +153,22 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
         that.awdr.cache.fromObj(JSON.parse(ta_cache.value));
         that.awdr.render(ta_awjson.value);
     });
+};
+
+AwDocViewer.prototype._requireModules = function( callback ) {
+    var urls = ["./modules"];
+    var script = document.createElement('script');
+    script.setAttribute('src', 'require.js');
+    script.setAttribute('type', 'text/javascript');
+    var that = this;
+    script.onload = function() {
+        require(urls, function() {
+            AndrewWIDE.modules = require("./modules");
+            that._registerModules(AndrewWIDE.modules);
+            if (callback) callback();
+        });
+    };
+    document.head.appendChild(script);
 };
 
 AwDocViewer.prototype._selectDoc = function( fn ) {

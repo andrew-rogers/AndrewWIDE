@@ -25,26 +25,26 @@
  *
  */
 
-asyncLoader.load( [
-        "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"] );
+import "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"
+import {marked} from "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js"
 
-var MathJaxMarkdownRenderer = function(awdoc_renderer) {
-    this.awdr = awdoc_renderer
-    var that = this;
-    awdoc_renderer.registerType("mjmd", {"hidden":true}, function(section){ that._mjmd(section); });
+export let aw = {}; // AndrewWIDE will set elements in the aw object to allow this module to access global functionality.
+export let types = {mjmd: render}
 
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [["$","$"],["\\(","\\)"]],
-            processEscapes: true
-        },
-        jax: ["input/TeX","output/SVG"]
-    });
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [["$","$"],["\\(","\\)"]],
+        processEscapes: true
+    },
+    jax: ["input/TeX","output/SVG"]
+});
 
-};
+function render(section)
+{
+    _mjmd( section );
+}
 
-MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(div) {
+function _mathjaxDoneHandler(div) {
 
     // --- Handle code sections without '>' displaying as '&gt;' ---
     // https://github.com/chjj/marked/issues/160#issuecomment-18611040
@@ -64,38 +64,36 @@ MathJaxMarkdownRenderer.prototype._mathjaxDoneHandler = function(div) {
     div.innerHTML = marked.parser( tokens );
     // -------------------------------------------------------------
 
-    this._processMathJaxOutput(div);
+    _processMathJaxOutput(div);
 };
 
-MathJaxMarkdownRenderer.prototype._mjmd = function(section_in) {
+function _mjmd(section_in) {
     var div_mjmd = document.createElement("div");
     section_in.div.appendChild(div_mjmd);
     div_mjmd.innerHTML = section_in.obj.content; // MathJax processes in-place so copy the input markdown into the div.
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, div_mjmd]);
-    var that = this;
     MathJax.Hub.Queue(function() {
-        that._mathjaxDoneHandler(div_mjmd);
+        _mathjaxDoneHandler(div_mjmd);
     });
 };
 
-MathJaxMarkdownRenderer.prototype._processMathJaxOutput = function(div) {
+function _processMathJaxOutput(div) {
 
     // Remove MathML stuff
     var mjs=div.getElementsByClassName("MathJax_SVG");
     for(var i=0; i<mjs.length; i++){
-        this._addClickHandler(div, mjs, i);
+        _addClickHandler(div, mjs, i);
         var span = mjs[i].getElementsByTagName("math")[0].parentNode;
         span.parentNode.removeChild(span);
     }
 };
 
-MathJaxMarkdownRenderer.prototype._addClickHandler = function(div, elems, index){
-    var that=this;
+function _addClickHandler(div, elems, index){
     elems[index].addEventListener("click", function(e) {
         for(var i=0; i<elems.length; i++) elems[i].style.backgroundColor="";
         elems[index].style.backgroundColor="#ccccff"
 
-        var svg_str = that._createSVG(elems[index]);
+        var svg_str = _createSVG(elems[index]);
         var blob = new Blob([svg_str]);
         var url = URL.createObjectURL(blob);
         var fn = "equation.svg"
@@ -110,7 +108,7 @@ MathJaxMarkdownRenderer.prototype._addClickHandler = function(div, elems, index)
     });
 };
 
-MathJaxMarkdownRenderer.prototype._createSVG = function( mjs ) {
+function _createSVG( mjs ) {
 
     // Get the SVG path definitions
     var defs=document.getElementById("MathJax_SVG_glyphs");

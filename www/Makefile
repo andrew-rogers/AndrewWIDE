@@ -25,7 +25,6 @@ SRCS = AwDocViewer.js \
  FileSystem.js \
  JavaScriptRenderer.js \
  JsonQuery.js \
- MathJaxMarkdownRenderer.js \
  NavBar.js \
  PlotRenderer.js \
  PrintRenderer.js \
@@ -37,7 +36,6 @@ SRCS = AwDocViewer.js \
  fileselector.js \
  jsonarraybuffers.js \
  menu.js \
- modules.js \
  svgarray.js
 
 AwAll.js: $(SRCS)
