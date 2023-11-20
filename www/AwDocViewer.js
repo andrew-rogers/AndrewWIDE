@@ -80,7 +80,6 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     this.awdr = new AwDocRenderer(this.docname);
     var that = this;
     var scripts = [];
-    if (typeof PlotRenderer === 'undefined') scripts.push("PlotRenderer.js");
     if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
     if (typeof FilterInterface === 'undefined') scripts.push("DSPInterfaces.js");
     if (typeof JavaScriptRenderer === 'undefined') scripts.push("JavaScriptRenderer.js");
@@ -97,7 +96,6 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", that.awdr);
         that.awdr.registerRenderer("awcppwasm", cppwasm);
         that.awdr.registerRenderer("diagram", new DiagramRenderer());
-        new PlotRenderer(that.awdr);
         new PrintRenderer(that.awdr);
         var jsr = new JavaScriptRenderer(that.awdr);
         var pyr = new PythonRenderer(that.awdr);
