@@ -223,6 +223,10 @@ WasmRuntime.prototype._createImports = function() {
         return AndrewWIDE.js_funcs[that.readString(name)](ptr);
     };
 
+    env.emjs_call_wasmjs = function(module, func, ptr) {
+        return AndrewWIDE.wasmjs[that.readString(module)][that.readString(func)](ptr);
+    };
+
     env.emjs_wasm_vectors_add = function(p_wvs, name, ptr, type) {
         var wvs = WasmVectors.dict["p"+p_wvs]; // Lookup the WasmVectors to add the WasmVector to.
         wvs.addPtr(that.readString(name), ptr, type);

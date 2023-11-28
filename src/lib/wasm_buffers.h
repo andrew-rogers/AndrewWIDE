@@ -38,6 +38,7 @@
 
 void add_js_func(const char* name, const char* code);
 void* call_js_func(const char* name, const void* ptr);
+void* call_wasmjs(const char *mod, const char* func, const void* ptr);
 void console_log(const char* str);
 void jsrt_add_response_cmd(const char* src);
 void jsrt_add_wasm_vectors(const char* name, void* ptr);

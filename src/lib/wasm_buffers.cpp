@@ -52,6 +52,16 @@ void* call_js_func(const char* name, const void* ptr)
     return emjs_call_js_func(name, ptr);
 }
 
+// Call a javascript module function.
+EM_JS( void*, emjs_call_wasmjs, (const char* mod, const char* func, const void* ptr), {
+    // Body defined in runtime.
+});
+
+void* call_wasmjs(const char *mod, const char* func, const void* ptr)
+{
+    return emjs_call_wasmjs(mod, func, ptr);
+}
+
 // Log strings to the Javascript console
 EM_JS( void, emjs_console_log, (const char* str), {
     console.log(UTF8ToString(str))
