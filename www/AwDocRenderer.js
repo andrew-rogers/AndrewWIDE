@@ -436,16 +436,38 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
 };
 
 AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
+    let loader = `(function () {
+    let name = 'AndrewWIDE.js';
+    let urls = [name, 'http://andrew-rogers.github.io/AndrewWIDE/javascripts/' + name];
+    let cnt = 0;
+
+    function load() {
+        let script = document.createElement('script');
+        let url = urls[cnt];
+        script.setAttribute('src', url);
+        script.setAttribute('type', 'text/javascript');
+        script.onload = function() {
+            console.log("Got '" + name + "' from '" + url + "'");
+            new AwDocViewer( "${this.docname}" );
+        };
+        script.onerror = function(e) {
+            cnt++;
+            if (cnt<urls.length) load();
+            else console.log("Can't load " + name);
+        };
+        document.head.appendChild(script);
+    }
+    load();
+})();`;
     var html = "<!DOCTYPE html>\n<html>\n\t<head>\n";
     html += "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" charset=\"UTF-8\">\n";
-    html += "\t\t<script src=\"AwAll.js\"></script>\n";
     html += "\t</head>\n\t<body>\n"
     html += "\t\t<textarea id=\"ta_awjson\" hidden>\n" + JSON.stringify(this.aw_json) + "\n\t\t</textarea>\n";
     html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(this.cache.toObj()) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
-    html += "new AwDocViewer( \"" + this.docname + "\" );\n";
+    html += loader + "\n";
     html += "\t\t</script>\n";
-    html += "\t</body>\n</html>";
+    html += "\t</body>\n</html>\n";
 
     this.download_link.href = URL.createObjectURL(
         new Blob([html], {

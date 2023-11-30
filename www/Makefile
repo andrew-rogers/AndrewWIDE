@@ -26,7 +26,6 @@ SRCS = AwDocViewer.js \
  JavaScriptRenderer.js \
  JsonQuery.js \
  NavBar.js \
- PlotRenderer.js \
  PrintRenderer.js \
  PythonRenderer.js \
  WasmRuntime.js \
@@ -38,9 +37,9 @@ SRCS = AwDocViewer.js \
  menu.js \
  svgarray.js
 
-AwAll.js: $(SRCS)
+AndrewWIDE.js: $(SRCS)
 	$(CAT) $(call FixPath,$^) > $@
 
 clean:
-	$(RM) AwAll.js
+	$(RM) AndrewWIDE.js
 

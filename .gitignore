@@ -4,6 +4,6 @@ www/third-party/
 *.cgi
 src/outputs
 src/wasm
-www/AwAll.js
+www/AndrewWIDE.js
 www/modules.js
 www/external/
