@@ -1,14 +1,14 @@
-import * as javascript from "./javascript.js"
-import * as cpp from "./cpp.js"
-import * as mjmd from "./mjmd.js"
-import * as plot from "./plot.js"
+import * as javascript from "./javascript.mjs"
+import * as cpp from "./cpp.mjs"
+import * as mjmd from "./mjmd.mjs"
+import * as plot from "./plot.mjs"
 export {cpp, javascript, mjmd, plot}
 
-import * as array from "./array.js"
+import * as array from "./array.mjs"
 window.AndrewWIDE = window.AndrewWIDE || {};
 AndrewWIDE.wasmjs = AndrewWIDE.wasmjs || {};
 AndrewWIDE.wasmjs.array = array;
 array.init(AndrewWIDE);
 
-import {AwDocRenderer} from "./renderer.js"
+import {AwDocRenderer} from "./renderer.mjs"
 AndrewWIDE.awdr = new AwDocRenderer( AndrewWIDE.docname );

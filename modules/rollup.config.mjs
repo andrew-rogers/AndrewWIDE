@@ -1,5 +1,5 @@
 export default {
-	input: 'modules.js',
+	input: 'modules.mjs',
 	output: {
 		file: '../www/modules.js',
 		format: 'umd',
