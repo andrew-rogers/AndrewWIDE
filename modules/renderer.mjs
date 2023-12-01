@@ -25,6 +25,50 @@
  *
  */
 
+export function parseAwDoc( awdoc ) {
+
+    let ret = [];
+
+    var lines = awdoc.split('\n');
+    var src = "";
+    var obj={};
+    var cnt = 0;
+    for (var i = 0; i<lines.length; i++) {
+        var line = lines[i];
+
+        // Check if line is AW tag
+        if (line.startsWith("AW{") && line.trim().endsWith("}")) {
+
+            // Push the previous section
+            if (cnt>0) {
+                obj.content = src;
+                ret.push(obj);
+            }
+
+            // Get attributes of this new section
+            obj = JSON.parse(line.slice(2));
+
+            src = "";
+            cnt++;
+        } else {
+            src=src+line+"\n";
+        }
+    }
+
+    // Push remaining content
+    if (cnt>0) {
+        obj.content = src;
+        ret.push(obj);
+    }
+    else {
+        // If no AW{...} tags then assume the doc is a JSON array.
+        ret = JSON.parse(src);
+    }
+
+    return ret;
+}
+
+
 function CacheRenderer() {
     this.cache = [];
     this.cache_map = {};
@@ -290,48 +334,13 @@ AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
 };
 
 AwDocRenderer.prototype.render = function( awdoc ) {
-
     // Disable running all runnable sections until queue is empty. This is to allow asynchronous compilation of code to
     // complete before potential dependencies are run.
     this.post( {"type": "run_disable", "name": "awdocrenderer"} );
 
-    var lines = awdoc.split('\n');
-    var src = "";
-    var obj={};
-    var cnt = 0;
-    for (var i = 0; i<lines.length; i++) {
-        var line = lines[i];
-
-        // Check if line is AW tag
-        if (line.startsWith("AW{") && line.trim().endsWith("}")) {
-
-            // Render the previous section
-            if (cnt>0) {
-                obj.content = src;
-                this._render(obj);
-            }
-
-            // Get attributes of this new section
-            obj = JSON.parse(line.slice(2));
-
-            src = "";
-            cnt++;
-        } else {
-            src=src+line+"\n";
-        }
-    }
-
-    // Render remaining content
-    if (cnt>0) {
-        obj.content = src;
-        this._render(obj);
-    }
-    else {
-        // If no AW{...} tags then assume the doc is a JSON array.
-        var array = JSON.parse(src);
-        for (var i=0; i<array.length; i++) {
-            this._render(array[i])
-        }
+    let doc = parseAwDoc( awdoc );
+    for (var i=0; i<doc.length; i++) {
+        this._render(doc[i])
     }
 
     this.post( {"type": "run_enable", "name": "awdocrenderer"} );
