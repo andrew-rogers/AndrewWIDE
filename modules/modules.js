@@ -9,3 +9,6 @@ window.AndrewWIDE = window.AndrewWIDE || {};
 AndrewWIDE.wasmjs = AndrewWIDE.wasmjs || {};
 AndrewWIDE.wasmjs.array = array;
 array.init(AndrewWIDE);
+
+import {AwDocRenderer} from "./renderer.js"
+AndrewWIDE.awdr = new AwDocRenderer( AndrewWIDE.docname );

@@ -14,7 +14,6 @@ endif
 SRCS = AwDocViewer.js \
  AwCppRenderer.js \
  AwCppWasmRenderer.js \
- AwDocRenderer.js \
  DOTRenderer.js \
  DSPInterfaces.js \
  Diagram/Geometry.js \

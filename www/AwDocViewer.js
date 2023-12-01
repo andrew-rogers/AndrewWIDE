@@ -64,6 +64,7 @@ function AwDocViewer( docname ) {
     this.serverless = false;
     if (this.ta_awjson == null) this._selectDoc();
     else this._renderFromHTML();
+    AndrewWIDE.docname = this.docname;
 }
 
 AwDocViewer.prototype._disableDrop = function () {
@@ -77,7 +78,6 @@ AwDocViewer.prototype._disableDrop = function () {
 };
 
 AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
-    this.awdr = new AwDocRenderer(this.docname);
     var that = this;
     var scripts = [];
     if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
@@ -88,21 +88,24 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof PythonRenderer === 'undefined') scripts.push("PythonRenderer.js");
     if (typeof DOTRenderer === 'undefined') scripts.push("DOTRenderer.js");
 
-    AndrewWIDE.awdr = this.awdr;
-
-    asyncLoader.onload = function() {
-        new AwCppRenderer(that.awdr);
-        var cppwasm = new AwCppWasmRenderer(that.awdr);
-        if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", that.awdr);
-        that.awdr.registerRenderer("awcppwasm", cppwasm);
-        that.awdr.registerRenderer("diagram", new DiagramRenderer());
-        new PrintRenderer(that.awdr);
-        var jsr = new JavaScriptRenderer(that.awdr);
-        var pyr = new PythonRenderer(that.awdr);
-        var dotr = new DOTRenderer(that.awdr);
+    function instantiate_legacy() {
+        let awdr = AndrewWIDE.awdr;
+        new AwCppRenderer(awdr);
+        var cppwasm = new AwCppWasmRenderer(awdr);
+        if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
+        awdr.registerRenderer("awcppwasm", cppwasm);
+        awdr.registerRenderer("diagram", new DiagramRenderer());
+        new PrintRenderer(awdr);
+        var jsr = new JavaScriptRenderer(awdr);
+        var pyr = new PythonRenderer(awdr);
+        var dotr = new DOTRenderer(awdr);
         var fi = new FilterInterface(jsr);
         cppwasm.addInterface("filter", fi);
-        that._requireModules(callback);
+        callback();
+    }
+
+    asyncLoader.onload = function() {
+        that._requireModules(instantiate_legacy);
     };
     asyncLoader.load( scripts );
 };
@@ -112,13 +115,13 @@ AwDocViewer.prototype._openDoc = function( fn ) {
     var that = this;
     this._instantiateRenderers( function() {
         FileSystem.readFile(fn, function( err, content ) {
-            that.awdr.render(content);
+            AndrewWIDE.awdr.render(content);
         });
     });
 };
 
 AwDocViewer.prototype._registerModules = function(m) {
-    let renderers = this.awdr.renderers;
+    let renderers = AndrewWIDE.awdr.renderers;
 
     function registerTypes(types) {
         let keys = Object.keys(types);
@@ -135,7 +138,7 @@ AwDocViewer.prototype._registerModules = function(m) {
     for (let i=0; i<keys.length; i++) {
         let module = m[keys[i]];
         module.aw.render = function(obj, div) {
-            this.awdr.post(obj, div);
+            AndrewWIDE.awdr.post(obj, div);
         };
         let types = module.types;
         registerTypes(types);
@@ -143,13 +146,13 @@ AwDocViewer.prototype._registerModules = function(m) {
 };
 
 AwDocViewer.prototype._renderFromHTML = function( fn ) {
-    var that = this;
     this.serverless = true;
     this._instantiateRenderers( function() {
-        that.awdr.setServerless();
+        var awdr = AndrewWIDE.awdr;
+        awdr.setServerless();
         var ta_cache = document.getElementById("ta_cache");
-        that.awdr.cache.fromObj(JSON.parse(ta_cache.value));
-        that.awdr.render(ta_awjson.value);
+        awdr.cache.fromObj(JSON.parse(ta_cache.value));
+        awdr.render(ta_awjson.value);
     });
 };
 

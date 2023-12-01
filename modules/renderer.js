@@ -152,12 +152,12 @@ Queue.prototype._dispatch = function () {
     var queue = this.queue;
     this.queue = [];
     while( queue.length > 0 ) {
-        obj = queue.shift();
+        var obj = queue.shift();
         this.callback( obj );
     }
 };
 
-function AwDocRenderer(docname, div) {
+export function AwDocRenderer(docname, div) {
     this.doc = {"docname": docname};
     this.docname = docname;
     if(div){
@@ -498,7 +498,7 @@ AwDocRenderer.prototype._render = function( obj ) {
     if (obj.hasOwnProperty("hidden")) hidden = obj.hidden;
     if (!hidden) this._textarea(obj.content, div);
 
-    callback = function() {
+    var callback = function() {
         console.log(obj.type+" "+obj.id+" done!");
     };
 
@@ -568,13 +568,13 @@ Runnable.prototype._disable = function ( section_in, callback ) {
 
 Runnable.prototype._dispatch = function () {
     while( (this.queue.length > 0) && (Object.keys(this.disables).length == 0) ) {
-        obj = this.queue.shift();
+        var obj = this.queue.shift();
         var section_in = obj.section_in;
         var callback = obj.callback;
         var runnable = this.runnables[section_in.obj.id];
         var args = this._generateCallArgs(runnable.inputs);
         var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
-        section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
+        var section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
         this.awdr._dispatch(section_out);
     }
 };
@@ -587,7 +587,7 @@ Runnable.prototype._enable = function ( section_in, callback ) {
 
 Runnable.prototype._generateCallArgs = function ( input_sections ) {
     // Search the specified input sections and get their content.
-    ret = {};
+    var ret = {};
     for (var i=0; i<input_sections.length; i++) {
         var key = input_sections[i];
         ret[key] = this.input_sections[key].obj.content;
@@ -605,7 +605,7 @@ Runnable.prototype._runDeps = function ( id ) {
     var deps = this.input_sections[id].deps;
     for (var i=0; i<deps.length; i++) {
         var runnable_id = deps[i];
-        this.awdr.post( {"type": "run", "id": deps[i]}, null, callback);
+        this.awdr.post( {"type": "run", "id": deps[i]}, null, null);
     }
 };
 

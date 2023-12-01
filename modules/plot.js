@@ -40,6 +40,5 @@ function render( section ) {
         if (obj["ylabel"]) layout["yaxis"] = {"title": obj.ylabel};
         plotly.newPlot(section.div, obj.data, layout);
     }
-    if( callback ) callback();
 };
 
