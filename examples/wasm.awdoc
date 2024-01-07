@@ -21,7 +21,13 @@ let dir = "external/WasmDSP/";
 let suspend_id = AndrewWIDE.suspend("Waiting for WasmDSP imports.");
 
 function gotWasm(e) {
-    WasmDSP.importModules([dir + "modules/signal.js"]).then(gotSignal);
+    requirejs([dir + "modules/signal.js"], function(signal) {
+        WasmDSP.modules = WasmDSP.modules || {};
+        WasmDSP.modules.signal = signal;
+        WasmDSP.initialise(WasmDSP.modules, function() {
+            gotSignal();
+        });
+    });
 }
 
 function gotSignal() {
@@ -31,11 +37,10 @@ function gotSignal() {
     AndrewWIDE.resume(suspend_id);
 }
 
-
-let scr = document.createElement("script");
-scr.src = dir + "WasmDSP.js";
-scr.addEventListener("load",gotWasm);
-document.head.appendChild(scr);
+requirejs([dir + "WasmDSP.js"], function(wasmdsp) {
+    window.WasmDSP = wasmdsp;
+    gotWasm();
+});
 
 AW{"type":"jss"}
 
