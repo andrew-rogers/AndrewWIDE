@@ -1,24 +1,6 @@
 AW{"type":"awcppwasm","id":"globals","hidden":true}
 
-class JSArray
-{
-public:
-    JSArray(const char* name)
-    {
-        m_id = (int32_t) call_wasmjs("array", "open", name);
-    }
-
-    void write(const float* ptr, size_t cnt)
-    {
-        int32_t args[3];
-        args[0] = m_id;
-        args[1] = (int32_t)ptr;
-        args[2] = (int32_t)cnt;
-        call_wasmjs("array", "write", &args[0]);
-    }
-private:
-    int32_t m_id;
-};
+#include "JSArray.h"
 
 AW{"type":"awcppwasm"}
 JSArray arr2("arr2");
@@ -27,3 +9,6 @@ vec.push_back(5.4);
 vec.push_back(M_PI);
 arr2.write(&vec[0], vec.size());
 
+AW{"type":"jss"}
+let arr = AndrewWIDE.wasmjs.array.get("arr2");
+console.log(arr);
