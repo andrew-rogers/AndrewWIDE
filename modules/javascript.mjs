@@ -1,7 +1,6 @@
 export let aw = {}; // AndrewWIDE will set elements in the aw object to allow this module to access global functionality.
-export let types = {javascript: render, func_run: run}
+export let types = {javascript: render}
 
-let wrapper_funcs = {};
 let _input = {}; // Inputs for the currently running section.
 let _outputs = []; // Outputs for the currently running section.
 
@@ -32,9 +31,14 @@ function render(section) {
 
     let func = Function("funcs", hdr_src + section.obj.content);
 
-    wrapper_funcs[section.obj.id] = function(section){
+    // Create a div for the execution result
+    var div_result = document.createElement("div");
+    section.div.appendChild(div_result);
+
+    function wrapper(){
         // TODO: Process inputs
-        _input = section;
+        _input = {};
+        _input.div = div_result;
         _outputs = [];
         let plot = function(){};
         func(funcs);
@@ -42,29 +46,8 @@ function render(section) {
         AndrewWIDE.postSections(_outputs);
     };
 
-    var sections_out = [];
-
-    // Create a div for the execution result
-    var div_result = document.createElement("div");
-    let div = section.div;
-    let obj = section.obj;
-    div.appendChild(div_result);
-    if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-    s = {"div": div_result, "callback": section.callback};
-    s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "func_run"};
-    sections_out.push(s);
-
-    // Queue the run
-    run = {}
-    run.obj = {"type": "run", "id": obj.id};
-    sections_out.push(run);
-
-    AndrewWIDE.postSections( sections_out );
-}
-
-function run(section) {
-    let func = wrapper_funcs[section.obj.id];
-    func(section);
+    AndrewWIDE.addRunnable(section.obj, wrapper);
+    AndrewWIDE.queueRun(section.obj.id);
 }
 
 function textarea( text, div ) {

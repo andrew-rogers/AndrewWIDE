@@ -228,6 +228,7 @@ export function AwDocRenderer(docname, div) {
     this.renderers["log"] = this;
     this.async = [];
     this.cache = new CacheRenderer();
+    this.wrapper_funcs = {};
 
     // Provide a URL for this doc. User can open it and bookmark it for quicker access.
     this.url_link = document.createElement("a");
@@ -271,6 +272,22 @@ export function AwDocRenderer(docname, div) {
     };
     AndrewWIDE.postSections = function(sections){
         that.postSections(sections);
+    };
+    AndrewWIDE.queueRun = function(id) {
+        run = {}
+        run.obj = {"type": "run", "id": id};
+        that.postSections( [run] );
+    }
+    AndrewWIDE.addRunnable = function(obj, wrapper) {
+        that.wrapper_funcs[obj.id] = wrapper;
+        if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
+        s = {};
+        s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "run": "func_run"};
+        that.postSections([s]);
+    };
+    this.renderers.func_run = function(section) {
+        let func = that.wrapper_funcs[section.obj.id];
+        func();
     };
 }
 
