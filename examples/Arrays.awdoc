@@ -12,3 +12,7 @@ arr2.write(&vec[0], vec.size());
 AW{"type":"jss"}
 let arr = AndrewWIDE.wasmjs.array.get("arr2");
 console.log(arr);
+plot(arr);
+
+AW{"type":"javascript"}
+console.log("Hi!");

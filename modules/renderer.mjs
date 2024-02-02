@@ -269,6 +269,9 @@ export function AwDocRenderer(docname, div) {
         let s = {obj: {type:"run_enable", name:name}};
         that.runnable._enable(s);
     };
+    AndrewWIDE.postSections = function(sections){
+        that.postSections(sections);
+    };
 }
 
 AwDocRenderer.prototype.doneTypes = function(id) {
