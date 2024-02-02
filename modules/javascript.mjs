@@ -1,17 +1,45 @@
 export let aw = {}; // AndrewWIDE will set elements in the aw object to allow this module to access global functionality.
 export let types = {javascript: render, func_run: run}
 
+let wrapper_funcs = {};
+let _input = {}; // Inputs for the currently running section.
+let _outputs = []; // Outputs for the currently running section.
+
+// Define the functions available to user code.
 let funcs = {};
+funcs.plot = function(data){
+    var section_in = _input;
+    var s = {"div": section_in.div, "callback": section_in.callback};
+    s.obj = {"type": "plot", "data": [{"y":data}]};
+    _outputs.push(s);
+};
+
+let hdr_src = null; // This is prepended to user code to make library functions available.
+
+function createHdrSrc() {
+    hdr_src = "";
+    let keys = Object.keys(funcs);
+    for (let i=0; i<keys.length; i++) {
+        hdr_src += "let " + keys[i] + " = funcs." + keys[i] + ";\n";
+    }
+    hdr_src += "\n";
+}
 
 function render(section) {
     textarea(section.obj.content, section.div);
 
-    let func = Function(section.obj.content);
+    if(!hdr_src) createHdrSrc();
 
-    funcs[section.obj.id] = function(){
+    let func = Function("funcs", hdr_src + section.obj.content);
+
+    wrapper_funcs[section.obj.id] = function(section){
         // TODO: Process inputs
-        func();
-        // TODO: Get outputs
+        _input = section;
+        _outputs = [];
+        let plot = function(){};
+        func(funcs);
+        // TODO: Response generators
+        AndrewWIDE.postSections(_outputs);
     };
 
     var sections_out = [];
@@ -35,8 +63,8 @@ function render(section) {
 }
 
 function run(section) {
-    let func = funcs[section.obj.id];
-    func();
+    let func = wrapper_funcs[section.obj.id];
+    func(section);
 }
 
 function textarea( text, div ) {

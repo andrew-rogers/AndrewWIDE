@@ -16,3 +16,6 @@ plot(arr);
 
 AW{"type":"javascript"}
 console.log("Hi!");
+AndrewWIDE.myvar=45;
+let arr = AndrewWIDE.wasmjs.array.get("arr2");
+plot(arr);
