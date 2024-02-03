@@ -1,21 +1,4 @@
-AW{"type":"awcppwasm","id":"mk","hidden":true}
-
-TARGET = src.wasm
-LDFLAGS += --no-entry
-
-AW{"type":"awcppwasm", "id":"globals"}
-
-EMSCRIPTEN_KEEPALIVE
-extern "C" void* allocBuffer(size_t n)
-{
-    return malloc(n);
-}
-
-AW{"type":"jss"}
-
-console.log(AndrewWIDE.wasm.exports.allocBuffer(9));
-
-AW{"type":"jss"}
+AW{"type":"javascript"}
 
 let dir = "external/WasmDSP/";
 let suspend_id = AndrewWIDE.suspend("Waiting for WasmDSP imports.");
@@ -42,7 +25,7 @@ requirejs([dir + "WasmDSP.js"], function(wasmdsp) {
     gotWasm();
 });
 
-AW{"type":"jss"}
+AW{"type":"javascript"}
 
 let bq = new WasmDSP.modules.signal.Biquad(1,0,1,0.5,0.6);
 let resp = bq.process([1,0,0,0,0,0,0]);

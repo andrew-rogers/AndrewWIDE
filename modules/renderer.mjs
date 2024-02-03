@@ -274,14 +274,14 @@ export function AwDocRenderer(docname, div) {
         that.postSections(sections);
     };
     AndrewWIDE.queueRun = function(id) {
-        run = {}
+        let run = {}
         run.obj = {"type": "run", "id": id};
         that.postSections( [run] );
     }
     AndrewWIDE.addRunnable = function(obj, wrapper) {
         that.wrapper_funcs[obj.id] = wrapper;
         if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-        s = {};
+        let s = {};
         s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "run": "func_run"};
         that.postSections([s]);
     };
