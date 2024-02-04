@@ -25,15 +25,37 @@ function generateResponses() {
 }
 
 function render(section) {
-    textarea(section.obj.content, section.div);
 
     if(!hdr_src) createHdrSrc();
 
     let func = Function("funcs", hdr_src + section.obj.content);
 
+    // Create controls
+    let controls = new NavBar();
+    let butt_run = document.createElement("button");
+    butt_run.innerHTML="Run";
+    controls.addRight(butt_run);
+    controls.elem.hidden = true;
+    section.div.appendChild(controls.elem);
+
+    let ta = textarea(section.obj.content, section.div);
+
     // Create a div for the execution result
-    var div_result = document.createElement("div");
+    let div_result = document.createElement("div");
     section.div.appendChild(div_result);
+
+    // Define event handler functions.
+    let that = this;
+    butt_run.onclick = function() {
+        // Update source from textarea;
+        func = Function("funcs", hdr_src + ta.value);
+
+        // Queue the run.
+        var run = {};
+        run.obj = { "type": "run", "id": section.obj.id };
+        AndrewWIDE.postSections( [run] );
+    }
+    ta.oninput = function() {controls.elem.hidden = false;};
 
     function wrapper(){
         // TODO: Process inputs
