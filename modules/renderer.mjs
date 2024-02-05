@@ -287,7 +287,7 @@ export function AwDocRenderer(docname, div) {
     };
     this.renderers.func_run = function(section) {
         let func = that.wrapper_funcs[section.obj.id];
-        func();
+        func(section);
     };
 }
 

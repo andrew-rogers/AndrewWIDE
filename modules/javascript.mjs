@@ -8,6 +8,9 @@ let funcs = {};
 funcs.plot = function(data){
     return PlotGenerator.current().addTrace(data);
 };
+funcs.getInput = function(name) {
+    return ces.inputs[name];
+};
 
 let hdr_src = null; // This is prepended to user code to make library functions available.
 
@@ -55,9 +58,8 @@ function render(section) {
     }
     ta.oninput = function() {controls.elem.hidden = false;};
 
-    function wrapper(){
-        // TODO: Process inputs
-        ces.input = {};
+    function wrapper(section){
+        ces.inputs = section.obj.args.inputs;
         ces.div = div_result;
         ces.generators = [];
         ces.outputs = [];
