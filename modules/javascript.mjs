@@ -51,9 +51,7 @@ function render(section) {
         func = Function("funcs", hdr_src + ta.value);
 
         // Queue the run.
-        var run = {};
-        run.obj = { "type": "run", "id": section.obj.id };
-        AndrewWIDE.postSections( [run] );
+        AndrewWIDE.queueRun(section.obj.id);
     }
     ta.oninput = function() {controls.elem.hidden = false;};
 
@@ -108,4 +106,5 @@ PlotGenerator.prototype.generate = function() {
     let s = {"div": ces.div};
     s.obj = {"type": "plot", "data": this.traces};
     ces.outputs.push(s);
+    PlotGenerator.m_current = null;
 };
