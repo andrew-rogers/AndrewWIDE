@@ -464,7 +464,7 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
     }
 };
 
-export function createHTML(docname, aw_json, cache) {
+export function createHTML(textareas) {
     let loader = `(function () {
     let name = 'AndrewWIDE.js';
     let urls = [name, 'http://andrew-rogers.github.io/AndrewWIDE/javascripts/' + name];
@@ -477,7 +477,7 @@ export function createHTML(docname, aw_json, cache) {
         script.setAttribute('type', 'text/javascript');
         script.onload = function() {
             console.log("Got '" + name + "' from '" + url + "'");
-            new AwDocViewer( "${docname}" );
+            new AwDocViewer( "serverless" );
         };
         script.onerror = function(e) {
             cnt++;
@@ -491,8 +491,8 @@ export function createHTML(docname, aw_json, cache) {
     var html = "<!DOCTYPE html>\n<html>\n\t<head>\n";
     html += "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" charset=\"UTF-8\">\n";
     html += "\t</head>\n\t<body>\n"
-    html += "\t\t<textarea id=\"ta_awjson\" hidden>\n" + JSON.stringify(aw_json) + "\n\t\t</textarea>\n";
-    html += "\t\t<textarea id=\"ta_cache\" hidden>\n" + JSON.stringify(cache.toObj()) + "\n\t\t</textarea>\n";
+    const keys = Object.keys(textareas)
+    for (let i=0; i<keys.length; i++) html += "\t\t<textarea id=\"" + keys[i] +"\" hidden>\n" + JSON.stringify(textareas[keys[i]]) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
     html += loader + "\n";
     html += "\t\t</script>\n";
@@ -501,7 +501,7 @@ export function createHTML(docname, aw_json, cache) {
 }
 
 AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
-    let html = createHTML(this.docname, this.aw_json, this.cache);
+    let html = createHTML({ta_awjson: this.aw_json, ta_cache: this.cache.toObj()});
 
     this.download_link.href = URL.createObjectURL(
         new Blob([html], {
