@@ -14,6 +14,7 @@ CXXFLAGS += -I $(AW_DIR)/src/lib
 LDFLAGS = -L $(AW_DIR)/src/wasm --no-entry
 
 AW2CPP = $(EMSDK_NODE) $(AW_DIR)/tools/aw2cpp.mjs
+AW2HTML = $(EMSDK_NODE) $(AW_DIR)/tools/aw2html.mjs
 
 .PRECIOUS: $(CPPS) $(OBJS) # Stops make deleting intermediate files
 
@@ -24,11 +25,10 @@ dirs:
 	mkdir -p $(OUTPUT)
 
 $(OUTPUT)/%.cpp: %.awdoc
-	#echo $< $@ $(patsubst %.awdoc,%,$<)
 	$(AW2CPP) $< $@ $(patsubst %.awdoc,%,$<)
 
 $(OUTPUT)/%.html: %.awdoc
-	echo $< $@ $(patsubst %.awdoc,%,$<) $(WASMMJS)
+	$(AW2HTML) $< $@ $(patsubst %.awdoc,%,$<) $(WASMMJS)
 
 $(WASM): $(OBJS)
 	$(CXX) $(OBJS) $(LDFLAGS) -lAw -o $@ -Oz
