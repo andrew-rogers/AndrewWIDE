@@ -105,7 +105,7 @@ CacheRenderer.prototype.searchSection = function( section, post, notFound ) {
     if (this.attributes.hasOwnProperty(type)) {
         var key = this.attributes[type].hash_key;
         if (section.obj.hasOwnProperty(key)) {
-            var hash = this._createHash(JSON.stringify(section.obj[key]));
+            var hash = createHash(JSON.stringify(section.obj[key]));
             section.hash = hash;
             if (this.cache_map.hasOwnProperty(hash)) {
                 var cache = this.cache[this.cache_map[hash]];
@@ -121,7 +121,7 @@ CacheRenderer.prototype.toObj = function() {
     return {"attributes": this.attributes, "cache": this.cache};
 };
 
-CacheRenderer.prototype._createHash = function( str ) {
+export function createHash( str ) {
     var hash = 0;
     var prime = 127;
     for (var i=0; i<str.length; i++) {
@@ -129,7 +129,7 @@ CacheRenderer.prototype._createHash = function( str ) {
         hash |= 0; // 32-bit. JavaScript uses double float for numbers.
     }
     return hash.toString();
-};
+}
 
 function Lock(callback) {
     this.locks = [];

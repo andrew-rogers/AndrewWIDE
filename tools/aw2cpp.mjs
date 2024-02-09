@@ -26,15 +26,17 @@
  */
 
 import * as fs from 'fs'
-import {parseAwDoc} from "../modules/renderer.mjs"
+import {parseAwDoc, createHash} from "../modules/renderer.mjs"
 
 function aw2cpp(fn_in, fn_out, prefix) {
     const input = fs.readFileSync(fn_in, 'utf8');
     let doc = parseAwDoc(input);
     let src = "#include \"wasm_buffers.h\"\n\n";
+    let hash = "const char* " + prefix + "_ids()\n{\n\treturn(\n\t\t\"{\"\n";
     for (let i=0; i < doc.length; i++) {
         if (doc[i].type == "awcppwasm") {
             let id = doc[i].id || prefix + "_" + (i+1);
+            hash += "\t\t\"\\\"" + id + "\\\": " + createHash(doc[i].content) + ", \"\n";
             if (id == "globals") {
                 src += doc[i].content;
             } else {
@@ -45,6 +47,8 @@ function aw2cpp(fn_in, fn_out, prefix) {
             }
         }
     }
+    hash += "\t\t\"\\\"prefix\\\": \\\"" + prefix + "\\\"\"\n\t\t\"}\"\n\t);\n}\n";
+    src += hash;
     fs.writeFileSync(fn_out, src);
 }
 
