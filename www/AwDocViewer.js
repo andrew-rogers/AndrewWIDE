@@ -150,9 +150,15 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
     this._instantiateRenderers( function() {
         var awdr = AndrewWIDE.awdr;
         awdr.setServerless();
-        var ta_cache = document.getElementById("ta_cache");
-        awdr.cache.fromObj(JSON.parse(ta_cache.value));
-        awdr.render(ta_awjson.value);
+        const tas = document.getElementsByClassName('awjson');
+        if (tas.length == 0) {
+            var ta_cache = document.getElementById("ta_cache");
+            awdr.cache.fromObj(JSON.parse(ta_cache.value));
+            awdr.render(ta_awjson.value);
+        }
+        for (let i=0; i<tas.length; i++) {
+            awdr.render(tas[i].value);
+        }
     });
 };
 

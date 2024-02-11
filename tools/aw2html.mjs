@@ -32,8 +32,8 @@ function aw2html(fn_in, fn_out, prefix, module) {
     const input = fs.readFileSync(fn_in, 'utf8');
     const doc = parseAwDoc(input);
     const module_base = module.split('/').pop();
-    const mod = {prefix: prefix, module: module_base};
-    const html = createHTML({aw_json: doc, aw_module: mod});
+    const mod = {type: "awcppwasm_module", prefix: prefix, module: module_base};
+    const html = createHTML({aw_json: doc, aw_modules: [mod]});
     fs.writeFileSync(fn_out, html);
 }
 

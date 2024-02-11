@@ -492,7 +492,7 @@ export function createHTML(textareas) {
     html += "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" charset=\"UTF-8\">\n";
     html += "\t</head>\n\t<body>\n"
     const keys = Object.keys(textareas)
-    for (let i=0; i<keys.length; i++) html += "\t\t<textarea id=\"" + keys[i] +"\" hidden>\n" + JSON.stringify(textareas[keys[i]]) + "\n\t\t</textarea>\n";
+    for (let i=0; i<keys.length; i++) html += "\t\t<textarea id=\"" + keys[i] + "\" class=\"awjson\" hidden>\n" + JSON.stringify(textareas[keys[i]]) + "\n\t\t</textarea>\n";
     html += "\t\t<script>\n";
     html += loader + "\n";
     html += "\t\t</script>\n";
