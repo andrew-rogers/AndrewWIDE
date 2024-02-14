@@ -62,7 +62,7 @@ function AwDocViewer( docname ) {
     this._disableDrop();
     this.ta_awjson = document.getElementById("ta_awjson");
     this.serverless = false;
-    if (this.ta_awjson == null) this._selectDoc();
+    if ((this.ta_awjson == null) && (docname != "serverless")) this._selectDoc();
     else this._renderFromHTML();
     AndrewWIDE.docname = this.docname;
 }
@@ -157,7 +157,12 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
             awdr.render(ta_awjson.value);
         }
         for (let i=0; i<tas.length; i++) {
-            awdr.render(tas[i].value);
+            const ta = tas[i];
+            if (ta.id == "ta_cache") {
+                awdr.cache.fromObj(JSON.parse(ta.value));
+            } else {
+                awdr.render(tas[i].value);
+            }
         }
     });
 };
