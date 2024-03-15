@@ -34,7 +34,7 @@ function aw2cpp(fn_in, fn_out, prefix) {
     let src = "#include \"wasm_buffers.h\"\n\n";
     let hash = "const char* " + prefix + "_ids()\n{\n\treturn(\n\t\t\"{\"\n";
     for (let i=0; i < doc.length; i++) {
-        if (doc[i].type == "awcppwasm") {
+        if (doc[i].type == "wasmcpp") {
             let id = doc[i].id || prefix + "_" + (i+1);
             hash += "\t\t\"\\\"" + id + "\\\": " + createHash(doc[i].content) + ", \"\n";
             if (id == "globals") {

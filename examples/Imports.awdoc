@@ -1,0 +1,13 @@
+AW{"type":"wasmcpp","id":"globals","hidden":true}
+// My thing.
+EM_JS( void, thing, (int value), {
+    // Defined in javascript.
+});
+
+AW{"type":"javascript"}
+AndrewWIDE.addWasmImport("thing", function(n){
+    console.log("Thing> "+n);
+});
+
+AW{"type":"wasmcpp"}
+thing(10);

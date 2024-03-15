@@ -1,6 +1,7 @@
 MODULE = thing
 #DOCS = $(wildcard *.awdoc)
-DOCS = Arrays.awdoc biquad.awdoc
+#DOCS = Arrays.awdoc biquad.awdoc
+DOCS = Imports.awdoc
 
 AW_DIR ?= ..
 WASMDSP_DIR ?= ../../WasmDSP
@@ -10,6 +11,7 @@ HTMLS = $(patsubst %.awdoc,$(OUTPUT)/%.html,$(DOCS))
 OBJS = $(patsubst %.awdoc,$(OUTPUT)/%.o,$(DOCS))
 WASM = $(OUTPUT)/$(MODULE).wasm
 WASMMJS = $(OUTPUT)/$(MODULE).mjs
+WASMJS = $(OUTPUT)/$(MODULE).js
 
 CXXFLAGS += -I $(AW_DIR)/src/lib
 LDFLAGS = -L $(AW_DIR)/src/wasm --no-entry
@@ -21,7 +23,7 @@ WASM2MJS = $(EMSDK_NODE) $(WASMDSP_DIR)/tools/wasm2mjs.mjs
 .PRECIOUS: $(CPPS) $(OBJS) # Stops make deleting intermediate files
 
 .PHONY: all dirs
-all: dirs $(WASMMJS) $(HTMLS)
+all: dirs $(WASMJS) $(HTMLS)
 
 dirs:
 	mkdir -p $(OUTPUT)
@@ -30,7 +32,7 @@ $(OUTPUT)/%.cpp: %.awdoc
 	$(AW2CPP) $< $@ $(patsubst %.awdoc,%,$<)
 
 $(OUTPUT)/%.html: %.awdoc
-	$(AW2HTML) $< $@ $(patsubst %.awdoc,%,$<) $(WASMMJS)
+	$(AW2HTML) $< $@ $(patsubst %.awdoc,%,$<) $(WASMJS)
 
 $(WASM): $(OBJS)
 	$(CXX) $(OBJS) $(LDFLAGS) -lAw -o $@ -Oz
@@ -38,3 +40,5 @@ $(WASM): $(OBJS)
 $(WASMMJS): $(WASM)
 	$(WASM2MJS) $< $@
 
+$(WASMJS): $(WASMMJS)
+	rollup --format=amd --file=$@ -- $<
