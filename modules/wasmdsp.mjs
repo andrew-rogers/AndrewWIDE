@@ -50,6 +50,7 @@ function callWasmFunc(func_name) {
         mergeImports();
         wasmdsp.initialise([module], function() {
             aw.resume(id);
+            aw.wasm_mod = module.wasm;
             module.wasm.exports[func_name]();
         });
         initialised = true;

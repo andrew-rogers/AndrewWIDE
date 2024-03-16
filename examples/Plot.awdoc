@@ -1,0 +1,23 @@
+AW{"type":"mjmd"}
+
+1. Push values in JSArray
+2. Plot JSArray
+3. Get values from textarea
+
+* JSArray is a WasmDSP class
+* Plot is an AndrewWIDE class
+
+AW{"type":"wasmcpp","id":"globals","hidden":true}
+#include "JSArray.h"
+
+AW{"type":"javascript"}
+// Define the import because the shared wasm requires it even though we don't use it here
+// TODO: Replace import with mediator or eval
+AndrewWIDE.addWasmImport("thing", function(n){
+    console.log("Thing> "+n);
+});
+
+AW{"type":"wasmcpp"}
+WasmDSP::JSArray j("my_array");
+float vals[] = {0.1, 0.2, 0.34};
+j.write(vals, 3);

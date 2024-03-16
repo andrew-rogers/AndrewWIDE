@@ -5,6 +5,7 @@ EM_JS( void, thing, (int value), {
 });
 
 AW{"type":"javascript"}
+// TODO: Replace import with mediator or eval
 AndrewWIDE.addWasmImport("thing", function(n){
     console.log("Thing> "+n);
 });

@@ -1,7 +1,6 @@
 MODULE = thing
 #DOCS = $(wildcard *.awdoc)
-#DOCS = Arrays.awdoc biquad.awdoc
-DOCS = Imports.awdoc
+DOCS = Imports.awdoc Plot.awdoc
 
 AW_DIR ?= ..
 WASMDSP_DIR ?= ../../WasmDSP
@@ -13,8 +12,8 @@ WASM = $(OUTPUT)/$(MODULE).wasm
 WASMMJS = $(OUTPUT)/$(MODULE).mjs
 WASMJS = $(OUTPUT)/$(MODULE).js
 
-CXXFLAGS += -I $(AW_DIR)/src/lib
-LDFLAGS = -L $(AW_DIR)/src/wasm --no-entry
+CXXFLAGS += -I $(WASMDSP_DIR)/lib/WasmDSP
+LDFLAGS = -L $(WASMDSP_DIR)/lib/WasmDSP -lWasmDSP --no-entry
 
 AW2CPP = $(EMSDK_NODE) $(AW_DIR)/tools/aw2cpp.mjs
 AW2HTML = $(EMSDK_NODE) $(AW_DIR)/tools/aw2html.mjs
@@ -35,7 +34,7 @@ $(OUTPUT)/%.html: %.awdoc
 	$(AW2HTML) $< $@ $(patsubst %.awdoc,%,$<) $(WASMJS)
 
 $(WASM): $(OBJS)
-	$(CXX) $(OBJS) $(LDFLAGS) -lAw -o $@ -Oz
+	$(CXX) $(OBJS) $(LDFLAGS) -o $@ -Oz
 
 $(WASMMJS): $(WASM)
 	$(WASM2MJS) $< $@
