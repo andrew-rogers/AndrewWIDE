@@ -9,6 +9,7 @@ AW{"type":"mjmd"}
 
 AW{"type":"wasmcpp","id":"globals","hidden":true}
 #include "JSArray.h"
+#include "emjs.h"
 
 AW{"type":"javascript"}
 // Define the import because the shared wasm requires it even though we don't use it here
@@ -21,3 +22,9 @@ AW{"type":"wasmcpp"}
 WasmDSP::JSArray j("my_array");
 float vals[] = {0.1, 0.2, 0.34};
 j.write(vals, 3);
+WasmDSP::jsEval("console.log('Hello!');console.log(wasm_module)");
+
+AW{"type":"javascript"}
+let y=[1,3,5,2]
+plot(y)
+plot(AndrewWIDE.wasm_mod.arrays.my_array)

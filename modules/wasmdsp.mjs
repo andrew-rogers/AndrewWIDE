@@ -48,12 +48,12 @@ function callWasmFunc(func_name) {
     if (!initialised) {
         const id = aw.suspend("Initialising wasm.");
         mergeImports();
+        initialised = true;
         wasmdsp.initialise([module], function() {
-            aw.resume(id);
             aw.wasm_mod = module.wasm;
             module.wasm.exports[func_name]();
+            aw.resume(id);
         });
-        initialised = true;
     }
     else {
         module.wasm.exports[func_name]();
