@@ -1,9 +1,5 @@
-MODULE = thing
-#DOCS = $(wildcard *.awdoc)
-DOCS = Imports.awdoc Plot.awdoc
+# AW_DIR, DOCS, MODULE & WASMDSP_DIR variable must be defined by user
 
-AW_DIR ?= ..
-WASMDSP_DIR ?= ../../WasmDSP
 OUTPUT = $(MODULE).awtmp
 CPPS = $(patsubst %.awdoc,$(OUTPUT)/%.cpp,$(DOCS))
 HTMLS = $(patsubst %.awdoc,$(OUTPUT)/%.html,$(DOCS))
