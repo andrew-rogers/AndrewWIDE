@@ -16,13 +16,27 @@ AW2CPP = $(EMSDK_NODE) $(AW_DIR)/tools/aw2cpp.mjs
 AW2HTML = $(EMSDK_NODE) $(AW_DIR)/tools/aw2html.mjs
 WASM2MJS = $(EMSDK_NODE) $(WASMDSP_DIR)/tools/wasm2mjs.mjs
 
+# https://stackoverflow.com/questions/4058840/makefile-that-distincts-between-windows-and-unix-like-systems
+# https://stackoverflow.com/questions/714100/os-detecting-makefile
+ifeq '$(findstring ;,$(PATH))' ';'
+    CAT = type
+    FixPath = $(subst /,\,$1)
+    MKDIR = mkdir
+    RM = del /Q
+else
+    CAT = cat
+    FixPath = $1
+    MKDIR = mkdir -p
+    RM = rm -f
+endif
+
 .PRECIOUS: $(CPPS) $(OBJS) # Stops make deleting intermediate files
 
-.PHONY: all dirs
-all: dirs $(WASMJS) $(HTMLS)
+.PHONY: all clean
+all: $(OUTPUT) $(WASMJS) $(HTMLS)
 
-dirs:
-	mkdir -p $(OUTPUT)
+$(OUTPUT):
+	$(MKDIR) $@
 
 $(OUTPUT)/%.cpp: %.awdoc
 	$(AW2CPP) $< $@ $(patsubst %.awdoc,%,$<)
@@ -38,3 +52,6 @@ $(WASMMJS): $(WASM)
 
 $(WASMJS): $(WASMMJS)
 	rollup --format=amd --file=$@ -- $<
+
+clean:
+	$(RM) $(call FixPath,$(CPPS) $(HTMLS))
