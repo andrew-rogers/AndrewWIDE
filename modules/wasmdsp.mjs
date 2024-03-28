@@ -38,6 +38,7 @@ export function init(a) {
     aw.addRenderer("wasmcpp", cpp);
     aw.addWasmImport = addWasmImport;
     aw.callWasmFunc = callWasmFunc;
+    aw.getWasmArray = getArray;
 }
 
 function addWasmImport(name, func) {
@@ -74,6 +75,12 @@ function cpp(section) {
         aw.addRunnable(section.obj, wrapper);
         aw.queueRun(section.obj.id);
     }
+}
+
+function getArray(name) {
+    let arrs = module.wasm.arrays;
+    arrs[name] = arrs[name] || [];
+    return arrs[name];
 }
 
 function mergeImports() {
