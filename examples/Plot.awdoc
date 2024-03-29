@@ -40,6 +40,7 @@ let vals = JSON.parse('[' + s.substr(i+1) + ']')
 let a = AndrewWIDE.getWasmArray(name)
 a.length = 0
 a.push(...vals)
+console.log(getNamedValues('some_samples'))
 
 AW{"type":"javascript"}
 AndrewWIDE.loadWasmDSPModules(['signal'])

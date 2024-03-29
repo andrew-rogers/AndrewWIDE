@@ -11,6 +11,20 @@ funcs.plot = function(data){
 funcs.getInput = function(name) {
     return ces.inputs[name];
 };
+funcs.getNamedValues = function(input_name) {
+  const str =  ces.inputs[input_name];
+  const lines = str.split(/\r?\n/);
+  let out = {};
+  for (let i in lines) {
+    const line = lines[i];
+    const pos = line.indexOf(':');
+    if (pos > 0) {
+      const name = line.substr(0,pos).trim();
+      out[name] = JSON.parse('[' + line.substr(pos+1) + ']');
+    }
+  }
+  return out;
+};
 
 let hdr_src = null; // This is prepended to user code to make library functions available.
 
