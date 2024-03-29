@@ -40,3 +40,13 @@ let vals = JSON.parse('[' + s.substr(i+1) + ']')
 let a = AndrewWIDE.getWasmArray(name)
 a.length = 0
 a.push(...vals)
+
+AW{"type":"javascript"}
+AndrewWIDE.loadWasmDSPModules(['signal'])
+
+AW{"type":"javascript"}
+let bq = new AndrewWIDE.WasmDSP.modules.signal.Biquad(1,0,1,-1.9,0.97);
+let x=[1];
+for (let i=0; i<400; i++) x.push(0);
+let resp = bq.process(x);
+plot(resp);

@@ -28,7 +28,7 @@
 let aw = {};
 let imports = {};
 let initialised = false;
-let module = null;
+let module = null; // WasmDSP module for AwDoc functions.
 let prefix = "";
 let wasmdsp = null;
 
@@ -39,6 +39,7 @@ export function init(a) {
     aw.addWasmImport = addWasmImport;
     aw.callWasmFunc = callWasmFunc;
     aw.getWasmArray = getArray;
+    aw.loadWasmDSPModules = loadWasmDSPModules;
 }
 
 function addWasmImport(name, func) {
@@ -83,16 +84,49 @@ function getArray(name) {
     return arrs[name];
 }
 
+function loadWasmDSP(callback) {
+  if (wasmdsp == null) {
+    const id = aw.suspend("Loading WasmDSP.");
+    requirejs(["WasmDSP"], function(w){
+      wasmdsp = w;
+      wasmdsp.modules = {};  // WasmDSP library modules.
+      aw.WasmDSP = w;
+      if (callback) callback();
+      aw.resume(id);
+    });
+  }
+  else {
+    if (callback) callback();
+  }
+}
+
+function loadWasmDSPModules(mods, callback) {
+  loadWasmDSP(function(){
+    let cnt = 0;
+    const id = aw.suspend("Loading WasmDSP modules.");
+    for (let i in mods) {
+      require([mods[i]], function(m){
+        wasmdsp.modules[mods[i]] = m;
+        cnt++;
+        if (cnt == mods.length) {
+          wasmdsp.initialise(wasmdsp.modules, function() {
+            if (callback) callback();
+            aw.resume(id);
+          });
+        }
+      });
+    }
+  });
+}
+
 function mergeImports() {
     module.imports = module.imports || {};
     for (let k in imports) module.imports[k] = imports[k];
 }
 
 function renderModule(section) {
-    console.log("Module");
-    const id = aw.suspend("Loading WasmDSP modules.");
-    requirejs(["WasmDSP"], function(w){
-        wasmdsp = w;
+    const id = aw.suspend("Loading WasmDSP module.");
+    loadWasmDSP(function() {
         const module_name = section.obj.module;
         prefix = section.obj.prefix;
         requirejs([module_name], function(m){
