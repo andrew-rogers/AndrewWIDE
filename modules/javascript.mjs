@@ -5,12 +5,11 @@ let ces = {}; // Variables for currently executing section.
 
 // Define the functions available to user code.
 let funcs = {};
-funcs.plot = function(data){
-    return PlotGenerator.current().addTrace(data);
-};
+
 funcs.getInput = function(name) {
     return ces.inputs[name];
 };
+
 funcs.getNamedValues = function(input_name) {
   const str =  ces.inputs[input_name];
   const lines = str.split(/\r?\n/);
@@ -24,6 +23,14 @@ funcs.getNamedValues = function(input_name) {
     }
   }
   return out;
+};
+
+funcs.heatmap = function(data, transpose) {
+  return PlotGenerator.current().addHeatmap(data, transpose);
+};
+
+funcs.plot = function(data){
+  return PlotGenerator.current().addTrace(data);
 };
 
 let hdr_src = null; // This is prepended to user code to make library functions available.
@@ -114,8 +121,18 @@ PlotGenerator.current = function() {
     return PlotGenerator.m_current;
 };
 
-PlotGenerator.prototype.addTrace = function(y) {
-    this.traces.push({y: y});
+PlotGenerator.prototype.addHeatmap = function(z, transpose) {
+  let data = {z: z, type: 'heatmap'};
+  data.transpose = transpose || false;
+  this.traces.push(data);
+};
+
+PlotGenerator.prototype.addTrace = function(x, y) {
+  if (typeof y === 'undefined') {
+    this.traces.push({y: x});
+  } else {
+    this.traces.push({x: x, y: y});
+  }
 };
 
 PlotGenerator.prototype.generate = function() {
