@@ -6,6 +6,11 @@ let ces = {}; // Variables for currently executing section.
 // Define the functions available to user code.
 let funcs = {};
 
+funcs.addFunction = function(name, f) {
+  funcs[name] = f;
+  hdr_src = ""
+};
+
 funcs.getInput = function(name) {
     return ces.inputs[name];
 };
@@ -31,6 +36,10 @@ funcs.heatmap = function(data, transpose) {
 
 funcs.plot = function(data){
   return PlotGenerator.current().addTrace(data);
+};
+
+funcs.print = function(str){
+  return PrintGenerator.current().print(str);
 };
 
 let hdr_src = null; // This is prepended to user code to make library functions available.
@@ -80,6 +89,7 @@ function render(section) {
     ta.oninput = function() {controls.elem.hidden = false;};
 
     function wrapper(section){
+        div_result.innerHTML="";
         ces.inputs = section.obj.args.inputs;
         ces.div = div_result;
         ces.generators = [];
@@ -140,4 +150,31 @@ PlotGenerator.prototype.generate = function() {
     s.obj = {"type": "plot", "data": this.traces};
     ces.outputs.push(s);
     PlotGenerator.m_current = null;
+};
+
+let PrintGenerator = function() {
+    this.str = '';
+};
+
+PrintGenerator.m_current = null;
+
+PrintGenerator.current = function() {
+    if(!PrintGenerator.m_current) {
+        PrintGenerator.m_current = new PrintGenerator();
+        ces.generators.push(function(){
+            PrintGenerator.m_current.generate();
+        });
+    }
+    return PrintGenerator.m_current;
+};
+
+PrintGenerator.prototype.print = function(str) {
+  this.str += str;
+};
+
+PrintGenerator.prototype.generate = function() {
+    let s = {"div": ces.div};
+    s.obj = {"type": "print", "str": this.str};
+    ces.outputs.push(s);
+    PrintGenerator.m_current = null;
 };
