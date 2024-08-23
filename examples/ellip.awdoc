@@ -1,0 +1,46 @@
+AW{"type":"mjmd"}
+
+
+
+$$K\left(k^2\right) = \frac{\pi}{2M\left(1,k^{\prime}\right)}$$
+
+$M\left(a_{0},g_{0}\right)$ is the Arithmetic-Geometric Mean (AGM)
+
+$$\begin{aligned}
+  a_{n+1} &= \frac{a_{n}+g_{n}}{2} \\
+  g_{n+1} &= \sqrt{a_{n}g_{n}}
+\end{aligned}$$
+
+As $n$ becomes large, $a_{n}$ and $g_{n}$ converge to the same value. This value is the AGM. 
+
+The complementary modulus, $k^{\prime}$, can be found from $k^{2}+{k^{\prime}}^{2}=1$.
+
+References
+----------
+
+* [DLMF](https://dlmf.nist.gov/19.8#E5)
+* [OctaveOnline](https://octave-online.net/) is used to verify the results.
+
+
+AW{"type":"javascript"}
+window.plot = AndrewWIDE.plot;
+window.unitCircle = AndrewWIDE.unitCircle;
+
+window.agm = function(a, g) {
+  for (let i=0; i<50; i++) {
+    let temp = 0.5 * (a + g);
+    g = Math.sqrt(a * g);
+    a = temp;
+  }
+  return a;
+}
+
+window.ellipk = function(kk) {
+  let kprime = Math.sqrt(1-kk);
+  let result = Math.PI / (2*agm(1,kprime));
+  return result;
+}
+
+AW{"type":"javascript"}
+console.log(ellipk(0.7));
+console.log(ellipk(0.6));
