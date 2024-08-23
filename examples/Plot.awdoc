@@ -12,13 +12,6 @@ AW{"type":"wasmcpp","id":"globals","hidden":true}
 #include "emjs.h"
 
 AW{"type":"javascript"}
-// Define the import because the shared wasm requires it even though we don't use it here
-// TODO: Replace import with mediator or eval
-AndrewWIDE.addWasmImport("thing", function(n){
-    console.log("Thing> "+n);
-});
-
-AW{"type":"javascript"}
 window.plot = AndrewWIDE.plot;
 window.unitCircle = AndrewWIDE.unitCircle;
 

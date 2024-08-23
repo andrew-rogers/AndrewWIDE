@@ -26,7 +26,6 @@
  */
 
 let aw = {};
-let imports = {};
 let initialised = false;
 let module = null; // WasmDSP module for AwDoc functions.
 let prefix = "";
@@ -36,20 +35,14 @@ export function init(a) {
     aw = a;
     aw.addRenderer("wasmcpp_module", renderModule);
     aw.addRenderer("wasmcpp", cpp);
-    aw.addWasmImport = addWasmImport;
     aw.callWasmFunc = callWasmFunc;
     aw.getWasmArray = getArray;
     aw.loadWasmDSPModules = loadWasmDSPModules;
 }
 
-function addWasmImport(name, func) {
-    imports[name] = func;
-}
-
 function callWasmFunc(func_name) {
     if (!initialised) {
         const id = aw.suspend("Initialising wasm.");
-        mergeImports();
         initialised = true;
         wasmdsp.initialise([module], function() {
             aw.wasm_mod = module.wasm;
@@ -117,11 +110,6 @@ function loadWasmDSPModules(mods, callback) {
       });
     }
   });
-}
-
-function mergeImports() {
-    module.imports = module.imports || {};
-    for (let k in imports) module.imports[k] = imports[k];
 }
 
 function renderModule(section) {
