@@ -1,5 +1,15 @@
-export let aw = {}; // AndrewWIDE will set elements in the aw object to allow this module to access global functionality.
+export let aw = {};
 export let types = {javascript: render}
+
+export function init(a) {
+  aw = a;
+  aw.plot = function(x, y){
+    return PlotGenerator.current().addTrace(x, y);
+  };
+  aw.unitCircle = function(){
+    PlotGenerator.current().unitCircle();
+  };
+}
 
 let ces = {}; // Variables for currently executing section.
 
@@ -32,10 +42,6 @@ funcs.getNamedValues = function(input_name) {
 
 funcs.heatmap = function(data, transpose) {
   return PlotGenerator.current().addHeatmap(data, transpose);
-};
-
-funcs.plot = function(data){
-  return PlotGenerator.current().addTrace(data);
 };
 
 funcs.print = function(str){
@@ -84,7 +90,7 @@ function render(section) {
         func = Function("funcs", hdr_src + ta.value);
 
         // Queue the run.
-        AndrewWIDE.queueRun(section.obj.id);
+        aw.queueRun(section.obj.id);
     }
     ta.oninput = function() {controls.elem.hidden = false;};
 
@@ -98,11 +104,11 @@ function render(section) {
         func(funcs);
 
         generateResponses();
-        AndrewWIDE.postSections(ces.outputs);
+        aw.postSections(ces.outputs);
     };
 
-    AndrewWIDE.addRunnable(section.obj, wrapper);
-    AndrewWIDE.queueRun(section.obj.id);
+    aw.addRunnable(section.obj, wrapper);
+    aw.queueRun(section.obj.id);
 }
 
 function textarea( text, div ) {
@@ -116,7 +122,8 @@ function textarea( text, div ) {
 }
 
 let PlotGenerator = function() {
-    this.traces = [];
+    this.obj = {data: []}
+    this.traces = this.obj.data;
 };
 
 PlotGenerator.m_current = null;
@@ -135,21 +142,74 @@ PlotGenerator.prototype.addHeatmap = function(z, transpose) {
   let data = {z: z, type: 'heatmap'};
   data.transpose = transpose || false;
   this.traces.push(data);
+  return this;
 };
 
 PlotGenerator.prototype.addTrace = function(x, y) {
-  if (typeof y === 'undefined') {
-    this.traces.push({y: x});
-  } else {
-    this.traces.push({x: x, y: y});
-  }
+  return new PlotTrace(this.obj, x, y);
 };
 
 PlotGenerator.prototype.generate = function() {
-    let s = {"div": ces.div};
-    s.obj = {"type": "plot", "data": this.traces};
-    ces.outputs.push(s);
-    PlotGenerator.m_current = null;
+  let s = {"div": ces.div};
+  s.obj = this.obj;
+  s.obj.type = "plot";
+  ces.outputs.push(s);
+  PlotGenerator.m_current = null;
+};
+
+PlotGenerator.prototype.unitCircle = function() {
+  let circle = {};
+  circle["type"] = "circle";
+  circle["xref"] = "x";
+  circle["yref"] = "y";
+  circle["x0"] = -1;
+  circle["y0"] = -1;
+  circle["x1"] = 1;
+  circle["y1"] = 1;
+  circle["opacity"] = 0.2;
+  let layout = {shapes: [], xaxis: {}, yaxis: {}};
+  layout["shapes"].push(circle);
+  layout["xaxis"]["constrain"] = "domain";
+  layout["yaxis"]["scaleanchor"] = "x";
+  this.obj.layout = layout;
+  return this;
+}
+
+
+let PlotTrace = function(obj, x, y) {
+  this.graph = obj;
+  this.trace = {};
+  obj.data = obj.data || [];
+  obj.data.push(this.trace);
+
+  if (typeof y === 'undefined') {
+    this.trace.y = x;
+  } else {
+    this.trace.x = x;
+    this.trace.y = y;
+  }
+};
+
+PlotTrace.prototype.marker = function(sym) {
+  if (sym == 'o') sym = 'circle-open';
+  this.trace.marker = {symbol: sym};
+  this.trace.mode = 'markers';
+  return this;
+};
+
+PlotTrace.prototype.name = function(n) {
+  this.trace.name = n;
+  return this;
+};
+
+PlotTrace.prototype.plot = function(x, y) {
+  obj.data = obj.data || [];
+  if (typeof y === 'undefined') {
+    obj.data.push({y: x});
+  } else {
+    obj.data.push({x: x, y: y});
+  }
+  return this;
 };
 
 let PrintGenerator = function() {

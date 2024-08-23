@@ -18,6 +18,10 @@ AndrewWIDE.addWasmImport("thing", function(n){
     console.log("Thing> "+n);
 });
 
+AW{"type":"javascript"}
+window.plot = AndrewWIDE.plot;
+window.unitCircle = AndrewWIDE.unitCircle;
+
 AW{"type":"wasmcpp"}
 WasmDSP::JSArray j("my_array");
 float vals[] = {0.1, 0.2, 0.34};
@@ -42,6 +46,9 @@ a.length = 0
 a.push(...vals)
 console.log(getNamedValues('some_samples'))
 
+AW{"type":"wasmcpp","inputs":["some_samples"]}
+WasmDSP::jsEval("console.log('Samples!')");
+
 AW{"type":"javascript"}
 AndrewWIDE.loadWasmDSPModules(['signal'])
 
@@ -51,3 +58,8 @@ let x=[1];
 for (let i=0; i<400; i++) x.push(0);
 let resp = bq.process(x);
 plot(resp);
+
+AW{"type":"javascript"}
+unitCircle();
+plot([-1,1],[0,0]).marker('o').name('zeros');
+plot([0.9,0.9],[0.2,-0.2]).marker('x').name('poles');

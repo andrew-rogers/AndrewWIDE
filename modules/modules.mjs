@@ -13,6 +13,7 @@ AndrewWIDE.addRenderer = function(type, func) {
     AndrewWIDE.awdr.renderers[type] = func;
 };
 array.init(AndrewWIDE);
+javascript.init(AndrewWIDE);
 
 import {AwDocRenderer} from "./renderer.mjs"
 AndrewWIDE.awdr = new AwDocRenderer( AndrewWIDE.docname );
