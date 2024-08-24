@@ -72,7 +72,7 @@ function cpp(section) {
 }
 
 function getArray(name) {
-    let arrs = module.wasm.arrays;
+    let arrs = module.arrays;
     arrs[name] = arrs[name] || [];
     return arrs[name];
 }
@@ -119,6 +119,7 @@ function renderModule(section) {
         prefix = section.obj.prefix;
         requirejs([module_name], function(m){
             module = m;
+            module.arrays = module.arrays || {};
             aw.resume(id);
         });
     });
