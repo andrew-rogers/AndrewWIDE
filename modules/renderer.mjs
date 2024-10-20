@@ -579,7 +579,6 @@ function Runnable(awdr) {
     this.awdr = awdr;
     this.disables={}; // If any items in this object are true, running is disabled and queued for later.
     this.input_sections = {};
-    this.queue = [];
     this.runnables = {};
     this.types = {
         "run": {},
@@ -589,6 +588,10 @@ function Runnable(awdr) {
         "run_section": {}
     };
     awdr.registerTypes(this.types, this);
+    var that = this;
+    this.queue = new Queue(function(obj) {
+      that._dispatch(obj);
+    });
 }
 
 Runnable.prototype.addRunnable = function ( runnable ) {
@@ -625,25 +628,23 @@ Runnable.prototype.renderSection = function( section_in, callback ) {
 Runnable.prototype._disable = function ( section_in, callback ) {
     var name = section_in.obj.name;
     this.disables[name] = true;
+    this.queue.disableDispatch();
 };
 
-Runnable.prototype._dispatch = function () {
-    while( (this.queue.length > 0) && (Object.keys(this.disables).length == 0) ) {
-        var obj = this.queue.shift();
-        var section_in = obj.section_in;
-        var callback = obj.callback;
-        var runnable = this.runnables[section_in.obj.id];
-        var args = this._generateCallArgs(runnable.inputs);
-        var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
-        var section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
-        this.awdr._dispatch(section_out);
-    }
+Runnable.prototype._dispatch = function (obj) {
+  var section_in = obj.section_in;
+  var callback = obj.callback;
+  var runnable = this.runnables[section_in.obj.id];
+  var args = this._generateCallArgs(runnable.inputs);
+  var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
+  var section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
+  this.awdr._dispatch(section_out);
 };
 
 Runnable.prototype._enable = function ( section_in, callback ) {
     var name = section_in.obj.name;
     delete this.disables[name];
-    if (Object.keys(this.disables).length == 0) this._dispatch();
+    if (Object.keys(this.disables).length == 0) this.queue.enableDispatch();
 };
 
 Runnable.prototype._generateCallArgs = function ( input_sections ) {
@@ -658,8 +659,7 @@ Runnable.prototype._generateCallArgs = function ( input_sections ) {
 
 Runnable.prototype._run = function ( section_in, callback ) {
     var obj = {"section_in": section_in, "callback": callback};
-    this.queue.push(obj);
-    if (Object.keys(this.disables).length == 0) this._dispatch();
+    this.queue.post(obj);
 };
 
 Runnable.prototype._runDeps = function ( id ) {
