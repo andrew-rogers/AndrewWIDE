@@ -154,52 +154,79 @@ Lock.prototype.release = function ( id ) {
 };
 
 function Queue(callback) {
-    this.queue = [];
+    this.queueA = [];
+    this.queueB = [];
+    this.in = this.queueA;
+    this.dispatch = this.queueB;
+    this.toggle = 0;
     this.callback = callback;
     this.dispatch_enabled = true;
+    this.dispatch_pending = false;
 }
 
 Queue.prototype.post = function ( obj ) {
     if (obj.constructor.name == "Array") {
         for (var i=0; i<obj.length; i++) {
-            this.queue.push(obj[i]);
+            this.in.push(obj[i]);
         }
     }
     else {
-        this.queue.push(obj);
+        this.in.push(obj);
     }
 
-    if (this.dispatch_enabled) {
-        // Dispatch on the next event cycle.
-        var that = this;
-        setTimeout( function(){
-            that._dispatch();
-        });
-    }
+    this._schedule();
 };
 
 Queue.prototype.disableDispatch = function () {
-    this.dispatch_enabled = false;
+  this.dispatch_enabled = false;
+  this.dispatch_pending = false;
 };
 
 Queue.prototype.enableDispatch = function () {
-    this.dispatch_enabled = true;
-
-    // Dispatch on the next event cycle.
-    var that = this;
-    setTimeout( function(){
-        that._dispatch();
-    });
+  this.dispatch_enabled = true;
+  this._schedule();
 };
 
 Queue.prototype._dispatch = function () {
-    var queue = this.queue;
-    this.queue = [];
-    while( queue.length > 0 ) {
-        var obj = queue.shift();
-        this.callback( obj );
+
+  // If queue is empty then swap queues.
+  if (this.dispatch.length == 0) {
+    // Swap queues
+    if (this.toggle == 0) {
+      this.in = this.queueB;
+      this.dispatch = this.queueA;
+      this.toggle = 1;
     }
+    else {
+      this.in = this.queueA;
+      this.dispatch = this.queueB;
+      this.toggle = 0;
+    }
+
+    // If the new queue is not empty, schdeule a dispatch.
+    if (this.dispatch.length > 0) {
+      this._schedule();
+    }
+  } else {
+    while( (this.dispatch.length > 0) && (this.dispatch_enabled) ) {
+      var obj = this.dispatch.shift();
+      this.callback( obj );
+    }
+    this._schedule();
+  }
 };
+
+Queue.prototype._schedule = function () {
+  if (this.dispatch_enabled && (this.dispatch_pending == false)) {
+    // Dispatch on the next event cycle.
+    var that = this;
+    setTimeout( function(){
+      that.dispatch_pending = false;
+      that._dispatch();
+    });
+    this.dispatch_pending = true;
+  }
+}
 
 export function AwDocRenderer(docname, div) {
     this.doc = {"docname": docname};
