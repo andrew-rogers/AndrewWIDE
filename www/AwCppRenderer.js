@@ -133,10 +133,11 @@ MonoRenderer.prototype.renderObj = function( obj, div, callback ) {
     };
 
     // Run handler
+    let aw = AndrewWIDE;
     butt_run.onclick = function(e) {
         obj.content = ta.value;
         var obj_out = {"type": "run_section", "id": obj.id};
-        that.awdr.postSections([{"obj": obj_out}]);
+        aw.enqueue({"obj": obj_out});
     };
 };
 

@@ -131,28 +131,6 @@ export function createHash( str ) {
     return hash.toString();
 }
 
-function Lock(callback) {
-    this.locks = [];
-    this.callback = callback;
-}
-
-Lock.prototype.lock = function() {
-    var id = this.locks.length;
-    this.locks.push( {"done": false} );
-    return id;
-};
-
-Lock.prototype.release = function ( id ) {
-    this.locks[id]["done"] = true;
-
-    // Check if all locks released
-    var done = true;
-    for (var i=0; i<this.locks.length; i++) {
-        if (this.locks[i].done == false) done = false;
-    }
-    if (done && this.callback) this.callback();
-};
-
 function Queue(callback) {
     this.queueA = [];
     this.queueB = [];
@@ -226,7 +204,7 @@ Queue.prototype._schedule = function () {
     });
     this.dispatch_pending = true;
   }
-}
+};
 
 export function AwDocRenderer(docname, div) {
     this.doc = {"docname": docname};
@@ -244,10 +222,8 @@ export function AwDocRenderer(docname, div) {
     this.div = div;
     this.renderers = {};
     var that = this;
-    this.queue = new Queue(function(obj){
-        that._dispatch(obj);
-    });
-    this.cnt = 0;
+
+    this.cnt = 1;
     this.suspend_cnt = 0;
     this.runnable = new Runnable(this);
     this.renderers["array"] = this;
@@ -277,13 +253,8 @@ export function AwDocRenderer(docname, div) {
     this.ta_log.hidden = true;
     div.appendChild(this.ta_log);
 
-    // Lock for disabling rendering until all types registered.
-    var that = this;
-    this.rendering_lock = new Lock(function() {
-        that.queue.enableDispatch();
-    });
-
     // Export suspend and resume functions
+    var that = this;
     AndrewWIDE.suspend = function(reason){
         let id = that.suspend_cnt;
         let name = "suspend_" + id;
@@ -303,24 +274,23 @@ export function AwDocRenderer(docname, div) {
     AndrewWIDE.queueRun = function(id) {
         let run = {}
         run.obj = {"type": "run", "id": id};
-        that.postSections( [run] );
+        that.runnable._run(run);
+    }
+    AndrewWIDE.enqueue = function(section) {
+        that.runnable._runDeps(section.obj.id);
     }
     AndrewWIDE.addRunnable = function(obj, wrapper) {
         that.wrapper_funcs[obj.id] = wrapper;
         if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
         let s = {};
         s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "run": "func_run"};
-        that.postSections([s]);
+        that.runnable.addRunnable(s.obj);
     };
     this.renderers.func_run = function(section) {
         let func = that.wrapper_funcs[section.obj.id];
         func(section);
     };
 }
-
-AwDocRenderer.prototype.doneTypes = function(id) {
-    this.rendering_lock.release(id);
-};
 
 AwDocRenderer.prototype.loadScriptsSeq = function ( urls, callback ) {
 
@@ -347,12 +317,12 @@ AwDocRenderer.prototype.postSections = function( sections ) {
     for (var i=0; i<sections.length; i++) {
         this._assignId( sections[i].obj );
     }
-    this.queue.post(sections);
+    this.renderSections( sections );
 };
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
     this._assignId(obj);
-    this.queue.post({"obj":obj, "div":div, "callback":callback});
+    this._dispatch({"obj":obj, "div":div, "callback":callback});
 };
 
 AwDocRenderer.prototype.registerAsync = function( renderer ) {
@@ -381,16 +351,16 @@ AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
 };
 
 AwDocRenderer.prototype.render = function( awdoc ) {
-    // Disable running all runnable sections until queue is empty. This is to allow asynchronous compilation of code to
+    // Disable running all runnable sections until all sections dispatched. This is to allow asynchronous compilation of code to
     // complete before potential dependencies are run.
-    this.post( {"type": "run_disable", "name": "awdocrenderer"} );
+    let id = AndrewWIDE.suspend( "awdocrenderer" );
 
     let doc = parseAwDoc( awdoc );
     for (var i=0; i<doc.length; i++) {
         this._render(doc[i])
     }
 
-    this.post( {"type": "run_enable", "name": "awdocrenderer"} );
+    AndrewWIDE.resume( id );
 };
 
 AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
@@ -406,7 +376,7 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
             this.aw_objs[obj.array[i].id] = obj.array[i];
             sections.push({"obj":obj.array[i], "div": new_div, "callback": callback});
         }
-        this.queue.post(sections);
+        this.renderSections(sections);
     }
     else if (type == "json") {
         var new_obj = JSON.parse(obj.content);
@@ -415,6 +385,17 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
     else if (type == "log") {
         this.ta_log.value += obj.msg;
         this.ta_log.hidden = false;
+    }
+};
+
+AwDocRenderer.prototype.renderSections = function ( sections ) {
+    if (sections.constructor.name == "Array") {
+        for (var i=0; i<sections.length; i++) {
+            this._dispatch(sections[i]);
+        }
+    }
+    else {
+        this._dispatch(sections);
     }
 };
 
@@ -434,11 +415,6 @@ AwDocRenderer.prototype.setServerless = function ( ) {
     this.url_link.hidden = true;
 };
 
-AwDocRenderer.prototype.waitTypes = function () {
-    this.queue.disableDispatch();
-    return this.rendering_lock.lock();
-};
-
 AwDocRenderer.prototype._assignId= function(obj) {
     if (obj.hasOwnProperty("id") == false) {
         // Create a default ID if one is not given
@@ -453,7 +429,7 @@ AwDocRenderer.prototype._dispatch = function(section) {
     this.cache.searchSection( section, function(section) {
         // Found in cache.
         that._assignId(section.obj);
-        that.queue.post(section);
+        that.renderSections(section);
     }, function(section) {
         // Not in cache.
         that._dispatchRenderer(section);
@@ -478,7 +454,7 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
             renderer( section, function(section_out) {
                 that.cache.add(section, section_out);
                 that._assignId(section_out.obj);
-                that.queue.post(section_out);
+                that.renderSections(section_out);
             });
         }
     }
@@ -580,14 +556,7 @@ function Runnable(awdr) {
     this.disables={}; // If any items in this object are true, running is disabled and queued for later.
     this.input_sections = {};
     this.runnables = {};
-    this.types = {
-        "run": {},
-        "runnable": {},
-        "run_enable": {},
-        "run_disable": {},
-        "run_section": {}
-    };
-    awdr.registerTypes(this.types, this);
+
     var that = this;
     this.queue = new Queue(function(obj) {
       that._dispatch(obj);
@@ -602,26 +571,6 @@ Runnable.prototype.addRunnable = function ( runnable ) {
             this.input_sections[input_id] = {"deps": [], "obj": this.awdr.aw_objs[input_id]};
         }
         this.input_sections[input_id].deps.push(runnable.id);
-    }
-};
-
-Runnable.prototype.renderSection = function( section_in, callback ) {
-    var type = section_in.obj.type;
-    var id = section_in.obj.id;
-    if (type == "run") {
-        this._run( section_in, callback );
-    }
-    else if (type == "runnable") {
-        this.addRunnable( section_in.obj );
-    }
-    else if (type == "run_enable") {
-        this._enable( section_in, callback );
-    }
-    else if (type == "run_disable") {
-        this._disable( section_in, callback );
-    }
-    else if (type == "run_section") {
-        this._runDeps( id );
     }
 };
 
@@ -665,8 +614,8 @@ Runnable.prototype._run = function ( section_in, callback ) {
 Runnable.prototype._runDeps = function ( id ) {
     var deps = this.input_sections[id].deps;
     for (var i=0; i<deps.length; i++) {
-        var runnable_id = deps[i];
-        this.awdr.post( {"type": "run", "id": deps[i]}, null, null);
+        let obj = {"type": "run", "id": deps[i]};
+        this._run({obj: obj, div: null});
     }
 };
 
