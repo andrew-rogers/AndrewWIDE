@@ -68,59 +68,6 @@ export function parseAwDoc( awdoc ) {
     return ret;
 }
 
-
-function CacheRenderer() {
-    this.cache = [];
-    this.cache_map = {};
-    this.attributes = {};
-}
-
-CacheRenderer.prototype.add = function ( section_in, section_out ) {
-    // Only add objects that have a hash.
-    if (section_in.hasOwnProperty("hash")) {
-        this.cache_map[section_in.hash] = this.cache.length;
-        this.cache.push({"type": section_in.obj.type, "hash": section_in.hash, "out": section_out.obj});
-    }
-};
-
-CacheRenderer.prototype.fromObj = function ( obj ) {
-    this.cache = obj.cache;
-    this.attributes = obj.attributes;
-    for (var i=0; i<obj.cache.length; i++) {
-        var hash = obj.cache[i].hash;
-        this.cache_map[hash] = i;
-    }
-};
-
-CacheRenderer.prototype.registerType = function (type, attributes) {
-    // Only store types with a hash_key.
-    var attr = attributes || {};
-    var hash_key = attr["hash_key"] || null;
-    if (hash_key) this.attributes[type] = attr;
-};
-
-CacheRenderer.prototype.searchSection = function( section, post, notFound ) {
-    var found = false;;
-    var type = section.obj.type;
-    if (this.attributes.hasOwnProperty(type)) {
-        var key = this.attributes[type].hash_key;
-        if (section.obj.hasOwnProperty(key)) {
-            var hash = createHash(JSON.stringify(section.obj[key]));
-            section.hash = hash;
-            if (this.cache_map.hasOwnProperty(hash)) {
-                var cache = this.cache[this.cache_map[hash]];
-                found = true;
-                post({"obj": cache.out, "div": section.div});
-            }
-        }
-    }
-    if (!found) notFound(section);
-};
-
-CacheRenderer.prototype.toObj = function() {
-    return {"attributes": this.attributes, "cache": this.cache};
-};
-
 export function createHash( str ) {
     var hash = 0;
     var prime = 127;
@@ -230,7 +177,6 @@ export function AwDocRenderer(docname, div) {
     this.renderers["json"] = this;
     this.renderers["log"] = this;
     this.async = [];
-    this.cache = new CacheRenderer();
     this.wrapper_funcs = {};
 
     // Provide a URL for this doc. User can open it and bookmark it for quicker access.
@@ -338,7 +284,6 @@ AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
 AwDocRenderer.prototype.registerType = function( name, attributes, func ) {
     this.renderers[name] = func;
     this.attributes[name] = attributes;
-    this.cache.registerType(name, attributes);
 };
 
 AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
@@ -424,16 +369,8 @@ AwDocRenderer.prototype._assignId= function(obj) {
 };
 
 AwDocRenderer.prototype._dispatch = function(section) {
-    var that = this;
     section.doc = this.doc; // Document globals.
-    this.cache.searchSection( section, function(section) {
-        // Found in cache.
-        that._assignId(section.obj);
-        that.renderSections(section);
-    }, function(section) {
-        // Not in cache.
-        that._dispatchRenderer(section);
-    });
+    this._dispatchRenderer(section);
 };
 
 AwDocRenderer.prototype._dispatchRenderer = function(section) {
@@ -452,7 +389,6 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
         else {
             var that = this;
             renderer( section, function(section_out) {
-                that.cache.add(section, section_out);
                 that._assignId(section_out.obj);
                 that.renderSections(section_out);
             });
@@ -504,7 +440,7 @@ export function createHTML(textareas) {
 }
 
 AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
-    let html = createHTML({ta_awjson: this.aw_json, ta_cache: this.cache.toObj()});
+    let html = createHTML({ta_awjson: this.aw_json});
 
     this.download_link.href = URL.createObjectURL(
         new Blob([html], {
