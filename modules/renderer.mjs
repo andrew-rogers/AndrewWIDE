@@ -260,14 +260,10 @@ AwDocRenderer.prototype.loadScriptsSeq = function ( urls, callback ) {
 };
 
 AwDocRenderer.prototype.postSections = function( sections ) {
-    for (var i=0; i<sections.length; i++) {
-        this._assignId( sections[i].obj );
-    }
     this.renderSections( sections );
 };
 
 AwDocRenderer.prototype.post = function ( obj, div, callback ) {
-    this._assignId(obj);
     this._dispatch({"obj":obj, "div":div, "callback":callback});
 };
 
@@ -302,6 +298,8 @@ AwDocRenderer.prototype.render = function( awdoc ) {
 
     let doc = parseAwDoc( awdoc );
     for (var i=0; i<doc.length; i++) {
+        let section = AndrewWIDE.createSection(doc[i]);
+        doc[i].id = section.id;
         this._render(doc[i])
     }
 
@@ -317,7 +315,6 @@ AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
             var new_div = document.createElement("div");
             if (obj.array[i]["hidden"]==true) new_div.hidden = true;
             div.appendChild(new_div);
-            this._assignId(obj.array[i]);
             this.aw_objs[obj.array[i].id] = obj.array[i];
             sections.push({"obj":obj.array[i], "div": new_div, "callback": callback});
         }
@@ -360,14 +357,6 @@ AwDocRenderer.prototype.setServerless = function ( ) {
     this.url_link.hidden = true;
 };
 
-AwDocRenderer.prototype._assignId= function(obj) {
-    if (obj.hasOwnProperty("id") == false) {
-        // Create a default ID if one is not given
-        obj.id = obj.type + "_" + this.cnt;
-    }
-    this.cnt++;
-};
-
 AwDocRenderer.prototype._dispatch = function(section) {
     section.doc = this.doc; // Document globals.
     this._dispatchRenderer(section);
@@ -389,7 +378,6 @@ AwDocRenderer.prototype._dispatchRenderer = function(section) {
         else {
             var that = this;
             renderer( section, function(section_out) {
-                that._assignId(section_out.obj);
                 that.renderSections(section_out);
             });
         }
