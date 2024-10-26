@@ -77,7 +77,7 @@ function render(section) {
     controls.elem.hidden = true;
     section.div.appendChild(controls.elem);
 
-    let ta = textarea(section.obj.content, section.div);
+    let ta = section.showSource(false);
 
     // Create a div for the execution result
     let div_result = document.createElement("div");
@@ -109,16 +109,6 @@ function render(section) {
 
     aw.addRunnable(section.obj, wrapper);
     aw.queueRun(section.obj.id);
-}
-
-function textarea( text, div ) {
-    // Put the text into a textarea
-    var ta = document.createElement("textarea");
-    ta.style.width = "100%";
-    ta.value = text;
-    div.appendChild(ta);
-    ta.style.height = (ta.scrollHeight+8)+"px";
-    return ta;
 }
 
 let PlotGenerator = function() {

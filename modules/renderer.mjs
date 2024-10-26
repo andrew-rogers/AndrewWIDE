@@ -299,8 +299,8 @@ AwDocRenderer.prototype.render = function( awdoc ) {
     let doc = parseAwDoc( awdoc );
     for (var i=0; i<doc.length; i++) {
         let section = AndrewWIDE.createSection(doc[i]);
-        doc[i].id = section.id;
-        this._render(doc[i])
+        section.obj.id = section.id;
+        this._render(section)
     }
 
     AndrewWIDE.resume( id );
@@ -443,36 +443,15 @@ AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
     this.download_link.hidden = false;
 };
 
-AwDocRenderer.prototype._render = function( obj ) {
+AwDocRenderer.prototype._render = function(section) {
+
+    let obj = section.obj;
 
     // Store for creating serverless page later.
     this.aw_json.push(obj);
     this.aw_objs[obj.id] = obj;
 
-    // Create a div for the section.
-    var div = document.createElement("div");
-    this.div.appendChild(div);
-
-    // Display content source.
-    var attributes = this.attributes[obj.type] || {};
-    var hidden = attributes["hidden"] || false;
-    if (obj.hasOwnProperty("hidden")) hidden = obj.hidden;
-    if (!hidden) this._textarea(obj.content, div);
-
-    var callback = function() {
-        console.log(obj.type+" "+obj.id+" done!");
-    };
-
-    this.post( obj, div, callback );
-};
-
-AwDocRenderer.prototype._textarea = function(text, div) {
-    var ta = document.createElement("textarea");
-    ta.style.width = "100%";
-    ta.value = text;
-    div.appendChild(ta);
-    ta.style.height = (ta.scrollHeight+8)+"px";
-    return ta
+    this._dispatch(section);
 };
 
 function Runnable(awdr) {

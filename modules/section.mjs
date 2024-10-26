@@ -25,6 +25,7 @@
  *
  */
 
+let aw = null;
 let cnt = 1;
 let sectionMap = {};
 
@@ -32,9 +33,8 @@ export function createSection(obj) {
 
   // Get id from supplied string or object. Otherwise create a default id.
   let id = null;
-  if(typeof obj ==='string') {
+  if(typeof obj === 'string') {
     id = obj;
-    obj = {};
   }
   else {
     id = obj.id;
@@ -47,15 +47,53 @@ export function createSection(obj) {
 
   // If the id is not in map then create a new section.
   if (sectionMap.hasOwnProperty(id) == false) {
-    sectionMap[id] = new Section(id, obj);
+    sectionMap[id] = new Section(id);
   }
+
+  // Assign object to section.
+  sectionMap[id].setObj(obj);
 
   return sectionMap[id];
 }
 
+export function init(a) {
+  aw = a;
+}
+
 class Section {
-  constructor(id, obj) {
+  constructor(id) {
     this.id = id;
-    this.obj = obj;
+  }
+
+  setObj(obj) {
+    if (typeof obj === 'object') {
+      this.obj = obj;
+      this.#createDiv();
+    }
+  }
+
+  showSource(def) {
+    let hidden = def;
+    let ta = {};
+    if (this.obj.hasOwnProperty("hidden")) hidden = this.obj.hidden;
+    if (!hidden) ta = this.#textarea();
+    return ta;
+  }
+
+  #createDiv() {
+    // Create a div for the section.
+    if (this.div == undefined) {
+      this.div = document.createElement("div");
+      aw.awdr.div.appendChild(this.div);
+    }
+  }
+
+  #textarea() {
+    let ta = document.createElement("textarea");
+    ta.style.width = "100%";
+    ta.value = this.obj.content;
+    this.div.appendChild(ta);
+    ta.style.height = (ta.scrollHeight+8)+"px";
+    return ta;
   }
 }

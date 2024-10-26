@@ -19,4 +19,5 @@ javascript.init(AndrewWIDE);
 import {AwDocRenderer} from "./renderer.mjs"
 AndrewWIDE.awdr = new AwDocRenderer( AndrewWIDE.docname );
 wasmdsp.init(AndrewWIDE);
+section.init(AndrewWIDE);
 AndrewWIDE.createSection = section.createSection;

@@ -56,7 +56,8 @@ function callWasmFunc(func_name) {
 }
 
 function cpp(section) {
-    console.log(section);
+    section.showSource(false);
+
     const func_name = section.obj.id;
 
     if (func_name != 'globals') {
