@@ -220,16 +220,6 @@ export function AwDocRenderer(docname, div) {
         that.runnable._runDeps(section.id);
         that.runnable._run(section);
     }
-    AndrewWIDE.enqueue = function(section) {
-        that.runnable._runDeps(section.obj.id);
-    }
-    AndrewWIDE.addRunnable = function(section) {
-        let obj = section.obj;
-        if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-        let s = {};
-        s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "run": "func_run"};
-        that.runnable.addRunnable(s.obj);
-    };
 }
 
 AwDocRenderer.prototype.loadScriptsSeq = function ( urls, callback ) {
@@ -456,16 +446,6 @@ function Runnable(awdr) {
       section.func(section);
     });
 }
-
-Runnable.prototype.addRunnable = function ( runnable ) {
-    let section = AndrewWIDE.createSection(runnable.id);
-    for (var i=0; i<runnable.inputs.length; i++) {
-        var input_id = runnable.inputs[i];
-        let input = AndrewWIDE.createSection(input_id);
-        section.addInput(input);
-        input.addDep(section);
-    }
-};
 
 Runnable.prototype._disable = function ( section_in, callback ) {
     var name = section_in.obj.name;

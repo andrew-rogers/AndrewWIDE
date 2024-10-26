@@ -108,7 +108,6 @@ function render(section) {
     };
 
     section.setFunc(wrapper);
-    aw.addRunnable(section);
     section.enqueue();
 }
 

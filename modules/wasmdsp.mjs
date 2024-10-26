@@ -68,7 +68,6 @@ function cpp(section) {
         }
 
         section.setFunc(wrapper);
-        aw.addRunnable(section);
         aw.queueRun(section);
     }
 }

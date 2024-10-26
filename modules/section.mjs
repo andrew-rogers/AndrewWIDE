@@ -91,6 +91,7 @@ class Section {
 
   setFunc(f) {
     this.func = f;
+    this.#linkInputs();
   }
 
   setObj(obj) {
@@ -112,6 +113,17 @@ class Section {
     if (this.div == undefined) {
       this.div = document.createElement("div");
       aw.awdr.div.appendChild(this.div);
+    }
+  }
+
+  #linkInputs() {
+    if (this.obj.inputs) {
+      let input_ids = this.obj.inputs;
+      for (let i=0; i<input_ids.length; i++) {
+        let input = aw.createSection(input_ids[i]);
+        this.inputs.push(input);
+        input.addDep(this);
+      }
     }
   }
 
