@@ -457,8 +457,6 @@ AwDocRenderer.prototype._render = function(section) {
 function Runnable(awdr) {
     this.awdr = awdr;
     this.disables={}; // If any items in this object are true, running is disabled and queued for later.
-    this.input_sections = {};
-    this.runnables = {};
 
     var that = this;
     this.queue = new Queue(function(obj) {
@@ -467,13 +465,13 @@ function Runnable(awdr) {
 }
 
 Runnable.prototype.addRunnable = function ( runnable ) {
-    this.runnables[runnable.id] = runnable;
+    let section = AndrewWIDE.createSection(runnable.id);
+    section.run = runnable.run;
     for (var i=0; i<runnable.inputs.length; i++) {
         var input_id = runnable.inputs[i];
-        if (this.input_sections.hasOwnProperty(input_id) == false) {
-            this.input_sections[input_id] = {"deps": [], "obj": this.awdr.aw_objs[input_id]};
-        }
-        this.input_sections[input_id].deps.push(runnable.id);
+        let input = AndrewWIDE.createSection(input_id);
+        section.addInput(input);
+        input.addDep(section);
     }
 };
 
@@ -486,8 +484,8 @@ Runnable.prototype._disable = function ( section_in, callback ) {
 Runnable.prototype._dispatch = function (obj) {
   var section_in = obj.section_in;
   var callback = obj.callback;
-  var runnable = this.runnables[section_in.obj.id];
-  var args = this._generateCallArgs(runnable.inputs);
+  let runnable = AndrewWIDE.createSection(section_in.obj.id);
+  let args = runnable.generateCallArgs();
   var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
   var section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
   this.awdr._dispatch(section_out);
@@ -499,23 +497,13 @@ Runnable.prototype._enable = function ( section_in, callback ) {
     if (Object.keys(this.disables).length == 0) this.queue.enableDispatch();
 };
 
-Runnable.prototype._generateCallArgs = function ( input_sections ) {
-    // Search the specified input sections and get their content.
-    var ret = {};
-    for (var i=0; i<input_sections.length; i++) {
-        var key = input_sections[i];
-        ret[key] = this.input_sections[key].obj.content;
-    }
-    return {"inputs": ret};
-};
-
 Runnable.prototype._run = function ( section_in, callback ) {
     var obj = {"section_in": section_in, "callback": callback};
     this.queue.post(obj);
 };
 
 Runnable.prototype._runDeps = function ( id ) {
-    var deps = this.input_sections[id].deps;
+    let deps = AndrewWIDE.createSection(id).deps;
     for (var i=0; i<deps.length; i++) {
         let obj = {"type": "run", "id": deps[i]};
         this._run({obj: obj, div: null});

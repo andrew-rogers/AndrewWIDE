@@ -42,8 +42,8 @@ export function createSection(obj) {
       // Create a default ID if one is not given
       id = obj.type + "_" + cnt;
     }
+    cnt++;
   }
-  cnt++;
 
   // If the id is not in map then create a new section.
   if (sectionMap.hasOwnProperty(id) == false) {
@@ -63,6 +63,26 @@ export function init(a) {
 class Section {
   constructor(id) {
     this.id = id;
+    this.deps = [];
+    this.inputs = [];
+  }
+
+  addDep(dep) {
+    this.deps.push(dep);
+  }
+
+  addInput(input) {
+    this.inputs.push(input);
+  }
+
+  generateCallArgs = function () {
+    // Search the specified input sections and get their content.
+    var ret = {};
+    for (let i=0; i<this.inputs.length; i++) {
+        let key = this.inputs[i].id;
+        ret[key] = this.inputs[i].obj.content;
+    }
+    return {"inputs": ret};
   }
 
   setObj(obj) {
@@ -72,8 +92,7 @@ class Section {
     }
   }
 
-  showSource(def) {
-    let hidden = def;
+  showSource(hidden) {
     let ta = {};
     if (this.obj.hasOwnProperty("hidden")) hidden = this.obj.hidden;
     if (!hidden) ta = this.#textarea();
