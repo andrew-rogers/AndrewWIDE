@@ -90,7 +90,6 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
 
     function instantiate_legacy() {
         let awdr = AndrewWIDE.awdr;
-        new AwCppRenderer(awdr);
         var cppwasm = new AwCppWasmRenderer(awdr);
         if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
         awdr.registerRenderer("awcppwasm", cppwasm);

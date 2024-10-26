@@ -203,21 +203,18 @@ export function AwDocRenderer(docname, div) {
     AndrewWIDE.suspend = function(reason){
         let id = that.suspend_cnt;
         let name = "suspend_" + id;
-        let s = {obj: {type:"run_disable", name:name}};
         that.suspend_cnt++;
-        that.runnable._disable(s);
+        that.runnable._disable(name);
         return id;
     };
     AndrewWIDE.resume = function(id){
         let name = "suspend_" + id;
-        let s = {obj: {type:"run_enable", name:name}};
-        that.runnable._enable(s);
+        that.runnable._enable(name);
     };
     AndrewWIDE.postSections = function(sections){
         that.postSections(sections);
     };
     AndrewWIDE.queueRun = function(section) {
-        that.runnable._runDeps(section.id);
         that.runnable._run(section);
     }
 }
@@ -325,17 +322,6 @@ AwDocRenderer.prototype.renderSections = function ( sections ) {
     }
 };
 
-AwDocRenderer.prototype.renderingComplete = function ( id ) {
-    this.async[id]["done"] = true;
-
-    // Check if all async renderers done
-    var done = true;
-    for (var i=0; i<this.async.length; i++) {
-        if (this.async[i].done == false) done = false;
-    }
-    if (done) this._prepareServerlessDoc();
-};
-
 AwDocRenderer.prototype.setServerless = function ( ) {
     this.serverless = true;
     this.url_link.hidden = true;
@@ -411,22 +397,6 @@ export function createHTML(textareas) {
     return html
 }
 
-AwDocRenderer.prototype._prepareServerlessDoc = function( obj, src ) {
-    let html = createHTML({ta_awjson: this.aw_json});
-
-    this.download_link.href = URL.createObjectURL(
-        new Blob([html], {
-          type: "text/html"
-        })
-    );
-    var fn = this.docname.replace(/^.*\//,''); // Remove directories from path
-    fn = fn.replace(/\..*$/,''); // Remove extensions like .awdoc
-    fn += ".html"
-    this.download_link.setAttribute("download", fn);
-    this.download_link.innerHTML="Download doc.";
-    this.download_link.hidden = false;
-};
-
 AwDocRenderer.prototype._render = function(section) {
 
     let obj = section.obj;
@@ -447,14 +417,12 @@ function Runnable(awdr) {
     });
 }
 
-Runnable.prototype._disable = function ( section_in, callback ) {
-    var name = section_in.obj.name;
+Runnable.prototype._disable = function (name) {
     this.disables[name] = true;
     this.queue.disableDispatch();
 };
 
-Runnable.prototype._enable = function ( section_in, callback ) {
-    var name = section_in.obj.name;
+Runnable.prototype._enable = function (name) {
     delete this.disables[name];
     if (Object.keys(this.disables).length == 0) this.queue.enableDispatch();
 };
@@ -462,11 +430,3 @@ Runnable.prototype._enable = function ( section_in, callback ) {
 Runnable.prototype._run = function (section) {
     if (section.func) this.queue.post(section);
 };
-
-Runnable.prototype._runDeps = function ( id ) {
-    let deps = AndrewWIDE.createSection(id).deps;
-    for (var i=0; i<deps.length; i++) {
-        this._run(deps[i]);
-    }
-};
-

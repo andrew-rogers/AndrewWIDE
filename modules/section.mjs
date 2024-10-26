@@ -76,7 +76,8 @@ class Section {
   }
 
   enqueue() {
-    aw.queueRun(this);
+    for (let i=0; i<this.deps.length; i++) aw.queueRun(this.deps[i]);
+    if (this.func) aw.queueRun(this);
   }
 
   generateCallArgs = function () {

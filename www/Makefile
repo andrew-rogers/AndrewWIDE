@@ -12,7 +12,6 @@ endif
 
 # AwDocViewer Must be first, it has the AsyncLoader.
 SRCS = AwDocViewer.js \
- AwCppRenderer.js \
  AwCppWasmRenderer.js \
  DOTRenderer.js \
  DSPInterfaces.js \

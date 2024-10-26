@@ -5,6 +5,7 @@ import * as plot from "./plot.mjs"
 export {cpp, javascript, mjmd, plot}
 
 import * as array from "./array.mjs"
+import * as mono from "./mono.mjs"
 import * as section from "./section.mjs"
 import * as wasmdsp from "./wasmdsp.mjs"
 window.AndrewWIDE = window.AndrewWIDE || {};
@@ -19,5 +20,6 @@ javascript.init(AndrewWIDE);
 import {AwDocRenderer} from "./renderer.mjs"
 AndrewWIDE.awdr = new AwDocRenderer( AndrewWIDE.docname );
 wasmdsp.init(AndrewWIDE);
+mono.init(AndrewWIDE);
 section.init(AndrewWIDE);
 AndrewWIDE.createSection = section.createSection;
