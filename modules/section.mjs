@@ -75,6 +75,10 @@ class Section {
     this.inputs.push(input);
   }
 
+  enqueue() {
+    aw.queueRun(this);
+  }
+
   generateCallArgs = function () {
     // Search the specified input sections and get their content.
     var ret = {};
@@ -83,6 +87,10 @@ class Section {
         ret[key] = this.inputs[i].obj.content;
     }
     return {"inputs": ret};
+  }
+
+  setFunc(f) {
+    this.func = f;
   }
 
   setObj(obj) {

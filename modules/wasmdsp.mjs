@@ -67,8 +67,9 @@ function cpp(section) {
             callWasmFunc(fn);
         }
 
-        aw.addRunnable(section.obj, wrapper);
-        aw.queueRun(section.obj.id);
+        section.setFunc(wrapper);
+        aw.addRunnable(section);
+        aw.queueRun(section);
     }
 }
 

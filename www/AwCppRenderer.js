@@ -136,8 +136,7 @@ MonoRenderer.prototype.renderObj = function( obj, div, callback ) {
     let aw = AndrewWIDE;
     butt_run.onclick = function(e) {
         obj.content = ta.value;
-        var obj_out = {"type": "run_section", "id": obj.id};
-        aw.enqueue({"obj": obj_out});
+        aw.createSection(obj.id).enqueue();
     };
 };
 

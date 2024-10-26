@@ -177,7 +177,6 @@ export function AwDocRenderer(docname, div) {
     this.renderers["json"] = this;
     this.renderers["log"] = this;
     this.async = [];
-    this.wrapper_funcs = {};
 
     // Provide a URL for this doc. User can open it and bookmark it for quicker access.
     this.url_link = document.createElement("a");
@@ -217,24 +216,19 @@ export function AwDocRenderer(docname, div) {
     AndrewWIDE.postSections = function(sections){
         that.postSections(sections);
     };
-    AndrewWIDE.queueRun = function(id) {
-        let run = {}
-        run.obj = {"type": "run", "id": id};
-        that.runnable._run(run);
+    AndrewWIDE.queueRun = function(section) {
+        that.runnable._runDeps(section.id);
+        that.runnable._run(section);
     }
     AndrewWIDE.enqueue = function(section) {
         that.runnable._runDeps(section.obj.id);
     }
-    AndrewWIDE.addRunnable = function(obj, wrapper) {
-        that.wrapper_funcs[obj.id] = wrapper;
+    AndrewWIDE.addRunnable = function(section) {
+        let obj = section.obj;
         if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
         let s = {};
         s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "run": "func_run"};
         that.runnable.addRunnable(s.obj);
-    };
-    this.renderers.func_run = function(section) {
-        let func = that.wrapper_funcs[section.obj.id];
-        func(section);
     };
 }
 
@@ -458,15 +452,13 @@ function Runnable(awdr) {
     this.awdr = awdr;
     this.disables={}; // If any items in this object are true, running is disabled and queued for later.
 
-    var that = this;
-    this.queue = new Queue(function(obj) {
-      that._dispatch(obj);
+    this.queue = new Queue(function(section) {
+      section.func(section);
     });
 }
 
 Runnable.prototype.addRunnable = function ( runnable ) {
     let section = AndrewWIDE.createSection(runnable.id);
-    section.run = runnable.run;
     for (var i=0; i<runnable.inputs.length; i++) {
         var input_id = runnable.inputs[i];
         let input = AndrewWIDE.createSection(input_id);
@@ -481,32 +473,20 @@ Runnable.prototype._disable = function ( section_in, callback ) {
     this.queue.disableDispatch();
 };
 
-Runnable.prototype._dispatch = function (obj) {
-  var section_in = obj.section_in;
-  var callback = obj.callback;
-  let runnable = AndrewWIDE.createSection(section_in.obj.id);
-  let args = runnable.generateCallArgs();
-  var obj_out = {"type": runnable.run, "id": runnable.id, "args": args};
-  var section_out = {"obj": obj_out, "div": runnable.div, "callback": section_in.callback};
-  this.awdr._dispatch(section_out);
-};
-
 Runnable.prototype._enable = function ( section_in, callback ) {
     var name = section_in.obj.name;
     delete this.disables[name];
     if (Object.keys(this.disables).length == 0) this.queue.enableDispatch();
 };
 
-Runnable.prototype._run = function ( section_in, callback ) {
-    var obj = {"section_in": section_in, "callback": callback};
-    this.queue.post(obj);
+Runnable.prototype._run = function (section) {
+    if (section.func) this.queue.post(section);
 };
 
 Runnable.prototype._runDeps = function ( id ) {
     let deps = AndrewWIDE.createSection(id).deps;
     for (var i=0; i<deps.length; i++) {
-        let obj = {"type": "run", "id": deps[i]};
-        this._run({obj: obj, div: null});
+        this._run(deps[i]);
     }
 };
 

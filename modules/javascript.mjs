@@ -90,13 +90,13 @@ function render(section) {
         func = Function("funcs", hdr_src + ta.value);
 
         // Queue the run.
-        aw.queueRun(section.obj.id);
+        section.enqueue();
     }
     ta.oninput = function() {controls.elem.hidden = false;};
 
     function wrapper(section){
         div_result.innerHTML="";
-        ces.inputs = section.obj.args.inputs;
+        ces.inputs = section.generateCallArgs().inputs;
         ces.div = div_result;
         ces.generators = [];
         ces.outputs = [];
@@ -107,8 +107,9 @@ function render(section) {
         aw.postSections(ces.outputs);
     };
 
-    aw.addRunnable(section.obj, wrapper);
-    aw.queueRun(section.obj.id);
+    section.setFunc(wrapper);
+    aw.addRunnable(section);
+    section.enqueue();
 }
 
 let PlotGenerator = function() {
