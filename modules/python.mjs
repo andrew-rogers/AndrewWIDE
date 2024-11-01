@@ -26,119 +26,62 @@
  */
 
 let aw = null;
-let inst = null;
+let pyodide = null;
+let loading = false;
+
+// NOTE: The pyodide script must be loaded externally and before require.js is loaded.
+//       See https://github.com/pyodide/pyodide/issues/4863
 
 export function init(a) {
     aw = a;
-    inst = new PythonRenderer();
     aw.addRenderer("python", render);
 }
 
+function loadPy(callback) {
+  let suspend_id = null;
+
+  async function load() {
+    console.log("Got pyodide.js.");
+    pyodide = await loadPyodide();
+    console.log("Pyodide loaded.");
+    await pyodide.loadPackage("scipy");
+    console.log("Package scipy loaded");
+    aw.resume(suspend_id);
+    aw.pyodide = pyodide;
+    if (callback) callback();
+  }
+
+  if ((!pyodide) && (!loading)) {
+    suspend_id = aw.suspend('Loading Pyodide.');
+    loading = true;
+    load();
+  }
+};
+
 function render(section) {
-  inst._python(section);
+
+  // Put the content into the textarea
+  let ta = section.showSource(false);
+
+  // Create a div for the execution result
+  var div_result = document.createElement("div");
+  section.div.appendChild(div_result);
+
+  loadPy();
+
+  function wrapper(section) {
+    run(section);
+  }
+
+  section.setFunc(wrapper);
+  section.enqueue();
 }
 
-var pyodide=null; // Make this global so it can be easily accessed from console.
+function run(section) {
 
-var PythonRenderer = function() {
-    this.blocks = {}; // Store the Python scripts so they can be run separately.
-    this.pyodide = null;
-    this.status = null;
-    this.suspend_id = 0;
-};
+  // TODO: Process the inputs.
 
-PythonRenderer.prototype._loadPyodide = function( callback ) {
-    this.status = "Loading pyodide javascript";
+  pyodide.runPython(section.obj.content);
 
-    var that = this;
-
-    var get_js = function (url, callback) {
-        that.status = "Getting Pyodide javascript";
-        var script = document.createElement('script');
-        script.setAttribute('src', url);
-        script.setAttribute('type', 'text/javascript');
-        script.onload = function() {
-            callback();
-        };
-        window.document.head.appendChild(script);
-    };
-
-    var loaded = function() {
-        that.status = "Loaded";
-        pyodide = that.pyodide; // Set the global.
-        aw.resume(that.suspend_id);
-        //callback( [s] );
-    };
-
-    async function got_py_js() {
-        console.log("Got pyodide.js.");
-        that.status = "Loading pyodide";
-        that.pyodide = await loadPyodide();
-        console.log("Pyodide loaded.");
-        that.status = "Loading scipy package";
-        await that.pyodide.loadPackage("scipy");
-        console.log("Package scipy loaded");
-        loaded();
-    }
-
-    got_py_js();
-};
-
-PythonRenderer.prototype._python = function( section_in, callback ) {
-    var obj = section_in.obj;
-    var div = section_in.div;
-    this._textArea( obj.content, div );
-    var sections_out = [];
-
-    var id = obj.id;
-
-    // Store script
-    this.blocks[id] = obj.content;
-    // Create a div for the execution result
-    var div_result = document.createElement("div");
-    div.appendChild(div_result);
-    if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
-
-    // Disable run
-    if (!this.status) {
-      this.suspend_id = aw.suspend('Loading pyodide.');
-    }
-
-    let that = this;
-    function wrapper(section) {
-      that._run(section);
-    }
-
-    section_in.setFunc(wrapper);
-    section_in.enqueue();
-
-    if (!this.status) {
-        this._loadPyodide(callback);
-    }
-
-    //callback( sections_out );
-};
-
-PythonRenderer.prototype._run = function( section_in, callback ) {
-
-    // TODO: Process the inputs.
-
-    var id = section_in.id;
-    var src = this.blocks[id];
-    this.pyodide.runPython(src);
-
-    // TODO: Process the outputs.
-
-    //callback( sections_out );
-};
-
-PythonRenderer.prototype._textArea = function( text, div ) {
-    // Put the text into a textarea
-    var ta = document.createElement("textarea");
-    ta.style.width = "100%";
-    ta.value = text;
-    div.appendChild(ta);
-    ta.style.height = (ta.scrollHeight+8)+"px";
-    return ta
-};
-
+  // TODO: Process the outputs.
+}
