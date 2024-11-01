@@ -60,8 +60,11 @@ function loadPy(callback) {
 
 function render(section) {
 
-  // Put the content into the textarea
-  let ta = section.showSource(false);
+  // Put the content into an editor.
+  let ed = section.showEditor(false, function() {
+    section.obj.content = ed.ta.value;
+    section.enqueue();
+  });
 
   // Create a div for the execution result
   var div_result = document.createElement("div");

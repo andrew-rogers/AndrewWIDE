@@ -102,6 +102,30 @@ class Section {
     }
   }
 
+  showEditor(hidden, callback) {
+
+    // Create controls
+    let controls = new NavBar();
+    let butt_run = document.createElement("button");
+    butt_run.innerHTML="Run";
+    controls.addRight(butt_run);
+    controls.elem.hidden = true;
+    this.div.appendChild(controls.elem);
+
+    // Create text area
+    let ta = {};
+    if (this.obj.hasOwnProperty("hidden")) hidden = this.obj.hidden;
+    if (!hidden) ta = this.#textarea();
+
+    // Define event handler functions.
+    butt_run.onclick = function() {
+      if (callback) callback();
+    }
+    ta.oninput = function() {controls.elem.hidden = false;};
+
+    return {controls,ta};
+  }
+
   showSource(hidden) {
     let ta = {};
     if (this.obj.hasOwnProperty("hidden")) hidden = this.obj.hidden;

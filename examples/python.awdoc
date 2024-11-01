@@ -6,12 +6,23 @@ Running Python code in AndrewWIDE
 Loading the Python packages and the imports are very slow, please be patient! Results are sent to the console and are not yet displayed in the page.
 
 AW{"type":"python"}
-    from scipy.signal import butter
-    sos=butter(2,0.15,output='sos')
-    print(sos)
+from scipy.signal import butter, sosfreqz
+import numpy as np
+
+sos=butter(2,0.15,output='sos')
+w, h = sosfreqz(sos)
+w = w / np.pi
+mag = np.abs(h)
+
 
 AW{"type":"python"}
-    sos=butter(2,0.15,btype='high', output='sos')
-    print(sos)
+sos=butter(2,0.15,btype='high', output='sos')
+print(sos)
 
+AW{"type":"mjmd"}
+Variables defined in Python can be accessed from javascript.
 
+AW{"type":"javascript"}
+let mag = AndrewWIDE.pyodide.globals.get('mag').toJs();
+let w = AndrewWIDE.pyodide.globals.get('w').toJs();
+AndrewWIDE.plot(w, mag);

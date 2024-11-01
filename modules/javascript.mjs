@@ -69,30 +69,17 @@ function render(section) {
 
     let func = Function("funcs", hdr_src + section.obj.content);
 
-    // Create controls
-    let controls = new NavBar();
-    let butt_run = document.createElement("button");
-    butt_run.innerHTML="Run";
-    controls.addRight(butt_run);
-    controls.elem.hidden = true;
-    section.div.appendChild(controls.elem);
+    let ed = section.showEditor(false, function() {
+      // Update source from textarea;
+      func = Function("funcs", hdr_src + ed.ta.value);
 
-    let ta = section.showSource(false);
+      // Queue the run.
+      section.enqueue();
+    });
 
     // Create a div for the execution result
     let div_result = document.createElement("div");
     section.div.appendChild(div_result);
-
-    // Define event handler functions.
-    let that = this;
-    butt_run.onclick = function() {
-        // Update source from textarea;
-        func = Function("funcs", hdr_src + ta.value);
-
-        // Queue the run.
-        section.enqueue();
-    }
-    ta.oninput = function() {controls.elem.hidden = false;};
 
     function wrapper(section){
         div_result.innerHTML="";
