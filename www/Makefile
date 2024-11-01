@@ -25,7 +25,6 @@ SRCS = AwDocViewer.js \
  JsonQuery.js \
  NavBar.js \
  PrintRenderer.js \
- PythonRenderer.js \
  WasmRuntime.js \
  WasmVectors.js \
  XML.js \

@@ -1,6 +1,6 @@
 MODULE = thing
 #DOCS = $(wildcard *.awdoc)
-DOCS = ellip.awdoc Plot.awdoc
+DOCS = ellip.awdoc Plot.awdoc python.awdoc
 
 AW_DIR ?= ..
 WASMDSP_DIR ?= ../../WasmDSP

@@ -25,31 +25,26 @@
  *
  */
 
+let aw = null;
+let inst = null;
+
+export function init(a) {
+    aw = a;
+    inst = new PythonRenderer();
+    aw.addRenderer("python", render);
+}
+
+function render(section) {
+  inst._python(section);
+}
+
 var pyodide=null; // Make this global so it can be easily accessed from console.
 
-var PythonRenderer = function(awdoc_renderer) {
-
-    // Supported message types.
-    this.types = {
-        "python": {},
-        "python_run": {}
-    };
-    awdoc_renderer.registerTypes(this.types, this);
-
+var PythonRenderer = function() {
     this.blocks = {}; // Store the Python scripts so they can be run separately.
     this.pyodide = null;
     this.status = null;
-};
-
-PythonRenderer.prototype.renderSection = function( section_in, callback ) {
-    this.module = section_in.doc.docname.slice(0,-6);
-    var type = section_in.obj.type;
-    if (type == "python") {
-        this._python(section_in, callback);
-    }
-    else if (type == "python_run") {
-        this._run(section_in, callback);
-    }
+    this.suspend_id = 0;
 };
 
 PythonRenderer.prototype._loadPyodide = function( callback ) {
@@ -71,10 +66,8 @@ PythonRenderer.prototype._loadPyodide = function( callback ) {
     var loaded = function() {
         that.status = "Loaded";
         pyodide = that.pyodide; // Set the global.
-        // Enable run
-        var s = {};
-        s.obj = {"type": "run_enable", "name": "python"};
-        callback( [s] );
+        aw.resume(that.suspend_id);
+        //callback( [s] );
     };
 
     async function got_py_js() {
@@ -88,7 +81,7 @@ PythonRenderer.prototype._loadPyodide = function( callback ) {
         loaded();
     }
 
-    get_js("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js", got_py_js);
+    got_py_js();
 };
 
 PythonRenderer.prototype._python = function( section_in, callback ) {
@@ -107,40 +100,36 @@ PythonRenderer.prototype._python = function( section_in, callback ) {
     if (obj.hasOwnProperty("inputs")==false) obj.inputs = [];
 
     // Disable run
-    var s = {"div": div_result, "callback": section_in.callback};
-    s.obj = {"type": "run_disable", "name": "python"};
-    sections_out.push(s);
+    if (!this.status) {
+      this.suspend_id = aw.suspend('Loading pyodide.');
+    }
 
-    // Create a runnable for this python chunk.
-    var s = {"div": div_result, "callback": section_in.callback};
-    s.obj = {"type": "runnable", "id":obj.id, "inputs": obj.inputs, "div":div_result, "run": "python_run"};
-    sections_out.push(s);
+    let that = this;
+    function wrapper(section) {
+      that._run(section);
+    }
 
-    // Queue the run for this python chunk.
-    var s = {}
-    s.obj = {"type": "run", "id": obj.id};
-    sections_out.push(s);
+    section_in.setFunc(wrapper);
+    section_in.enqueue();
 
     if (!this.status) {
         this._loadPyodide(callback);
     }
 
-    callback( sections_out );
+    //callback( sections_out );
 };
 
 PythonRenderer.prototype._run = function( section_in, callback ) {
-    var inputs = section_in.obj.args.inputs;
-    var keys = Object.keys(inputs);
 
     // TODO: Process the inputs.
 
-    var id = section_in.obj.id;
+    var id = section_in.id;
     var src = this.blocks[id];
     this.pyodide.runPython(src);
 
     // TODO: Process the outputs.
 
-    callback( sections_out );
+    //callback( sections_out );
 };
 
 PythonRenderer.prototype._textArea = function( text, div ) {

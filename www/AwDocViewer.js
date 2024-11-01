@@ -85,8 +85,10 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     if (typeof JavaScriptRenderer === 'undefined') scripts.push("JavaScriptRenderer.js");
     if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
     if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
-    if (typeof PythonRenderer === 'undefined') scripts.push("PythonRenderer.js");
     if (typeof DOTRenderer === 'undefined') scripts.push("DOTRenderer.js");
+
+    // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
+    if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
 
     function instantiate_legacy() {
         let awdr = AndrewWIDE.awdr;
@@ -96,7 +98,6 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         awdr.registerRenderer("diagram", new DiagramRenderer());
         new PrintRenderer(awdr);
         var jsr = new JavaScriptRenderer(awdr);
-        var pyr = new PythonRenderer(awdr);
         var dotr = new DOTRenderer(awdr);
         var fi = new FilterInterface(jsr);
         cppwasm.addInterface("filter", fi);
