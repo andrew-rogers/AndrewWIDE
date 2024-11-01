@@ -8,6 +8,7 @@ import * as array from "./array.mjs"
 import * as mono from "./mono.mjs"
 import * as python from "./python.mjs"
 import * as section from "./section.mjs"
+import * as storage from "./storage.mjs"
 import * as wasmdsp from "./wasmdsp.mjs"
 window.AndrewWIDE = window.AndrewWIDE || {};
 AndrewWIDE.wasmjs = AndrewWIDE.wasmjs || {};
@@ -24,4 +25,5 @@ wasmdsp.init(AndrewWIDE);
 mono.init(AndrewWIDE);
 python.init(AndrewWIDE);
 section.init(AndrewWIDE);
+storage.init(AndrewWIDE);
 AndrewWIDE.createSection = section.createSection;

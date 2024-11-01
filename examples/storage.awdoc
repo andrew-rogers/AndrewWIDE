@@ -1,0 +1,19 @@
+AW{"type":"mjmd"}
+
+Storage in AndrewWIDE
+=====================
+
+AW{"type":"javascript"}
+window.fs = AndrewWIDE.storage;
+
+AW{"type":"javascript"}
+let id = AndrewWIDE.suspend('Waiting for file write completion.');
+fs.writeFile('hello.txt','Hello there!', (err) => {
+  console.log(err)
+  AndrewWIDE.resume(id);
+});
+
+AW{"type":"javascript"}
+fs.readFile("hello.txt", function(err, data) {
+  console.log(data);
+});
