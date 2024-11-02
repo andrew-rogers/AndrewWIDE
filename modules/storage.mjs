@@ -52,6 +52,7 @@ class Storage {
         that.#getFileObj(path, (obj) => {
           if (typeof obj === 'string') {
             callback('obj', null);
+            aw.resume(suspend_id);
           }
           else {
             callback(null, obj.content);
@@ -61,6 +62,7 @@ class Storage {
       }
       else {
         callback('error', null);
+        aw.resume(suspend_id);
       }  
     });
   }
@@ -87,10 +89,12 @@ class Storage {
 
         req.onerror = (event) => {
           callback('error');
+          aw.resume(suspend_id);
         };
       }
       else {
         callback('error');
+        aw.resume(suspend_id);
       }
     });
   }

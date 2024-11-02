@@ -23,3 +23,49 @@ AW{"type":"javascript"}
 fs.readFile("hello.txt", function(err, data) {
   console.log(data);
 });
+
+AW{"type":"mjmd"}
+Storing Design Results
+----------------------
+
+An embedded system may easily implement an elliptic filter but would not be required to calculate the coefficients.
+Often the coeeficients are calculated by the designer using tools such as Scipy or GNU/Octave. Starting python and Scipy in AndrewWIDE is slow due to the time it takes for pyodide to load. Using storage it is possible to store the coefficients to avoid unnecesary recalculation.
+
+The stored design is compared againt the design specified below. If the stored design matches then the SOS coeffcients from the stored design are used.
+
+AW{"type":"javascript"}
+window.design = {order: 4, cutoff: 0.35};
+fs.readFile("storage_design.json", function(err, data) {
+  if (data && (data.length>10)) {
+    let obj = JSON.parse(data);
+    if ((obj.order == design.order) && (obj.cutoff == design.cutoff)) {
+      design.sos = obj.sos;
+    }
+  }
+});
+
+AW{"type":"mjmd"}
+If the design does not contain the SOS coefficients then python is started and the design script is run. The design is then stored.
+
+AW{"type":"javascript"}
+let py_script = `
+from scipy.signal import ellip
+sos = ellip(N,1,30,fc,output='sos')
+`;
+
+if(!design.sos) {
+  AndrewWIDE.startPython((py) => {
+    py.globals.set('N', design.order);
+    py.globals.set('fc', design.cutoff);
+    py.runPython(py_script)
+    let sos = py.globals.get('sos').toJs();
+    design.sos = [];
+    for (let si = 0; si < sos.length; si++) {
+      let s = sos[si];
+      for (let ci = 0; ci < s.length; ci ++) design.sos.push(s[ci]);
+    }
+    fs.writeFile('storage_design.json', JSON.stringify(design), (err) => {
+      console.log(err);
+    });
+  });
+}

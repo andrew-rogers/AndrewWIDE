@@ -35,6 +35,7 @@ let loading = false;
 export function init(a) {
     aw = a;
     aw.addRenderer("python", render);
+    aw.startPython = loadPy;
 }
 
 function loadPy(callback) {
@@ -48,7 +49,7 @@ function loadPy(callback) {
     console.log("Package scipy loaded");
     aw.resume(suspend_id);
     aw.pyodide = pyodide;
-    if (callback) callback();
+    if (callback) callback(pyodide);
   }
 
   if ((!pyodide) && (!loading)) {
