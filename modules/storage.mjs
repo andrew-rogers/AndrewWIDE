@@ -45,6 +45,7 @@ class Storage {
   // https://nodejs.org/api/fs.html#fsreadfilepath-options-callback
   readFile(path, options, callback) {
     if (typeof callback === 'undefined') callback = options;
+    let suspend_id = aw.suspend('Reading file: ' + path);
     let that = this;
     that.#openDB(function() {
       if (that.db) {
@@ -54,6 +55,7 @@ class Storage {
           }
           else {
             callback(null, obj.content);
+            aw.resume(suspend_id);
           }
         });
       }
@@ -66,6 +68,7 @@ class Storage {
   // https://nodejs.org/api/fs.html#fswritefilefile-data-options-callback
   writeFile(file, data, options, callback) {
     if (typeof callback === 'undefined') callback = options;
+    let suspend_id = aw.suspend('Writing file: ' + file);
     let that = this;
     that.#openDB(function() {
       if (that.db) {
@@ -75,10 +78,11 @@ class Storage {
         obj.path = file;
 
         const key = obj.path;
-        const req = os.add(obj, key);
+        const req = os.put(obj, key);
 
         req.onsuccess = (event) => {
           callback('success');
+          aw.resume(suspend_id);
         };
 
         req.onerror = (event) => {
@@ -124,7 +128,10 @@ class Storage {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        const objectStore = db.createObjectStore('files');
+        db.createObjectStore('cache');
+        db.createObjectStore('files');
+        db.createObjectStore('settings');
+        db.createObjectStore('scripts');
       };
 
       request.onerror = (event) => {

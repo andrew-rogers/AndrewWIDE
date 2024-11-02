@@ -6,12 +6,18 @@ Storage in AndrewWIDE
 AW{"type":"javascript"}
 window.fs = AndrewWIDE.storage;
 
+AW{"type":"mjmd"}
+Writing a File
+--------------
+
 AW{"type":"javascript"}
-let id = AndrewWIDE.suspend('Waiting for file write completion.');
 fs.writeFile('hello.txt','Hello there!', (err) => {
   console.log(err)
-  AndrewWIDE.resume(id);
 });
+
+AW{"type":"mjmd"}
+Reading a File
+--------------
 
 AW{"type":"javascript"}
 fs.readFile("hello.txt", function(err, data) {
