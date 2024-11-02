@@ -27,7 +27,6 @@
 
 let aw = null;
 let pyodide = null;
-let loading = false;
 
 // NOTE: The pyodide script must be loaded externally and before require.js is loaded.
 //       See https://github.com/pyodide/pyodide/issues/4863
@@ -52,10 +51,12 @@ function loadPy(callback) {
     if (callback) callback(pyodide);
   }
 
-  if ((!pyodide) && (!loading)) {
+  if (!pyodide) {
     suspend_id = aw.suspend('Loading Pyodide.');
-    loading = true;
     load();
+  }
+  else {
+    if (callback) callback(pyodide);
   }
 };
 
@@ -71,8 +72,6 @@ function render(section) {
   var div_result = document.createElement("div");
   section.div.appendChild(div_result);
 
-  loadPy();
-
   function wrapper(section) {
     run(section);
   }
@@ -82,10 +81,7 @@ function render(section) {
 }
 
 function run(section) {
-
-  // TODO: Process the inputs.
-
-  pyodide.runPython(section.obj.content);
-
-  // TODO: Process the outputs.
+  loadPy((py) => {
+    py.runPython(section.obj.content);
+  });
 }
