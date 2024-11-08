@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+  </head>
+  <body>
+    <script>
+(function () {
+    let name = 'AndrewWIDE.js';
+    let urls = [name, 'http://andrew-rogers.github.io/AndrewWIDE/javascripts/' + name];
+    let cnt = 0;
+
+    function load() {
+        let script = document.createElement('script');
+        let url = urls[cnt];
+        script.setAttribute('src', url);
+        script.setAttribute('type', 'text/javascript');
+        script.onload = function() {
+            console.log("Got '" + name + "' from '" + url + "'");
+            new AwDocViewer( "serverless" );
+        };
+        script.onerror = function(e) {
+            cnt++;
+            if (cnt<urls.length) load();
+            else console.log("Can't load " + name);
+        };
+        document.head.appendChild(script);
+    }
+    load();
+})();
+    </script>
+  </body>
+</html>

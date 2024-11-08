@@ -27,6 +27,18 @@
 
 window.AndrewWIDE = window.AndrewWIDE || {};
 
+AndrewWIDE.saveDoc = function(path, callback) {
+  const tas = document.getElementsByClassName('awjson');
+  let obj = {};
+  for (let i=0; i<tas.length; i++) {
+    const ta = tas[i];
+    obj[ta.id] = ta.value;
+  }
+  AndrewWIDE.storage.writeFile(path, JSON.stringify(obj), (err) => {
+    if (callback) callback(err);
+  });
+};
+
 function AsyncLoader() {
     this.cnt = 0;
     this.urls = [];
@@ -147,14 +159,20 @@ AwDocViewer.prototype._registerModules = function(m) {
 
 AwDocViewer.prototype._renderFromHTML = function( fn ) {
     this.serverless = true;
+    let that = this;
     this._instantiateRenderers( function() {
         var awdr = AndrewWIDE.awdr;
         awdr.setServerless();
         const tas = document.getElementsByClassName('awjson');
         if (tas.length == 0) {
             var ta_cache = document.getElementById("ta_cache");
-            awdr.cache.fromObj(JSON.parse(ta_cache.value));
-            awdr.render(ta_awjson.value);
+            if (ta_cache) {
+              awdr.cache.fromObj(JSON.parse(ta_cache.value));
+              awdr.render(ta_awjson.value);
+            }
+            else {
+              that._renderFromStorage(fn);
+            }
         }
         for (let i=0; i<tas.length; i++) {
             const ta = tas[i];
@@ -165,6 +183,22 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
             }
         }
     });
+};
+
+AwDocViewer.prototype._renderFromStorage = function( fn ) {
+  var fn = window.location.search;
+  if (fn.startsWith("?idbs=")) {
+    var fn = decodeURIComponent(fn.slice(6));
+    AndrewWIDE.storage.readFile(fn, (err,data) => {
+      let awjson = JSON.parse(data);
+      for (let key in awjson) {
+        AndrewWIDE.awdr.render(awjson[key]);
+      }
+    });
+  }
+  else {
+    console.log("Unable to find AwJson data.");
+  }
 };
 
 AwDocViewer.prototype._requireModules = function( callback ) {
