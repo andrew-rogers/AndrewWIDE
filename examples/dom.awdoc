@@ -1,0 +1,26 @@
+AW{"type":"mjmd"}
+
+Accessing the Document Object Model (DOM)
+=========================================
+
+In AndrewWIDE JavaScript code is not executed in a WebWorker and thus can access the [DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model) of the page. A new HTML div element is added to the top of the page using the code below:
+
+AW{"type":"javascript"}
+window.doc = window.doc || {}; // Create doc to store our bits in.
+doc.div = document.createElement('div');
+document.body.firstChild.before(doc.div);
+
+AW{"type":"mjmd"}
+Hyperlinks can be added to the div. The example below provides a hyperlink for openning each awdoc in the IndexedDB storage.
+
+AW{"type":"javascript"}
+AndrewWIDE.storage.readdir('', (err, files) => {
+  let html = '';
+  for (let i in files) {
+    if (files[i].endsWith('.awdoc')) {
+      let fn = encodeURIComponent(files[i]);
+      html += `<a href="AndrewWIDE.html?idbs=${fn}" target="_blank">Open ${files[i]} in a new tab</a><br>`;
+    }
+  }
+  doc.div.innerHTML = html;
+});
