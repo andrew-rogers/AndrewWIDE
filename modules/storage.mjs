@@ -42,6 +42,48 @@ class Storage {
     return indexedDB.databases();
   }
 
+  // https://nodejs.org/api/fs.html#fsreaddirpath-options-callback
+  readdir(path, options, callback) {
+    if (typeof callback === 'undefined') callback = options;
+    let suspend_id = aw.suspend('Reading directory: ' + path);
+    if(path && !path.endsWith('/')) path = path + '/';
+    let files = [];
+    let that = this;
+    that.#openDB(function() {
+      if (that.db) {
+        const os = that.db.transaction('files','readonly').objectStore('files');
+        const req = os.openCursor();
+
+        req.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (!cursor) {
+            callback(null, files);
+            aw.resume(suspend_id);
+          }
+          else {
+            let cpath = cursor.value.path;
+            if (cpath.startsWith(path)) {
+              let fn = cpath.slice(path.length);
+              // TODO: Don't include files in subdirectories.
+              files.push(fn);
+            }
+
+            cursor.continue();
+          }
+        };
+
+        req.onerror = (event) => {
+          callback('error',files);
+          aw.resume(suspend_id);
+        };
+      }
+      else {
+        callback('error', null);
+        aw.resume(suspend_id);
+      }
+    });
+  }
+
   // https://nodejs.org/api/fs.html#fsreadfilepath-options-callback
   readFile(path, options, callback) {
     if (typeof callback === 'undefined') callback = options;
