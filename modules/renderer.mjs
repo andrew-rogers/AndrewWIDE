@@ -164,8 +164,6 @@ export function AwDocRenderer(docname, div) {
     }
 
     this.attributes = {};
-    this.aw_json = []; // Used to store all document objects for download.
-    this.aw_objs = {}; // Dictionary of AwObjects keyed by id.
     this.div = div;
     this.renderers = {};
     var that = this;
@@ -173,9 +171,6 @@ export function AwDocRenderer(docname, div) {
     this.cnt = 1;
     this.suspend_cnt = 0;
     this.runnable = new Runnable(this);
-    this.renderers["array"] = this;
-    this.renderers["json"] = this;
-    this.renderers["log"] = this;
     this.async = [];
 
     // Provide a URL for this doc. User can open it and bookmark it for quicker access.
@@ -219,25 +214,9 @@ export function AwDocRenderer(docname, div) {
     }
 }
 
-AwDocRenderer.prototype.loadScriptsSeq = function ( urls, callback ) {
-
-    var cnt = 0;
-
-    function loaded() {
-        cnt = cnt + 1;
-        if (cnt < urls.length) next();
-        else if (callback) callback();
-    }
-
-    function next() {
-        var script = document.createElement('script');
-        script.setAttribute('src', urls[cnt]);
-        script.setAttribute('type', 'text/javascript');
-        script.onload = loaded;
-        document.head.appendChild(script);
-    }
-
-    next();
+AwDocRenderer.prototype.log = function(msg) {
+  this.ta_log.value += msg;
+  this.ta_log.hidden = false;
 };
 
 AwDocRenderer.prototype.postSections = function( sections ) {
@@ -258,20 +237,6 @@ AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
     this.renderers[name]=renderer;
 };
 
-AwDocRenderer.prototype.registerType = function( name, attributes, func ) {
-    this.renderers[name] = func;
-    this.attributes[name] = attributes;
-};
-
-AwDocRenderer.prototype.registerTypes = function( types, renderer ) {
-    var keys = Object.keys(types);
-    for (var i=0; i<keys.length; i++) {
-        var name = keys[i];
-        this.renderers[name] = renderer;
-        this.attributes[name] = types[name];
-    }
-};
-
 AwDocRenderer.prototype.render = function( awdoc ) {
     // Disable running all runnable sections until all sections dispatched. This is to allow asynchronous compilation of code to
     // complete before potential dependencies are run.
@@ -281,34 +246,10 @@ AwDocRenderer.prototype.render = function( awdoc ) {
     for (var i=0; i<doc.length; i++) {
         let section = AndrewWIDE.createSection(doc[i]);
         section.obj.id = section.id;
-        this._render(section)
+        this._dispatch(section)
     }
 
     AndrewWIDE.resume( id );
-};
-
-AwDocRenderer.prototype.renderObj = function( obj, div, callback ) {
-    var type = obj.type;
-    if (type == "array") {
-        div.innerHTML="";
-        var sections = [];
-        for (var i=0; i<obj.array.length; i++) {
-            var new_div = document.createElement("div");
-            if (obj.array[i]["hidden"]==true) new_div.hidden = true;
-            div.appendChild(new_div);
-            this.aw_objs[obj.array[i].id] = obj.array[i];
-            sections.push({"obj":obj.array[i], "div": new_div, "callback": callback});
-        }
-        this.renderSections(sections);
-    }
-    else if (type == "json") {
-        var new_obj = JSON.parse(obj.content);
-        this.post( { "type":"array", "array":new_obj }, div, callback);
-    }
-    else if (type == "log") {
-        this.ta_log.value += obj.msg;
-        this.ta_log.hidden = false;
-    }
 };
 
 AwDocRenderer.prototype.renderSections = function ( sections ) {
@@ -328,29 +269,10 @@ AwDocRenderer.prototype.setServerless = function ( ) {
 };
 
 AwDocRenderer.prototype._dispatch = function(section) {
-    section.doc = this.doc; // Document globals.
-    this._dispatchRenderer(section);
-};
-
-AwDocRenderer.prototype._dispatchRenderer = function(section) {
     var renderer_name = section.obj.type;
     if (this.renderers.hasOwnProperty(renderer_name)) {
         var renderer = this.renderers[renderer_name];
-        if (typeof renderer.renderSection === 'function') {
-            var that = this;
-            renderer.renderSection( section, function(sections_out) {
-                that.postSections( sections_out );
-            });
-        }
-        else if (typeof renderer.renderObj === 'function'){
-            renderer.renderObj( section.obj, section.div, section.callback );
-        }
-        else {
-            var that = this;
-            renderer( section, function(section_out) {
-                that.renderSections(section_out);
-            });
-        }
+        renderer(section);
     }
     else {
         var ta = document.createElement("textarea");
@@ -396,17 +318,6 @@ export function createHTML(textareas) {
     html += "\t</body>\n</html>\n";
     return html
 }
-
-AwDocRenderer.prototype._render = function(section) {
-
-    let obj = section.obj;
-
-    // Store for creating serverless page later.
-    this.aw_json.push(obj);
-    this.aw_objs[obj.id] = obj;
-
-    this._dispatch(section);
-};
 
 function Runnable(awdr) {
     this.awdr = awdr;

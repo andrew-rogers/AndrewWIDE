@@ -79,6 +79,27 @@ function AwDocViewer( docname ) {
     AndrewWIDE.docname = this.docname;
 }
 
+AwDocViewer.prototype.loadScriptsSeq = function ( urls, callback ) {
+
+    var cnt = 0;
+
+    function loaded() {
+        cnt = cnt + 1;
+        if (cnt < urls.length) next();
+        else if (callback) callback();
+    }
+
+    function next() {
+        var script = document.createElement('script');
+        script.setAttribute('src', urls[cnt]);
+        script.setAttribute('type', 'text/javascript');
+        script.onload = loaded;
+        document.head.appendChild(script);
+    }
+
+    next();
+};
+
 AwDocViewer.prototype._disableDrop = function () {
     // Prevent dropped files being openned in new browser tabs.
     window.addEventListener("dragover",function(e){
@@ -93,14 +114,16 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     var that = this;
     var scripts = [];
     if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
-    if (typeof FilterInterface === 'undefined') scripts.push("DSPInterfaces.js");
-    if (typeof JavaScriptRenderer === 'undefined') scripts.push("JavaScriptRenderer.js");
     if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
     if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
-    if (typeof DOTRenderer === 'undefined') scripts.push("DOTRenderer.js");
 
     // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
     if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
+
+    const d3scripts = ["https://d3js.org/d3.v5.min.js",
+      "https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js",
+      "https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"
+    ];
 
     function instantiate_legacy() {
         let awdr = AndrewWIDE.awdr;
@@ -109,15 +132,13 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
         awdr.registerRenderer("awcppwasm", cppwasm);
         awdr.registerRenderer("diagram", new DiagramRenderer());
         new PrintRenderer(awdr);
-        var jsr = new JavaScriptRenderer(awdr);
-        var dotr = new DOTRenderer(awdr);
-        var fi = new FilterInterface(jsr);
-        cppwasm.addInterface("filter", fi);
         callback();
     }
 
     asyncLoader.onload = function() {
-        that._requireModules(instantiate_legacy);
+        that.loadScriptsSeq(d3scripts, () => {
+          that._requireModules(instantiate_legacy);
+        });
     };
     asyncLoader.load( scripts );
 };

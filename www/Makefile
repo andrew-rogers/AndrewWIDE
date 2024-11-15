@@ -13,7 +13,6 @@ endif
 # AwDocViewer Must be first, it has the AsyncLoader.
 SRCS = AwDocViewer.js \
  AwCppWasmRenderer.js \
- DOTRenderer.js \
  DSPInterfaces.js \
  Diagram/Geometry.js \
  Diagram/Plot/Plot.js \
@@ -21,7 +20,6 @@ SRCS = AwDocViewer.js \
  Diagram/SvgFigure.js \
  DiagramRenderer.js \
  FileSystem.js \
- JavaScriptRenderer.js \
  JsonQuery.js \
  NavBar.js \
  PrintRenderer.js \
