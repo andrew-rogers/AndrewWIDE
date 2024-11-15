@@ -79,27 +79,6 @@ function AwDocViewer( docname ) {
     AndrewWIDE.docname = this.docname;
 }
 
-AwDocViewer.prototype.loadScriptsSeq = function ( urls, callback ) {
-
-    var cnt = 0;
-
-    function loaded() {
-        cnt = cnt + 1;
-        if (cnt < urls.length) next();
-        else if (callback) callback();
-    }
-
-    function next() {
-        var script = document.createElement('script');
-        script.setAttribute('src', urls[cnt]);
-        script.setAttribute('type', 'text/javascript');
-        script.onload = loaded;
-        document.head.appendChild(script);
-    }
-
-    next();
-};
-
 AwDocViewer.prototype._disableDrop = function () {
     // Prevent dropped files being openned in new browser tabs.
     window.addEventListener("dragover",function(e){
@@ -119,11 +98,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
 
     // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
     if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
-
-    const d3scripts = ["https://d3js.org/d3.v5.min.js",
-      "https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js",
-      "https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"
-    ];
+    if (typeof window['@hpcc-js/wasm'] == 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
 
     function instantiate_legacy() {
         let awdr = AndrewWIDE.awdr;
@@ -136,9 +111,7 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
     }
 
     asyncLoader.onload = function() {
-        that.loadScriptsSeq(d3scripts, () => {
-          that._requireModules(instantiate_legacy);
-        });
+        that._requireModules(instantiate_legacy);
     };
     asyncLoader.load( scripts );
 };

@@ -26,16 +26,18 @@
  */
 
 let aw = null;
+let hpcc = null;
 
 export function init(a) {
   aw = a;
   aw.addRenderer("dot", draw);
+  hpcc = window["@hpcc-js/wasm"] || null;
 }
 
 function draw(section) {
-  var d3_div = d3.create("div");
-  var div = d3_div.node();
-  section.div.appendChild(div);
-  div.style['text-align'] = 'center';
-  d3_div.graphviz().renderDot(section.obj.content);
+  var dot = section.obj.content;
+  hpcc.graphviz.dot(dot).then((svg)=>{
+    section.div.style['text-align'] = 'center';
+    section.div.innerHTML = svg;
+  });
 }
