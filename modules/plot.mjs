@@ -27,18 +27,18 @@
 
 import * as plotly from "https://cdn.plot.ly/plotly-2.12.1.min.js"
 
-export let aw = {}; // AndrewWIDE will set elements in the aw object to allow this module to access global functionality.
-export let types = {plot: render}
+let aw = null;
+
+export function init(a) {
+  aw = a;
+  aw.addRenderer("plot", render);
+}
 
 function render( section ) {
-    var obj = section.obj;
-    var type = obj.type;
-
-    if (type == "plot") {
-        var layout = obj["layout"] || {};
-        if (obj["xlabel"]) layout["xaxis"] = {"title": obj.xlabel};
-        if (obj["ylabel"]) layout["yaxis"] = {"title": obj.ylabel};
-        plotly.newPlot(section.div, obj.data, layout);
-    }
+  var obj = section.obj;
+  var layout = obj["layout"] || {};
+  if (obj["xlabel"]) layout["xaxis"] = {"title": obj.xlabel};
+  if (obj["ylabel"]) layout["yaxis"] = {"title": obj.ylabel};
+  plotly.newPlot(section.div, obj.data, layout);
 };
 

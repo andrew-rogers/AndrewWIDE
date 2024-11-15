@@ -27,6 +27,27 @@
 
 window.AndrewWIDE = window.AndrewWIDE || {};
 
+AndrewWIDE.loadScripts = function(urls, callback) {
+  let cnt = 0;
+  for (var i=0; i<urls.length; i++) {
+    var script = document.createElement('script');
+    script.setAttribute('src', urls[i]);
+    script.setAttribute('type', 'text/javascript');
+    script.onload = function() {
+      cnt = cnt + 1;
+      if (cnt == urls.length) {
+        if (callback) callback();
+      }
+    };
+    document.head.appendChild(script);
+  }
+
+  // Do additional check in case urls is empty array.
+  if (cnt == urls.length) {
+    if (callback) callback();
+  }
+};
+
 AndrewWIDE.saveDoc = function(path, callback) {
   const tas = document.getElementsByClassName('awjson');
   let obj = {};
@@ -38,36 +59,6 @@ AndrewWIDE.saveDoc = function(path, callback) {
     if (callback) callback(err);
   });
 };
-
-function AsyncLoader() {
-    this.cnt = 0;
-    this.urls = [];
-    this.onload = null;
-}
-
-AsyncLoader.prototype.load = function ( urls ) {
-    for (var i=0; i<urls.length; i++) {
-        this.urls.push(urls[i]);
-        var script = document.createElement('script');
-        script.setAttribute('src', urls[i]);
-        script.setAttribute('type', 'text/javascript');
-        var that = this;
-        script.onload = function() {
-            that.cnt = that.cnt + 1;
-            if (that.cnt == that.urls.length) {
-                if (that.onload()) that.onload();
-            }
-        };
-        document.head.appendChild(script);
-    }
-
-    // Do additional check incase urls is empty array.
-    if (this.cnt == this.urls.length) {
-        if (this.onload()) this.onload();
-    }
-};
-
-var asyncLoader = new AsyncLoader();
 
 function AwDocViewer( docname ) {
     this.docname = docname;
@@ -90,30 +81,29 @@ AwDocViewer.prototype._disableDrop = function () {
 };
 
 AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
-    var that = this;
-    var scripts = [];
-    if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
-    if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
-    if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
+  var that = this;
+  var scripts = [];
+  if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
+  if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
+  if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
 
-    // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
-    if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
-    if (typeof window['@hpcc-js/wasm'] == 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
+  // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
+  if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
+  if (typeof window['@hpcc-js/wasm'] == 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
 
-    function instantiate_legacy() {
-        let awdr = AndrewWIDE.awdr;
-        var cppwasm = new AwCppWasmRenderer(awdr);
-        if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
-        awdr.registerRenderer("awcppwasm", cppwasm);
-        awdr.registerRenderer("diagram", new DiagramRenderer());
-        new PrintRenderer(awdr);
-        callback();
-    }
+  function instantiate_legacy() {
+    let awdr = AndrewWIDE.awdr;
+    var cppwasm = new AwCppWasmRenderer(awdr);
+    if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
+    awdr.registerRenderer("awcppwasm", cppwasm);
+    awdr.registerRenderer("diagram", new DiagramRenderer());
+    new PrintRenderer(awdr);
+      callback();
+  }
 
-    asyncLoader.onload = function() {
-        that._requireModules(instantiate_legacy);
-    };
-    asyncLoader.load( scripts );
+  AndrewWIDE.loadScripts(scripts, () => {
+    that._requireModules(instantiate_legacy);
+  });
 };
 
 AwDocViewer.prototype._openDoc = function( fn ) {
@@ -124,31 +114,6 @@ AwDocViewer.prototype._openDoc = function( fn ) {
             AndrewWIDE.awdr.render(content);
         });
     });
-};
-
-AwDocViewer.prototype._registerModules = function(m) {
-    let renderers = AndrewWIDE.awdr.renderers;
-
-    function registerTypes(types) {
-        let keys = Object.keys(types);
-        for (let i=0; i<keys.length; i++) {
-            let name = keys[i];
-            renderers[name] = function(section) {
-                types[name](section);
-                // TODO: The module will add a run() function to the section object. Create a Runnable that calls it.
-            };
-        }
-    }
-
-    let keys = Object.keys(m);
-    for (let i=0; i<keys.length; i++) {
-        let module = m[keys[i]];
-        module.aw.render = function(obj, div) {
-            AndrewWIDE.awdr.post(obj, div);
-        };
-        let types = module.types;
-        registerTypes(types);
-    }
 };
 
 AwDocViewer.prototype._renderFromHTML = function( fn ) {
@@ -204,7 +169,6 @@ AwDocViewer.prototype._requireModules = function( callback ) {
     script.onload = function() {
         require(urls, function() {
             AndrewWIDE.modules = require("./modules");
-            that._registerModules(AndrewWIDE.modules);
             if (callback) callback();
         });
     };

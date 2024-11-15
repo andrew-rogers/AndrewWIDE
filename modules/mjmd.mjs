@@ -28,8 +28,12 @@
 import "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"
 import {marked} from "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js"
 
-export let aw = {}; // AndrewWIDE will set elements in the aw object to allow this module to access global functionality.
-export let types = {mjmd: render}
+let aw = null;
+
+export function init(a) {
+    aw = a;
+    aw.addRenderer("mjmd", render);
+}
 
 MathJax.Hub.Config({
     tex2jax: {
