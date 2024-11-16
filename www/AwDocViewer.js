@@ -100,58 +100,43 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
   });
 };
 
-AwDocViewer.prototype._openDoc = function( fn ) {
-    this.docname = fn;
-    var that = this;
-    this._instantiateRenderers( function() {
-        FileSystem.readFile(fn, function( err, content ) {
-            AndrewWIDE.awdr.render(content);
-        });
-    });
-};
-
 AwDocViewer.prototype._renderFromHTML = function( fn ) {
     this.serverless = true;
     let that = this;
     this._instantiateRenderers( function() {
         var awdr = AndrewWIDE.awdr;
-        awdr.setServerless();
+        let obj = {};
         const tas = document.getElementsByClassName('awjson');
         if (tas.length == 0) {
-            var ta_cache = document.getElementById("ta_cache");
-            if (ta_cache) {
-              awdr.cache.fromObj(JSON.parse(ta_cache.value));
-              awdr.render(ta_awjson.value);
-            }
-            else {
-              that._renderFromStorage(fn);
-            }
+            that._renderFromStorage(fn);
         }
         for (let i=0; i<tas.length; i++) {
             const ta = tas[i];
-            if (ta.id == "ta_cache") {
-                awdr.cache.fromObj(JSON.parse(ta.value));
-            } else {
-                awdr.render(tas[i].value);
-            }
+            obj[ta.id] = ta.value;
         }
+        that._renderObj(obj);
     });
 };
 
 AwDocViewer.prototype._renderFromStorage = function( fn ) {
   var fn = window.location.search;
+  let that = this;
   if (fn.startsWith("?idbs=")) {
     var fn = decodeURIComponent(fn.slice(6));
     AndrewWIDE.storage.readFile(fn, (err,data) => {
-      let awjson = JSON.parse(data);
-      for (let key in awjson) {
-        AndrewWIDE.awdr.render(awjson[key]);
-      }
+      let obj = JSON.parse(data);
+      that._renderObj(obj);
     });
   }
   else {
     console.log("Unable to find AwJson data.");
   }
+};
+
+AwDocViewer.prototype._renderObj = function(obj) {
+  let div=document.createElement("div");
+  document.body.appendChild(div);
+  AndrewWIDE.createDoc(div, obj);
 };
 
 AwDocViewer.prototype._requireModules = function( callback ) {
@@ -168,23 +153,3 @@ AwDocViewer.prototype._requireModules = function( callback ) {
     };
     document.head.appendChild(script);
 };
-
-AwDocViewer.prototype._selectDoc = function( fn ) {
-    var fn = window.location.search;
-    if (fn.startsWith("?file=")) {
-        // Get filename from URL query.
-        var fn = decodeURIComponent(fn.slice(6));
-        this._openDoc(fn);
-    }
-    else {
-        // Create a fileselector to get filename from user.
-        div=document.createElement("div");
-        document.body.appendChild(div);
-        var fs = new FileSelector(div, FileSystem.list);
-        var that = this;
-        fs.show(function(fn){
-            that._openDoc(fn);
-        });
-    }
-};
-

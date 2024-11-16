@@ -153,48 +153,40 @@ Queue.prototype._schedule = function () {
   }
 };
 
-export function AwDocRenderer(docname, div) {
-    this.doc = {"docname": docname};
-    this.docname = docname;
-    if(div){
-        div=div;
-    } else{
-        div=document.createElement("div");
-        document.body.appendChild(div);
-    }
-
-    this.attributes = {};
+class AwDoc {
+  constructor(div, obj) {
     this.div = div;
-    this.renderers = {};
-    var that = this;
-
-    this.cnt = 1;
-    this.suspend_cnt = 0;
-    this.runnable = new Runnable(this);
-    this.async = [];
-
-    // Provide a URL for this doc. User can open it and bookmark it for quicker access.
-    this.url_link = document.createElement("a");
-    this.url_link.href = "AwDocViewer.html?file=" + encodeURIComponent(docname);
-    this.url_link.innerHTML = docname;
-    div.appendChild(this.url_link);
-    var tn = document.createTextNode(" ");
-    div.appendChild(tn);
-
-    // Make download link for serverless doc but hide for now.
-    this.serverless = false;
-    this.download_link = document.createElement("a");
-    this.download_link.hidden = true;
-    div.appendChild(this.download_link);
+    this.obj = obj || {};
 
     // Textarea for displaying log.
     this.ta_log = document.createElement("textarea");
     this.ta_log.style.width = "100%";
     this.ta_log.hidden = true;
     div.appendChild(this.ta_log);
+  }
+}
+
+export function AwDocRenderer(docname) {
+
+    this.attributes = {};
+    this.docs = [];
+    this.renderers = {};
+    var that = this;
+
+    this.cnt = 1;
+    this.suspend_cnt = 0;
+    this.runnable = new Runnable(this);
 
     // Export suspend and resume functions
     var that = this;
+    AndrewWIDE.createDoc = function(div, obj) {
+      that.div = div;
+      let doc = new AwDoc(div, obj);
+      that.docs.push(doc);
+      for (let key in obj) {
+        that.render(obj[key]);
+      }
+    };
     AndrewWIDE.suspend = function(reason){
         let id = that.suspend_cnt;
         let name = "suspend_" + id;
@@ -221,16 +213,6 @@ AwDocRenderer.prototype.log = function(msg) {
 
 AwDocRenderer.prototype.postSections = function( sections ) {
     this.renderSections( sections );
-};
-
-AwDocRenderer.prototype.post = function ( obj, div, callback ) {
-    this._dispatch({"obj":obj, "div":div, "callback":callback});
-};
-
-AwDocRenderer.prototype.registerAsync = function( renderer ) {
-    var id = this.async.length;
-    this.async.push( {"done": false} );
-    return id;
 };
 
 AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
@@ -261,11 +243,6 @@ AwDocRenderer.prototype.renderSections = function ( sections ) {
     else {
         this._dispatch(sections);
     }
-};
-
-AwDocRenderer.prototype.setServerless = function ( ) {
-    this.serverless = true;
-    this.url_link.hidden = true;
 };
 
 AwDocRenderer.prototype._dispatch = function(section) {
