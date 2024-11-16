@@ -88,15 +88,8 @@ AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
   if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
   if (typeof window['@hpcc-js/wasm'] === 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
 
-  function instantiate_legacy() {
-    let awdr = AndrewWIDE.awdr;
-    if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
-    awdr.registerRenderer("diagram", new DiagramRenderer());
-    callback();
-  }
-
   AndrewWIDE.loadScripts(scripts, () => {
-    that._requireModules(instantiate_legacy);
+    that._requireModules(callback);
   });
 };
 
@@ -104,7 +97,6 @@ AwDocViewer.prototype._renderFromHTML = function( fn ) {
     this.serverless = true;
     let that = this;
     this._instantiateRenderers( function() {
-        var awdr = AndrewWIDE.awdr;
         let obj = {};
         const tas = document.getElementsByClassName('awjson');
         if (tas.length == 0) {

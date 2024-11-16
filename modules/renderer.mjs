@@ -25,6 +25,30 @@
  *
  */
 
+let aw = null;
+
+export function init(a) {
+  aw = a;
+  let awdr = new AwDocRenderer();
+  let seq = new Sequencer();
+
+  aw.addRenderer = function(type, func) {
+    awdr.renderers[type] = func;
+  };
+
+  aw.queueRun = function(section) {
+    seq.queueRun(section);
+  };
+
+  aw.resume = function(id){
+    seq.resume(id);
+  };
+
+  aw.suspend = function(reason) {
+    return seq.suspend(reason);
+  };
+}
+
 export function parseAwDoc( awdoc ) {
 
     let ret = [];
@@ -201,12 +225,11 @@ class AwDoc {
   }
 }
 
-export function AwDocRenderer(docname) {
+export function AwDocRenderer() {
 
     this.docs = [];
     this.renderers = {};
     var that = this;
-    new Sequencer();
 
     // Export suspend and resume functions
     var that = this;
@@ -311,46 +334,29 @@ export function createHTML(textareas) {
 
 class Sequencer {
   constructor() {
-    this.runnable = new Runnable();
     this.suspend_cnt = 0;
-
-    // Export suspend and resume functions
-    let that = this;
-    AndrewWIDE.suspend = function(reason){
-      let id = that.suspend_cnt;
-      let name = "suspend_" + id;
-      that.suspend_cnt++;
-      that.runnable._disable(name);
-      return id;
-    };
-    AndrewWIDE.resume = function(id){
-      let name = "suspend_" + id;
-      that.runnable._enable(name);
-    };
-    AndrewWIDE.queueRun = function(section) {
-      that.runnable._run(section);
-    }
-  }
-}
-
-function Runnable() {
     this.disables={}; // If any items in this object are true, running is disabled and queued for later.
-
     this.queue = new Queue(function(section) {
       section.func(section);
     });
-}
+  }
 
-Runnable.prototype._disable = function (name) {
-    this.disables[name] = true;
-    this.queue.disableDispatch();
-};
+  queueRun(section) {
+    if (section.func) this.queue.post(section);
+  }
 
-Runnable.prototype._enable = function (name) {
+  resume(id) {
+    let name = "suspend_" + id;
     delete this.disables[name];
     if (Object.keys(this.disables).length == 0) this.queue.enableDispatch();
-};
+  }
 
-Runnable.prototype._run = function (section) {
-    if (section.func) this.queue.post(section);
-};
+  suspend(reason) {
+    let id = this.suspend_cnt;
+    let name = "suspend_" + id;
+    this.suspend_cnt++;
+    this.disables[name] = true;
+    this.queue.disableDispatch();
+    return id;
+  }
+}
