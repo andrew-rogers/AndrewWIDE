@@ -83,22 +83,16 @@ AwDocViewer.prototype._disableDrop = function () {
 AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
   var that = this;
   var scripts = [];
-  if (typeof PrintRenderer === 'undefined') scripts.push("PrintRenderer.js");
-  if (typeof WasmRuntime === 'undefined') scripts.push("WasmRuntime.js");
-  if (typeof WasmVectors === 'undefined') scripts.push("WasmVectors.js");
 
   // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
   if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
-  if (typeof window['@hpcc-js/wasm'] == 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
+  if (typeof window['@hpcc-js/wasm'] === 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
 
   function instantiate_legacy() {
     let awdr = AndrewWIDE.awdr;
-    var cppwasm = new AwCppWasmRenderer(awdr);
     if (!that.serverless) new XhrRenderer("/cgi-bin/awcpp.cgi", awdr);
-    awdr.registerRenderer("awcppwasm", cppwasm);
     awdr.registerRenderer("diagram", new DiagramRenderer());
-    new PrintRenderer(awdr);
-      callback();
+    callback();
   }
 
   AndrewWIDE.loadScripts(scripts, () => {

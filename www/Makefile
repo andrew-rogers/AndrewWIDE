@@ -12,8 +12,6 @@ endif
 
 # AwDocViewer Must be first, it has the AsyncLoader.
 SRCS = AwDocViewer.js \
- AwCppWasmRenderer.js \
- DSPInterfaces.js \
  Diagram/Geometry.js \
  Diagram/Plot/Plot.js \
  Diagram/Shapes/SignalProcessing.js \
@@ -22,12 +20,7 @@ SRCS = AwDocViewer.js \
  FileSystem.js \
  JsonQuery.js \
  NavBar.js \
- PrintRenderer.js \
- WasmRuntime.js \
- WasmVectors.js \
  XML.js \
- file.js \
- fileselector.js \
  jsonarraybuffers.js \
  menu.js \
  svgarray.js
