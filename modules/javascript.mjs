@@ -118,7 +118,7 @@ function render(section) {
         func(funcs);
 
         generateResponses();
-        aw.postSections(ces.outputs);
+        aw.render(ces.outputs);
     };
 
     section.setFunc(wrapper);

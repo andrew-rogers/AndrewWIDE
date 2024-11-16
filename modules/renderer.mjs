@@ -157,6 +157,8 @@ class AwDoc {
   constructor(div, obj) {
     this.div = div;
     this.obj = obj || {};
+    this.cnt = 1;
+    this.sectionMap = {};
 
     // Textarea for displaying log.
     this.ta_log = document.createElement("textarea");
@@ -164,18 +166,47 @@ class AwDoc {
     this.ta_log.hidden = true;
     div.appendChild(this.ta_log);
   }
+
+  createDiv() {
+    let div = document.createElement("div");
+    this.div.appendChild(div);
+    return div;
+  }
+
+  createSection(obj) {
+
+    // Get id from supplied string or object. Otherwise create a default id.
+    let id = null;
+    if(typeof obj === 'string') {
+      id = obj;
+    }
+    else {
+      id = obj.id;
+      if (obj.hasOwnProperty("id") == false) {
+        // Create a default ID if one is not given
+        id = obj.type + "_" + this.cnt;
+      }
+      this.cnt++;
+    }
+
+    // If the id is not in map then create a new section.
+    if (this.sectionMap.hasOwnProperty(id) == false) {
+      this.sectionMap[id] = new AndrewWIDE.classes.Section(id);
+    }
+
+    // Assign object to section.
+    this.sectionMap[id].setObj(this, obj);
+
+    return this.sectionMap[id];
+  }
 }
 
 export function AwDocRenderer(docname) {
 
-    this.attributes = {};
     this.docs = [];
     this.renderers = {};
     var that = this;
-
-    this.cnt = 1;
-    this.suspend_cnt = 0;
-    this.runnable = new Runnable(this);
+    new Sequencer();
 
     // Export suspend and resume functions
     var that = this;
@@ -187,32 +218,14 @@ export function AwDocRenderer(docname) {
         that.render(obj[key]);
       }
     };
-    AndrewWIDE.suspend = function(reason){
-        let id = that.suspend_cnt;
-        let name = "suspend_" + id;
-        that.suspend_cnt++;
-        that.runnable._disable(name);
-        return id;
+    AndrewWIDE.render = function(sections) {
+      that.renderSections(sections);
     };
-    AndrewWIDE.resume = function(id){
-        let name = "suspend_" + id;
-        that.runnable._enable(name);
-    };
-    AndrewWIDE.postSections = function(sections){
-        that.postSections(sections);
-    };
-    AndrewWIDE.queueRun = function(section) {
-        that.runnable._run(section);
-    }
 }
 
 AwDocRenderer.prototype.log = function(msg) {
   this.ta_log.value += msg;
   this.ta_log.hidden = false;
-};
-
-AwDocRenderer.prototype.postSections = function( sections ) {
-    this.renderSections( sections );
 };
 
 AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
@@ -226,12 +239,12 @@ AwDocRenderer.prototype.render = function( awdoc ) {
 
     let doc = parseAwDoc( awdoc );
     for (var i=0; i<doc.length; i++) {
-        let section = AndrewWIDE.createSection(doc[i]);
+        let section = this.docs[0].createSection(doc[i]);
         section.obj.id = section.id;
         this._dispatch(section)
     }
 
-    AndrewWIDE.resume( id );
+  AndrewWIDE.resume( id );
 };
 
 AwDocRenderer.prototype.renderSections = function ( sections ) {
@@ -296,8 +309,31 @@ export function createHTML(textareas) {
     return html
 }
 
-function Runnable(awdr) {
-    this.awdr = awdr;
+class Sequencer {
+  constructor() {
+    this.runnable = new Runnable();
+    this.suspend_cnt = 0;
+
+    // Export suspend and resume functions
+    let that = this;
+    AndrewWIDE.suspend = function(reason){
+      let id = that.suspend_cnt;
+      let name = "suspend_" + id;
+      that.suspend_cnt++;
+      that.runnable._disable(name);
+      return id;
+    };
+    AndrewWIDE.resume = function(id){
+      let name = "suspend_" + id;
+      that.runnable._enable(name);
+    };
+    AndrewWIDE.queueRun = function(section) {
+      that.runnable._run(section);
+    }
+  }
+}
+
+function Runnable() {
     this.disables={}; // If any items in this object are true, running is disabled and queued for later.
 
     this.queue = new Queue(function(section) {

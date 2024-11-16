@@ -26,38 +26,10 @@
  */
 
 let aw = null;
-let cnt = 1;
-let sectionMap = {};
-
-export function createSection(obj) {
-
-  // Get id from supplied string or object. Otherwise create a default id.
-  let id = null;
-  if(typeof obj === 'string') {
-    id = obj;
-  }
-  else {
-    id = obj.id;
-    if (obj.hasOwnProperty("id") == false) {
-      // Create a default ID if one is not given
-      id = obj.type + "_" + cnt;
-    }
-    cnt++;
-  }
-
-  // If the id is not in map then create a new section.
-  if (sectionMap.hasOwnProperty(id) == false) {
-    sectionMap[id] = new Section(id);
-  }
-
-  // Assign object to section.
-  sectionMap[id].setObj(obj);
-
-  return sectionMap[id];
-}
 
 export function init(a) {
   aw = a;
+  aw.classes.Section = Section;
 }
 
 class Section {
@@ -95,8 +67,9 @@ class Section {
     this.#linkInputs();
   }
 
-  setObj(obj) {
+  setObj(doc, obj) {
     if (typeof obj === 'object') {
+      this.doc = doc;
       this.obj = obj;
       this.#createDiv();
     }
@@ -136,8 +109,7 @@ class Section {
   #createDiv() {
     // Create a div for the section.
     if (this.div == undefined) {
-      this.div = document.createElement("div");
-      aw.awdr.div.appendChild(this.div);
+      this.div = this.doc.createDiv();
     }
   }
 
@@ -145,7 +117,7 @@ class Section {
     if (this.obj.inputs) {
       let input_ids = this.obj.inputs;
       for (let i=0; i<input_ids.length; i++) {
-        let input = aw.createSection(input_ids[i]);
+        let input = this.doc.createSection(input_ids[i]);
         this.inputs.push(input);
         input.addDep(this);
       }

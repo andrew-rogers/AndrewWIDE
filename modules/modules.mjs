@@ -14,6 +14,8 @@ AndrewWIDE.addRenderer = function(type, func) {
   AndrewWIDE.awdr.renderers[type] = func;
 };
 
+AndrewWIDE.classes = AndrewWIDE.classes || {};
+
 import {AwDocRenderer} from "./renderer.mjs"
 AndrewWIDE.awdr = new AwDocRenderer( AndrewWIDE.docname );
 
@@ -26,5 +28,3 @@ python.init(AndrewWIDE);
 section.init(AndrewWIDE);
 storage.init(AndrewWIDE);
 wasmdsp.init(AndrewWIDE);
-
-AndrewWIDE.createSection = section.createSection;
