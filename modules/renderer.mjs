@@ -27,17 +27,31 @@
 
 let aw = null;
 
+let docs = [];
+
 export function init(a) {
   aw = a;
-  let awdr = new AwDocRenderer();
+  let renderer = new Renderer();
   let seq = new Sequencer();
 
   aw.addRenderer = function(type, func) {
-    awdr.renderers[type] = func;
+    renderer.renderers[type] = func;
+  };
+
+  aw.createDoc = function(div, obj) {
+    renderer.div = div;
+    let doc = new AwDoc(div, obj);
+    docs.push(doc);
+    doc.render();
+    return doc;
   };
 
   aw.queueRun = function(section) {
     seq.queueRun(section);
+  };
+
+  aw.render = function(sections) {
+    renderer.renderSections(sections);
   };
 
   aw.resume = function(id){
@@ -223,78 +237,62 @@ class AwDoc {
 
     return this.sectionMap[id];
   }
-}
 
-export function AwDocRenderer() {
-
-    this.docs = [];
-    this.renderers = {};
-    var that = this;
-
-    // Export suspend and resume functions
-    var that = this;
-    AndrewWIDE.createDoc = function(div, obj) {
-      that.div = div;
-      let doc = new AwDoc(div, obj);
-      that.docs.push(doc);
-      for (let key in obj) {
-        that.render(obj[key]);
-      }
-    };
-    AndrewWIDE.render = function(sections) {
-      that.renderSections(sections);
-    };
-}
-
-AwDocRenderer.prototype.log = function(msg) {
-  this.ta_log.value += msg;
-  this.ta_log.hidden = false;
-};
-
-AwDocRenderer.prototype.registerRenderer = function( name, renderer ) {
-    this.renderers[name]=renderer;
-};
-
-AwDocRenderer.prototype.render = function( awdoc ) {
+  render() {
     // Disable running all runnable sections until all sections dispatched. This is to allow asynchronous compilation of code to
     // complete before potential dependencies are run.
-    let id = AndrewWIDE.suspend( "awdocrenderer" );
+    let id = aw.suspend( "AwDoc render" );
 
-    let doc = parseAwDoc( awdoc );
-    for (var i=0; i<doc.length; i++) {
-        let section = this.docs[0].createSection(doc[i]);
+    let sections = [];
+    for (let key in this.obj) {
+      let awdoc = this.obj[key];
+      let doc = parseAwDoc( awdoc );
+      for (var i=0; i<doc.length; i++) {
+        let section = this.createSection(doc[i]);
         section.obj.id = section.id;
-        this._dispatch(section)
+        sections.push(section);
+      }
     }
+    aw.render(sections);
+    AndrewWIDE.resume( id );
+  };
+}
 
-  AndrewWIDE.resume( id );
-};
+class Renderer {
+  constructor() {
+    this.renderers = {};
+  }
 
-AwDocRenderer.prototype.renderSections = function ( sections ) {
+  registerRenderer(name, renderer) {
+    this.renderers[name]=renderer;
+  }
+
+  renderSections(sections) {
     if (sections.constructor.name == "Array") {
-        for (var i=0; i<sections.length; i++) {
-            this._dispatch(sections[i]);
-        }
+      for (var i=0; i<sections.length; i++) {
+        this.#dispatch(sections[i]);
+      }
     }
     else {
-        this._dispatch(sections);
+      this.#dispatch(sections);
     }
-};
+  }
 
-AwDocRenderer.prototype._dispatch = function(section) {
-    var renderer_name = section.obj.type;
+  #dispatch(section) {
+    const renderer_name = section.obj.type;
     if (this.renderers.hasOwnProperty(renderer_name)) {
-        var renderer = this.renderers[renderer_name];
-        renderer(section);
+      const renderer = this.renderers[renderer_name];
+      renderer(section);
     }
     else {
-        var ta = document.createElement("textarea");
-        ta.value = "Error: No renderer for '" + renderer_name + "'\n";
-        ta.value += JSON.stringify(section.obj);
-        ta.style.width = "100%";
-        section.div.appendChild(ta);
+      const ta = document.createElement("textarea");
+      ta.value = "Error: No renderer for '" + renderer_name + "'\n";
+      ta.value += JSON.stringify(section.obj);
+      ta.style.width = "100%";
+      section.div.appendChild(ta);
     }
-};
+  }
+}
 
 export function createHTML(textareas) {
     let loader = `(function () {
