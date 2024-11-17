@@ -25,8 +25,8 @@
  *
  */
 
-import "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"
-import {marked} from "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js"
+import "mathjax"
+import {marked} from "marked"
 
 let aw = null;
 

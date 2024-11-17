@@ -25,7 +25,7 @@
  *
  */
 
-import * as plotly from "https://cdn.plot.ly/plotly-2.12.1.min.js"
+import * as plotly from "plotly"
 
 let aw = null;
 
