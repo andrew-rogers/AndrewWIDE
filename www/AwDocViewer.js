@@ -48,29 +48,16 @@ AndrewWIDE.loadScripts = function(urls, callback) {
   }
 };
 
-AndrewWIDE.saveDoc = function(path, callback) {
-  const tas = document.getElementsByClassName('awjson');
-  let obj = {};
-  for (let i=0; i<tas.length; i++) {
-    const ta = tas[i];
-    obj[ta.id] = ta.value;
+class AwDocViewer {
+  constructor() {
+    this.#disableDrop();
+    let that = this;
+    this.#loadScripts(() => {
+      that.#render();
+    });
   }
-  AndrewWIDE.storage.writeFile(path, JSON.stringify(obj), (err) => {
-    if (callback) callback(err);
-  });
-};
 
-function AwDocViewer( docname ) {
-    this.docname = docname;
-    this._disableDrop();
-    this.ta_awjson = document.getElementById("ta_awjson");
-    this.serverless = false;
-    if ((this.ta_awjson == null) && (docname != "serverless")) this._selectDoc();
-    else this._renderFromHTML();
-    AndrewWIDE.docname = this.docname;
-}
-
-AwDocViewer.prototype._disableDrop = function () {
+  #disableDrop() {
     // Prevent dropped files being openned in new browser tabs.
     window.addEventListener("dragover",function(e){
         e.preventDefault();
@@ -78,70 +65,48 @@ AwDocViewer.prototype._disableDrop = function () {
     window.addEventListener("drop",function(e){
         e.preventDefault();
     },false);
-};
+  }
 
-AwDocViewer.prototype._instantiateRenderers = function ( callback ) {
-  var that = this;
-  var scripts = [];
+  #loadScripts(callback) {
+    let scripts = [];
 
-  // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
-  if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
-  if (typeof window['@hpcc-js/wasm'] === 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
+    // Pyodide has to be loaded before require.js https://github.com/pyodide/pyodide/issues/4863
+    if (typeof loadPyodide === 'undefined') scripts.push("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
+    if (typeof window['@hpcc-js/wasm'] === 'undefined') scripts.push("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js");
 
-  AndrewWIDE.loadScripts(scripts, () => {
-    that._requireModules(callback);
-  });
-};
-
-AwDocViewer.prototype._renderFromHTML = function( fn ) {
-    this.serverless = true;
     let that = this;
-    this._instantiateRenderers( function() {
-        let obj = {};
-        const tas = document.getElementsByClassName('awjson');
-        if (tas.length == 0) {
-            that._renderFromStorage(fn);
-        }
-        for (let i=0; i<tas.length; i++) {
-            const ta = tas[i];
-            obj[ta.id] = ta.value;
-        }
-        that._renderObj(obj);
-    });
-};
-
-AwDocViewer.prototype._renderFromStorage = function( fn ) {
-  var fn = window.location.search;
-  let that = this;
-  if (fn.startsWith("?idbs=")) {
-    var fn = decodeURIComponent(fn.slice(6));
-    AndrewWIDE.storage.readFile(fn, (err,data) => {
-      let obj = JSON.parse(data);
-      that._renderObj(obj);
+    AndrewWIDE.loadScripts(scripts, () => {
+      that.#requireModules(callback);
     });
   }
-  else {
-    console.log("Unable to find AwJson data.");
+
+  #render() {
+    let fn = window.location.search;
+    if (fn.startsWith("?idbs=")) {
+      fn = decodeURIComponent(fn.slice(6));
+      AndrewWIDE.loadDoc(fn);
+    }
+    else {
+      let obj = {};
+      const tas = document.getElementsByClassName('awjson');
+      for (let i=0; i<tas.length; i++) {
+        const ta = tas[i];
+        obj[ta.id] = ta.value;
+      }
+      AndrewWIDE.createDoc(obj);
+    }
   }
-};
 
-AwDocViewer.prototype._renderObj = function(obj) {
-  let div=document.createElement("div");
-  document.body.appendChild(div);
-  AndrewWIDE.createDoc(div, obj);
-};
-
-AwDocViewer.prototype._requireModules = function( callback ) {
-    var urls = ["./modules"];
-    var script = document.createElement('script');
+  #requireModules(callback) {
+    let script = document.createElement('script');
     script.setAttribute('src', 'require.js');
     script.setAttribute('type', 'text/javascript');
-    var that = this;
+    let that = this;
     script.onload = function() {
-        require(urls, function() {
-            AndrewWIDE.modules = require("./modules");
-            if (callback) callback();
-        });
+      require(["./modules"], function() {
+        if (callback) callback();
+      });
     };
     document.head.appendChild(script);
-};
+  }
+}

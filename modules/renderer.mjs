@@ -38,12 +38,21 @@ export function init(a) {
     renderer.renderers[type] = func;
   };
 
-  aw.createDoc = function(div, obj) {
-    renderer.div = div;
+  aw.createDoc = function(obj) {
+    let div=document.createElement("div");
+    document.body.appendChild(div);
     let doc = new AwDoc(div, obj);
     docs.push(doc);
     doc.render();
     return doc;
+  };
+
+  aw.loadDoc = function(fn) {
+    let div=document.createElement("div");
+    document.body.appendChild(div);
+    let doc = new AwDoc(div, {});
+    docs.push(doc);
+    doc.load(fn);
   };
 
   aw.queueRun = function(section) {
@@ -203,6 +212,20 @@ class AwDoc {
     this.ta_log.style.width = "100%";
     this.ta_log.hidden = true;
     div.appendChild(this.ta_log);
+
+    // Filename for saving page.
+    this.ip_fn = document.createElement("input");
+    this.ip_fn.type = 'text';
+    this.bt_save = document.createElement("button");
+    this.bt_save.innerHTML = 'Save';
+    div.appendChild(this.ip_fn);
+    div.appendChild(this.bt_save);
+
+    // Save button click handler.
+    let that = this;
+    this.bt_save.onclick = () => {
+      that.save(that.ip_fn.value);
+    };
   }
 
   createDiv() {
@@ -238,6 +261,14 @@ class AwDoc {
     return this.sectionMap[id];
   }
 
+  load(fn) {
+    let that = this;
+    aw.storage.readFile(fn, (err,data) => {
+      that.obj = JSON.parse(data);
+      that.render();
+    });
+  }
+
   render() {
     // Disable running all runnable sections until all sections dispatched. This is to allow asynchronous compilation of code to
     // complete before potential dependencies are run.
@@ -246,9 +277,12 @@ class AwDoc {
     let sections = [];
     for (let key in this.obj) {
       let awdoc = this.obj[key];
-      let doc = parseAwDoc( awdoc );
-      for (var i=0; i<doc.length; i++) {
-        let section = this.createSection(doc[i]);
+      if (typeof awdoc === "string") {
+         awdoc = parseAwDoc( awdoc );
+         this.obj[key] = awdoc;
+      }
+      for (var i=0; i<awdoc.length; i++) {
+        let section = this.createSection(awdoc[i]);
         section.obj.id = section.id;
         sections.push(section);
       }
@@ -256,6 +290,12 @@ class AwDoc {
     aw.render(sections);
     AndrewWIDE.resume( id );
   };
+
+  save(path, callback) {
+    aw.storage.writeFile(path, JSON.stringify(this.obj), (err) => {
+      if (callback) callback(err);
+    });
+  }
 }
 
 class Renderer {
