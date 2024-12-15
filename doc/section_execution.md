@@ -4,7 +4,23 @@ Section Execution
 Initial Document Execution
 --------------------------
 
-In the initial document execution runnable sections are executed sequentially in the order they are presented in the document. During inital document execution sections can call the enqueque() method, however, no action is taken.
+In the initial document execution all sections that have their **initial** attribute set are executed sequentially in the order they are presented in the document. During inital document execution sections can call the enqueque() method, however, no action is taken.
+
+```mermaid
+sequenceDiagram
+    participant AwDoc as doc:AwDoc
+    participant Section as s0:Section
+    participant input as input:Section
+    AwDoc->>Section: execute()
+    loop inputs
+        Section->>input: getData()
+    end
+    Section->>Section: func()
+    loop parsers
+        Section->>AwDoc: enqueue(parsers[i])
+        Note left of AwDoc: AwDoc will ignore <br/> enqueue requests <br/> during initial execution
+    end
+```
 
 Event Triggered Execution
 -------------------------
@@ -13,17 +29,22 @@ Many sections in a document will be editable to facilitate user interaction. Edi
 
 ```mermaid
 sequenceDiagram
-    participant AwDoc
-    participant Section as s0:Section
-    participant Section1 as s1:Section
-    AwDoc->>Section: execute()
-    loop producers
-        Section->>Section1: getOutput()
+    actor User
+    participant inputA as inputA:Section
+    participant doc as doc:AwDoc
+    participant parser as parser:Section
+    participant inputB as inputB:Section
+    User->>inputA: submit data
+    inputA->>inputA: execute()
+    loop parsers
+        inputA->>doc: enqueue(parsers[i])
     end
-    Section->>Section: func()
-    loop consumers
-        Section->>AwDoc: enqueue(consumer[i])
+    doc->>parser: execute()
+    loop inputs
+        parser->>inputA: getData()
+        parser->>inputB: getData()
     end
+    parser->>parser: func()
 ```
 
 Section Types
@@ -43,19 +64,18 @@ The simplest of documents will have just *Basic* sections. These are executed se
 
 ### Input
 
-User input can be provided througt the use of *input* sections. Examples can be plain text, HTML forms, etc. These will typically have a 'Run' or 'Submit' button to signal to the document that the user has provided data. Further processing is often required on the data provided by the user. Input sections have a list of consumers that are queued for execution when data is submitted.
+User input can be provided througt the use of *input* sections. Examples can be plain text, HTML forms, etc. These will typically have a 'Run' or 'Submit' button to signal to the document that the user has provided data. Further processing is often required on the data provided by the user. Input sections have a list of parsers that are queued for execution when data is submitted.
 
 ### Parser
 
-Parses user supplied data from a list of input sections and has a list of consumers (or additional parsers) that are queued for execution after the data is parsed.
+Parses user supplied data from a list of input sections.
 
 
-| Section type  | Has user defined ID | Has producers | Has consumers | Has Wrapper |
-| ------------- | ------------------- | ------------- | ------------- | ------------|
-| Basic         | False               | False         | False         | True        |
-| Callable      | True                | False         | False         | True        |
-| Consumer      | False               | True          | False         | True        |
-| Input         | True                | False         | True          | False       |
-| Parser        | True                | True          | True          | True        |
+| Section type | Has user defined ID | Has inputs | Has parsers | Has Wrapper |
+| ------------ | ------------------- | ---------- | ----------- | ------------|
+| Basic        | False               | False      | False       | True        |
+| Callable     | True                | False      | False       | True        |
+| Parser       | False               | True       | False       | True        |
+| Input        | True                | False      | True        | False       |
 
-Use **callable** attribute, defaults as above, according to user defined ID.
+Use **initial** attribute, defaults as above, according to user defined ID.

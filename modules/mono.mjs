@@ -63,6 +63,7 @@ function render(section) {
 
   // Put the content into the textarea
   let ta = section.showSource(false);
+  section.setData(obj.content);
 
   // Drop handlers
   let that = this;
@@ -82,6 +83,7 @@ function render(section) {
   // Run handler
   butt_run.onclick = function(e) {
     obj.content = ta.value;
+    section.setData(obj.content);
     section.enqueue();
   };
 }

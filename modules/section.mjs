@@ -36,15 +36,15 @@ class Section {
   constructor(id) {
     this.id = id;
     this.deps = [];
-    this.inputs = [];
+    this.inputSections = [];
   }
 
   addDep(dep) {
     this.deps.push(dep);
   }
 
-  addInput(input) {
-    this.inputs.push(input);
+  addInputSection(input) {
+    this.inputSections.push(input);
   }
 
   enqueue() {
@@ -52,19 +52,26 @@ class Section {
     if (this.func) aw.queueRun(this);
   }
 
-  generateCallArgs = function () {
-    // Search the specified input sections and get their content.
-    var ret = {};
-    for (let i=0; i<this.inputs.length; i++) {
-        let key = this.inputs[i].id;
-        ret[key] = this.inputs[i].obj.content;
+  execute() {
+    this.inputs = {};
+    for (let i=0; i<this.inputSections.length; i++) {
+        let key = this.inputSections[i].id;
+        this.inputs[key] = this.inputSections[i].getData();
     }
-    return {"inputs": ret};
+    if (this.func) this.func(this);
+  }
+
+  getData() {
+    return this.data;
+  }
+
+  setData(data) {
+    this.data = data;
   }
 
   setFunc(f) {
     this.func = f;
-    this.#linkInputs();
+    this.#linkInputSections();
   }
 
   setObj(doc, obj) {
@@ -113,12 +120,12 @@ class Section {
     }
   }
 
-  #linkInputs() {
+  #linkInputSections() {
     if (this.obj.inputs) {
       let input_ids = this.obj.inputs;
       for (let i=0; i<input_ids.length; i++) {
         let input = this.doc.createSection(input_ids[i]);
-        this.inputs.push(input);
+        this.inputSections.push(input);
         input.addDep(this);
       }
     }

@@ -110,7 +110,7 @@ function render(section) {
 
     function wrapper(section){
         div_result.innerHTML="";
-        ces.inputs = section.generateCallArgs().inputs;
+        ces.inputs = section.inputs;
         ces.div = div_result;
         ces.generators = [];
         ces.outputs = [];

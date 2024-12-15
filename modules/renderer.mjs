@@ -375,7 +375,7 @@ class Sequencer {
     this.suspend_cnt = 0;
     this.disables={}; // If any items in this object are true, running is disabled and queued for later.
     this.queue = new Queue(function(section) {
-      section.func(section);
+      section.execute();
     });
   }
 
