@@ -1,0 +1,73 @@
+AW{"type":"javascript"}
+window.plot = AndrewWIDE.plot;
+window.unitCircle = AndrewWIDE.unitCircle;
+
+let id=AndrewWIDE.suspend('Loading MathJS.');
+require(["https://unpkg.com/mathjs@14.0.0/lib/browser/math.js"],(math) => {
+  window.math=math;
+  AndrewWIDE.resume(id);
+});
+
+AW{"type":"javascript"}
+
+function rr2q(r0, r1, k) {
+  k = k || 1;
+  return [k, -k * (r0 + r1), k * r0 * r1];
+}
+
+function ra2q(r, a, k) {
+  k = k || 1;
+  return [k, -2*k*r*Math.cos(a), k*r*r];
+}
+
+function nd2sos(n, d) {
+  let k = 1 / d[0];
+  return [k*n[0], k*n[1], k*n[2], k*d[1], k*d[2]]
+}
+
+window.filt=nd2sos(ra2q(1,0.9), ra2q(0.95,0.8));
+filt.push(...nd2sos(ra2q(1,1.35), ra2q(0.95,0.4)));
+
+AW{"type":"javascript"}
+
+function sosfreqz(sos, arr_w) {
+  let ha = [];
+  let hp = [];
+  for (let i=0; i<arr_w.length; i++) {
+    const w = arr_w[i];
+    const zr = Math.cos(w);
+    const zi = Math.sin(w);
+    const zzr = (zr*zr)-(zi*zi); // (a+jb) * (a+jb) = a^2 - b^2 + 2jab
+    const zzi = 2*zr*zi;
+    let haa = 1;
+    let hpa = 0;
+    for (let s=0; s<sos.length; s+=5) {
+      const b0 = sos[s];
+      const b1 = sos[s+1];
+      const b2 = sos[s+2];
+      const a1 = sos[s+3];
+      const a2 = sos[s+4];
+      const hnr = b0*zzr + b1*zr + b2;
+      const hni = b0*zzi + b1*zi;
+      const hdr = zzr + a1*zr + a2;
+      const hdi = zzi + a1*zi;
+      
+      haa *= Math.sqrt(hnr*hnr + hni*hni) / Math.sqrt(hdr*hdr + hdi*hdi);
+      hpa += Math.atan2(hni,hnr) - Math.atan2(hdi,hdr);
+    }
+    ha.push(haa);
+    hp.push(hpa);
+  }
+  return {ha, hp};
+}
+
+window.sosfreqz = sosfreqz;
+
+AW{"type":"javascript"}
+
+let w = [];
+const N=10000;
+for (let i=0; i<N; i++) w.push(2*Math.PI*i/N);
+
+h = sosfreqz(filt, w);
+plot(w, h.ha);
