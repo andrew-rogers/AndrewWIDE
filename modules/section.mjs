@@ -35,21 +35,23 @@ export function init(a) {
 class Section {
   constructor(id) {
     this.id = id;
-    this.deps = [];
+    this.observers = [];
     this.inputSections = [];
   }
 
   addDep(dep) {
-    this.deps.push(dep);
+    this.observers.push(dep);
   }
 
   addInputSection(input) {
     this.inputSections.push(input);
   }
 
-  enqueue() {
-    for (let i=0; i<this.deps.length; i++) aw.queueRun(this.deps[i]);
+  enqueue(enqueue_observers) {
     if (this.func) aw.queueRun(this);
+    if (enqueue_observers) {
+      for (let i=0; i<this.observers.length; i++) this.observers[i].enqueue(true);
+    }
   }
 
   execute() {

@@ -84,6 +84,6 @@ function render(section) {
   butt_run.onclick = function(e) {
     obj.content = ta.value;
     section.setData(obj.content);
-    section.enqueue();
+    section.enqueue(true);
   };
 }
