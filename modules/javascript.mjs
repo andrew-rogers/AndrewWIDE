@@ -150,7 +150,7 @@ PlotGenerator.prototype.addHeatmap = function(z, transpose) {
 };
 
 PlotGenerator.prototype.addTrace = function(x, y) {
-  return new PlotTrace(this.obj, x, y);
+  return new PlotTrace(this, x, y);
 };
 
 PlotGenerator.prototype.generate = function() {
@@ -160,6 +160,14 @@ PlotGenerator.prototype.generate = function() {
   ces.outputs.push(s);
   PlotGenerator.m_current = null;
 };
+
+PlotGenerator.prototype.shape = function(obj) {
+  this.obj.layout = this.obj.layout || {};
+  let layout = this.obj.layout;
+  layout.shapes = layout.shapes || [];
+  layout.shapes.push(obj);
+  return this;
+}
 
 PlotGenerator.prototype.unitCircle = function() {
   let circle = {};
@@ -180,11 +188,12 @@ PlotGenerator.prototype.unitCircle = function() {
 }
 
 
-let PlotTrace = function(obj, x, y) {
-  this.graph = obj;
+let PlotTrace = function(gen, x, y) {
+  this.gen = gen;
+  this.graph = gen.obj;
   this.trace = {};
-  obj.data = obj.data || [];
-  obj.data.push(this.trace);
+  this.graph.data = this.graph.data || [];
+  this.graph.data.push(this.trace);
 
   if (typeof y === 'undefined') {
     this.trace.y = x;
@@ -207,13 +216,11 @@ PlotTrace.prototype.name = function(n) {
 };
 
 PlotTrace.prototype.plot = function(x, y) {
-  obj.data = obj.data || [];
-  if (typeof y === 'undefined') {
-    obj.data.push({y: x});
-  } else {
-    obj.data.push({x: x, y: y});
-  }
-  return this;
+  return new PlotTrace(this.gen, x ,y);
+};
+
+PlotTrace.prototype.shape = function(obj) {
+  return this.gen.shape(obj);
 };
 
 let PrintGenerator = function() {
