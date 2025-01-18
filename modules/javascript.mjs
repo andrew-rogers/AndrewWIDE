@@ -71,8 +71,20 @@ funcs.heatmap = function(data, transpose) {
   return PlotGenerator.current().addHeatmap(data, transpose);
 };
 
+funcs.plot = function(x, y){
+  return PlotGenerator.current().addTrace(x, y);
+};
+
 funcs.print = function(str){
   return PrintGenerator.current().print(str);
+};
+
+funcs.xlabel = function(str){
+  return PlotGenerator.current().xlabel(str);
+};
+
+funcs.ylabel = function(str){
+  return PlotGenerator.current().ylabel(str);
 };
 
 let hdr_src = null; // This is prepended to user code to make library functions available.
@@ -187,6 +199,16 @@ PlotGenerator.prototype.unitCircle = function() {
   return this;
 }
 
+PlotGenerator.prototype.xlabel = function(str) {
+  this.obj.xlabel = str;
+  return this;
+};
+
+PlotGenerator.prototype.ylabel = function(str) {
+  this.obj.ylabel = str;
+  return this;
+};
+
 
 let PlotTrace = function(gen, x, y) {
   this.gen = gen;
@@ -221,6 +243,22 @@ PlotTrace.prototype.plot = function(x, y) {
 
 PlotTrace.prototype.shape = function(obj) {
   return this.gen.shape(obj);
+};
+
+PlotTrace.prototype.style = function(obj) {
+  for (let k in obj) {
+    if (k == 'mode') {
+      this.trace.mode = obj.mode;
+    }
+    else if (k == 'fill') {
+      this.trace.fill = obj.fill;
+    }
+    else {
+      this.trace.line = this.trace.line || {};
+      this.trace.line[k] = obj[k];
+    }
+  }
+  return this;
 };
 
 let PrintGenerator = function() {
