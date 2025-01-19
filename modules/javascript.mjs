@@ -204,8 +204,30 @@ PlotGenerator.prototype.xlabel = function(str) {
   return this;
 };
 
+PlotGenerator.prototype.xticks = function(vals, labels) {
+  this.obj.layout = this.obj.layout || {};
+  let layout = this.obj.layout;
+  layout.xaxis = layout.xaxis || {};
+  layout.xaxis.tickvals = vals;
+  layout.xaxis.ticktext = labels;
+  layout.xaxis.ticklen = 8;
+  layout.xaxis.tickwidth = 3;
+  return this;
+};
+
 PlotGenerator.prototype.ylabel = function(str) {
   this.obj.ylabel = str;
+  return this;
+};
+
+PlotGenerator.prototype.yticks = function(vals, labels) {
+  this.obj.layout = this.obj.layout || {};
+  let layout = this.obj.layout;
+  layout.yaxis = layout.yaxis || {};
+  layout.yaxis.tickvals = vals;
+  layout.yaxis.ticktext = labels;
+  layout.yaxis.ticklen = 8;
+  layout.yaxis.tickwidth = 3;
   return this;
 };
 
@@ -259,6 +281,14 @@ PlotTrace.prototype.style = function(obj) {
     }
   }
   return this;
+};
+
+PlotTrace.prototype.xticks = function(vals, labels) {
+  return this.gen.xticks(vals, labels);
+};
+
+PlotTrace.prototype.yticks = function(vals, labels) {
+  return this.gen.yticks(vals, labels);
 };
 
 let PrintGenerator = function() {
