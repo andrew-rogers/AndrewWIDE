@@ -35,13 +35,13 @@ function aw2cpp(fn_in, fn_out, prefix) {
     let hash = "const char* " + prefix + "_ids()\n{\n\treturn(\n\t\t\"{\"\n";
     for (let i=0; i < doc.length; i++) {
         if (doc[i].type == "wasmcpp") {
-            let id = doc[i].id || prefix + "_" + (i+1);
+            let id = doc[i].id || "" + (i+1);
             hash += "\t\t\"\\\"" + id + "\\\": " + createHash(doc[i].content) + ", \"\n";
             if (id == "globals") {
                 src += doc[i].content;
             } else {
                 src += "EMSCRIPTEN_KEEPALIVE\n";
-                src += "extern \"C\" void " + id + "()\n{\n";
+                src += "extern \"C\" void " + prefix + "_" + id + "()\n{\n";
                 src += doc[i].content;
                 src += "}\n\n";
             }

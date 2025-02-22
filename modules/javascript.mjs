@@ -48,6 +48,10 @@ funcs.addFunction = function(name, f) {
   hdr_src = ""
 };
 
+funcs.executeSection = function(id) {
+    ces.section.doc.executeSection(id);
+};
+
 funcs.getInput = function(name) {
     return ces.inputs[name];
 };
@@ -122,6 +126,7 @@ function render(section) {
 
     function wrapper(section){
         div_result.innerHTML="";
+        ces.section = section;
         ces.inputs = section.inputs;
         ces.div = div_result;
         ces.generators = [];

@@ -58,17 +58,20 @@ function callWasmFunc(func_name) {
 function cpp(section) {
     section.showSource(false);
 
-    const func_name = section.obj.id;
+    let func_name = section.id;
 
     if (func_name != 'globals') {
 
+        // Remove wasmcpp_ prefix if it exists.
+        if (func_name.substr(0,8) == "wasmcpp_") func_name = func_name.substr(8);
+
         function wrapper(s) {
-            let fn = prefix + func_name.substr(7);
+            let fn = prefix + "_" + func_name;
             callWasmFunc(fn);
         }
 
         section.setFunc(wrapper);
-        aw.queueRun(section);
+        section.enqueue();
     }
 }
 

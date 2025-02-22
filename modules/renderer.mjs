@@ -261,6 +261,10 @@ class AwDoc {
     return this.sectionMap[id];
   }
 
+  executeSection(id) {
+    this.sectionMap[id].execute();
+  }
+
   load(fn) {
     let that = this;
     aw.storage.readFile(fn, (err,data) => {
@@ -283,7 +287,6 @@ class AwDoc {
       }
       for (var i=0; i<awdoc.length; i++) {
         let section = this.createSection(awdoc[i]);
-        section.obj.id = section.id;
         sections.push(section);
       }
     }
