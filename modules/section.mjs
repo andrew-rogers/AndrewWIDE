@@ -50,9 +50,9 @@ class Section {
   enqueue(enqueue_observers) {
     if (!this.obj.id || (this.inputSections.length > 0)) {
       if (this.func) aw.queueRun(this);
-      if (enqueue_observers) {
-        for (let i=0; i<this.observers.length; i++) this.observers[i].enqueue(true);
-      }
+    }
+    if (enqueue_observers) {
+      for (let i=0; i<this.observers.length; i++) this.observers[i].enqueue(true);
     }
   }
 
