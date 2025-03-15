@@ -103,6 +103,12 @@ class AwDocViewer {
     script.setAttribute('type', 'text/javascript');
     let that = this;
     script.onload = function() {
+      require.config({
+        paths: {
+          mathjs:  'https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.0.1/math',
+          wasmdsp: './WasmDSP'
+        }
+      });
       require(["./modules"], function() {
         if (callback) callback();
       });
