@@ -32,14 +32,18 @@ export function init(a) {
   aw.addRenderer("mono", render);
 }
 
-function handleDroppedFile( obj, ta, filename ) {
-  var reader = new FileReader();
+function handleDroppedFile(obj, ta, file) {
+  let reader = new FileReader();
   reader.onload = function(event) {
-    obj.filename = filename;
+    obj.filename = file.name;
     obj.content = event.target.result;
     ta.value = obj.content;
   };
-  reader.readAsText(filename);
+  if (file.name.endsWith('.bin')) {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file);
+  }
 }
 
 function render(section) {
@@ -69,14 +73,14 @@ function render(section) {
   let that = this;
   butt_drop.ondrop = function(e) {
     e.preventDefault();
-    const filename = e.dataTransfer.files[0];
-    handleDroppedFile( obj, ta, filename );
+    const file = e.dataTransfer.files[0];
+    handleDroppedFile(obj, ta, file);
     return false;
   };
   ta.ondrop = function(e) {
     e.preventDefault();
-    const filename = e.dataTransfer.files[0];
-    handleDroppedFile( obj, ta, filename );
+    const file = e.dataTransfer.files[0];
+    handleDroppedFile(obj, ta, file);
     return false;
   };
 
