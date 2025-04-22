@@ -37,6 +37,7 @@ function handleDroppedFile(obj, ta, file) {
   reader.onload = function(event) {
     obj.filename = file.name;
     obj.content = event.target.result;
+    obj.buffer = event.target.result;
     ta.value = obj.content;
   };
   if (file.name.endsWith('.bin')) {
@@ -86,7 +87,11 @@ function render(section) {
 
   // Run handler
   butt_run.onclick = function(e) {
-    obj.content = ta.value;
+    if (obj.buffer) {
+      obj.content = obj.buffer;
+    } else {
+      obj.content = ta.value;
+    }
     section.setData(obj.content);
     section.enqueue(true);
   };
