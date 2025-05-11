@@ -5,11 +5,17 @@ Running Python code in AndrewWIDE
 
 Loading the Python packages and the imports are very slow, please be patient! Results are sent to the console and are not yet displayed in the page.
 
+AW{"type":"javascript"}
+let scope = { N: 2, fc: 0.15 };
+AndrewWIDE.startPython((py)=>{
+  py.globals.set('scope', scope);
+});
+
 AW{"type":"python"}
 from scipy.signal import butter, sosfreqz
 import numpy as np
 
-sos=butter(2,0.15,output='sos')
+sos=butter(scope.N, scope.fc, output='sos')
 w, h = sosfreqz(sos)
 w = w / np.pi
 mag = np.abs(h)
