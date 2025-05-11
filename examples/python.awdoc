@@ -6,9 +6,12 @@ Running Python code in AndrewWIDE
 Loading the Python packages and the imports are very slow, please be patient! Results are sent to the console and are not yet displayed in the page.
 
 AW{"type":"javascript"}
-let scope = { N: 2, fc: 0.15 };
+window.globals = {};
+
+AW{"type":"javascript"}
+globals.lpf = { N: 2, fc: 0.15 };
 AndrewWIDE.startPython((py)=>{
-  py.globals.set('scope', scope);
+  py.globals.set('scope', globals.lpf);
 });
 
 AW{"type":"python"}
@@ -17,8 +20,8 @@ import numpy as np
 
 sos=butter(scope.N, scope.fc, output='sos')
 w, h = sosfreqz(sos)
-w = w / np.pi
-mag = np.abs(h)
+scope.w = w / np.pi
+scope.mag = np.abs(h)
 
 
 AW{"type":"python"}
@@ -29,6 +32,6 @@ AW{"type":"mjmd"}
 Variables defined in Python can be accessed from javascript.
 
 AW{"type":"javascript"}
-let mag = AndrewWIDE.pyodide.globals.get('mag').toJs();
-let w = AndrewWIDE.pyodide.globals.get('w').toJs();
+let mag = globals.lpf.mag.toJs();
+let w = globals.lpf.w.toJs();
 AndrewWIDE.plot(w, mag);
