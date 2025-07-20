@@ -41,7 +41,7 @@ export function init(a) {
   aw.createDoc = function(obj) {
     let div=document.createElement("div");
     document.body.appendChild(div);
-    let doc = new AwDoc(div, obj);
+    let doc = new AwDoc(div, renderer, obj);
     docs.push(doc);
     doc.render();
     return doc;
@@ -50,7 +50,7 @@ export function init(a) {
   aw.loadDoc = function(fn) {
     let div=document.createElement("div");
     document.body.appendChild(div);
-    let doc = new AwDoc(div, {});
+    let doc = new AwDoc(div, renderer, {});
     docs.push(doc);
     doc.load(fn);
   };
@@ -201,36 +201,20 @@ Queue.prototype._schedule = function () {
 };
 
 class AwDoc {
-  constructor(div, obj) {
+  constructor(div, renderer, obj) {
     this.div = div;
+    this.renderer = renderer;
     this.obj = obj || {};
     this.cnt = 1;
     this.sectionMap = {};
 
-    // Textarea for displaying log.
-    this.ta_log = document.createElement("textarea");
-    this.ta_log.style.width = "100%";
-    this.ta_log.hidden = true;
-    div.appendChild(this.ta_log);
-
-    // Filename for saving page.
-    this.ip_fn = document.createElement("input");
-    this.ip_fn.type = 'text';
-    this.bt_save = document.createElement("button");
-    this.bt_save.innerHTML = 'Save';
-    div.appendChild(this.ip_fn);
-    div.appendChild(this.bt_save);
-
-    // Save button click handler.
-    let that = this;
-    this.bt_save.onclick = () => {
-      that.save(that.ip_fn.value);
-    };
+    // Layout
+    this.#layout()
   }
 
   createDiv() {
     let div = document.createElement("div");
-    this.div.appendChild(div);
+    this.div_sections.appendChild(div);
     return div;
   }
 
@@ -298,6 +282,45 @@ class AwDoc {
     aw.storage.writeFile(path, JSON.stringify(this.obj), (err) => {
       if (callback) callback(err);
     });
+  }
+
+  #layout() {
+    // Header
+    this.div_header = document.createElement('div');
+    this.div.appendChild(this.div_header);
+
+    // Textarea for displaying log.
+    this.ta_log = document.createElement("textarea");
+    this.ta_log.style.width = "100%";
+    this.ta_log.hidden = true;
+    this.div_header.appendChild(this.ta_log);
+
+    // Filename for saving page.
+    this.ip_fn = document.createElement("input");
+    this.ip_fn.type = 'text';
+    this.bt_save = document.createElement("button");
+    this.bt_save.innerHTML = 'Save';
+    this.div_header.appendChild(this.ip_fn);
+    this.div_header.appendChild(this.bt_save);
+
+    // Save button click handler.
+    let that = this;
+    this.bt_save.onclick = () => {
+      that.save(that.ip_fn.value);
+    };
+
+    // Sections
+    this.div_sections = document.createElement('div');
+    this.div.appendChild(this.div_sections);
+
+    // Footer - add section button.
+    this.div_footer = document.createElement('div');
+    this.div.appendChild(this.div_footer);
+    for (let key in this.renderer.renderers) {
+      let bt = document.createElement("button");
+      bt.innerHTML = '+' + key;
+      this.div_footer.appendChild(bt);
+    }
   }
 }
 
