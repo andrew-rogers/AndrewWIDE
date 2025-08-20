@@ -1,0 +1,28 @@
+AW{"type":"mjmd"}
+
+Jacobi Elliptic Functions
+=========================
+
+$$ F(\varphi,m) = \int_0^\varphi \frac{1}{\sqrt{1-m\sin^2\theta}}\mathrm{d}\theta $$
+
+AW{"type":"javascript"}
+function f(theta,m){
+  const s = Math.sin(theta);
+  return 1/Math.sqrt(1-m*s*s);
+}
+
+function integrate(func, ll, ul, N) {
+  let ss = (ul-ll)/N;
+  let f0 = func(ll);
+  let area = 0;
+  for (let n=1; n<=N; n++) {
+    let f1 = func(n*ss);
+    area += (f0+f1)*ss;
+    f0 = f1;
+  }
+  return area/2;
+}
+
+let m = 0.44;
+let K=integrate((x)=>f(x,m),0,Math.PI/2,100);
+console.log({K});
