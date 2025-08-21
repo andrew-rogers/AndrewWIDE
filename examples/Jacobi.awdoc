@@ -116,3 +116,32 @@ for (let n=0; n<1000; n++) {
 plot(x,y);
 xlabel("u");
 ylabel(`sn(u,${m})`);
+
+AW{"type":"javascript"}
+JEF.agm = function(u,m) {
+  let arr_a = [];
+  let arr_c = [];
+  let a = 1.0;
+  let b = Math.sqrt(1.0 - m);
+  let c = Math.sqrt(m);
+  for (let n=0; n<20; n++) {
+    arr_a.push(a);
+    arr_c.push(c);
+    if (Math.abs(c/a) < Number.EPSILON) break;
+    
+    let ta = a;
+    let tb = b;
+    a = (ta + tb) / 2.0;
+    b = Math.sqrt(ta * tb);
+    c = (ta - tb) /2.0;
+  }
+
+  let len = arr_a.length;
+  let phi = (2.0**(len-1)) * arr_a[len-1] * u;
+  for (let n=len-1; n>0; n--) {
+	  let x = arr_c[n] * Math.sin(phi) / arr_a[n];
+	  phi = (Math.asin(x) + phi)/2.0;
+	}
+
+  return phi;
+}
