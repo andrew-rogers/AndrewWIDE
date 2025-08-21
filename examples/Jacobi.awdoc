@@ -3,14 +3,18 @@ AW{"type":"mjmd"}
 Jacobi Elliptic Functions
 =========================
 
+[Jacobian Elliptic Function Tables](https://www.dbraulibrary.org.in/RareBooks/Jacobian%20elliptic%20function%20tables.pdf)
+
 $$ F(\varphi,m) = \int_0^\varphi \frac{1}{\sqrt{1-m\sin^2\theta}}\mathrm{d}\theta $$
 
-AW{"type":"javascript"}
-function f(theta,m){
-  const s = Math.sin(theta);
-  return 1/Math.sqrt(1-m*s*s);
-}
+Complete Elliptic Integral
+--------------------------
 
+$$ K(m) = F\left(\frac{\pi}{2},m\right) $$
+
+From tables pg 42 $ K(0.4) = 1.77752 $
+
+AW{"type":"javascript"}
 function integrate(func, ll, ul, N) {
   let ss = (ul-ll)/N;
   let f0 = func(ll);
@@ -23,6 +27,92 @@ function integrate(func, ll, ul, N) {
   return area/2;
 }
 
-let m = 0.44;
-let K=integrate((x)=>f(x,m),0,Math.PI/2,100);
-console.log({K});
+function F(phi,m) {
+  function r(theta,m){
+    const s = Math.sin(theta);
+    return 1/Math.sqrt(1-m*s*s);
+  }
+
+  return integrate((theta)=>r(theta,m),0,phi,100);
+}
+
+function K(m) {
+  const phi = Math.PI / 2;
+  return F(phi,m);
+}
+
+window.JEF = {F, K}; // Exported functions
+
+console.log("K(0.4) = ", JEF.K(0.4));
+
+AW{"type":"mjmd"}
+
+Jacobi Amplitude
+----------------
+
+$$ \mathrm{am}(u ,m) = \varphi $$
+
+AW{"type":"javascript"}
+
+function find(func, ll, ul, y) {
+  let x = ll;
+  for (let n=0; n<100; n++) {
+    x = (ll + ul) / 2;
+    let val = func(x);
+    if (val>y) ul = x;
+    else ll = x;
+  }
+  return x;
+}
+
+JEF.am = function(u, m) {
+  return find((phi) => JEF.F(phi,m), 0, Math.PI/2, u);
+}
+
+AW{"type":"mjmd"}
+
+Jacobi sn(u,m)
+--------------
+
+From tables pg 42 $\mathrm{sn}(0.15, 0.4) = 0.14922 $.
+
+AW{"type":"javascript"}
+JEF.sn = function(u, m) {
+  return Math.sin(JEF.am(u,m));
+}
+
+JEF.arcsn = function(x, m) {
+  return JEF.F(Math.asin(x), m);
+}
+
+console.log("sn(0.15, 0.4) =", JEF.sn(0.15, 0.4));
+console.log("arcsn(0.14922, 0.4) =", JEF.arcsn(0.14922, 0.4));
+
+AW{"type":"javascript"}
+const m=0.4;
+const K = JEF.K(m);
+
+let sn_lut=[];
+for (let n=0; n<200; n++) {
+  let u = n*K/200;
+  sn_lut.push(JEF.sn(u,m));
+}
+sn_lut.push(1);
+
+let x = [];
+let y = [];
+for (let n=0; n<1000; n++) {
+  let index = n % 400;
+  if (index>200) index = 400 - index;
+  x.push(n*K/200);
+
+  if (Math.floor(n/400)%2) {
+    y.push(-sn_lut[index]);
+  } else {
+    y.push(sn_lut[index]);
+  }
+}
+
+plot(x,y);
+xlabel("u");
+ylabel(`sn(u,${m})`);
