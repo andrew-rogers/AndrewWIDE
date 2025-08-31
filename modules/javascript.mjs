@@ -317,8 +317,11 @@ PrintGenerator.prototype.print = function(str) {
 };
 
 PrintGenerator.prototype.generate = function() {
-    let s = {"div": ces.div};
-    s.obj = {"type": "print", "str": this.str};
-    ces.outputs.push(s);
+    let ta = document.createElement('textarea');
+    ta.value = this.str;
+    ta.style.width = '100%';
+    ta.readOnly = true;
+    ces.div.appendChild(ta);
+    ta.style.height = ta.scrollHeight + 3 + "px";
     PrintGenerator.m_current = null;
 };
