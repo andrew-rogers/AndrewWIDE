@@ -38,7 +38,8 @@ function handleDroppedFile(obj, ta, file) {
     obj.filename = file.name;
     obj.content = event.target.result;
     obj.buffer = event.target.result;
-    ta.value = obj.content;
+    if (obj.buffer.length <= 65536) ta.value = obj.content;
+    else ta.value = 'File too large to display.';
   };
   if (file.name.endsWith('.bin')) {
     reader.readAsArrayBuffer(file);
