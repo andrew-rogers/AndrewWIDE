@@ -75,6 +75,10 @@ funcs.heatmap = function(data, transpose) {
   return PlotGenerator.current().addHeatmap(data, transpose);
 };
 
+funcs.outputHTML = function(html) {
+  ces.div.innerHTML = html;
+};
+
 funcs.plot = function(x, y){
   return PlotGenerator.current().addTrace(x, y);
 };
