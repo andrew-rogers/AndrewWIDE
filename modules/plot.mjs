@@ -40,5 +40,10 @@ function render( section ) {
   if (obj["xlabel"]) layout["xaxis"] = {"title": obj.xlabel};
   if (obj["ylabel"]) layout["yaxis"] = {"title": obj.ylabel};
   plotly.newPlot(section.div, obj.data, layout);
+  if (obj.zoom) {
+    section.div.on('plotly_relayout', function(e) {
+      obj.zoom(e);
+    });
+  }
 };
 

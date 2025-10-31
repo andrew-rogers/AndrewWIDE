@@ -182,6 +182,19 @@ PlotGenerator.prototype.generate = function() {
   PlotGenerator.m_current = null;
 };
 
+PlotGenerator.prototype.on = function(event, func) {
+  if (event=="zoom") {
+    this.obj.zoom = function(e) {
+      let args = [];
+      if (e['xaxis.range[0]']) args.push(e['xaxis.range[0]']);
+      if (e['yaxis.range[0]']) args.push(e['yaxis.range[0]']);
+      if (e['xaxis.range[1]']) args.push(e['xaxis.range[1]']);
+      if (e['yaxis.range[1]']) args.push(e['yaxis.range[1]']);
+      if (args.length == 4) func(...args);
+    };
+  }
+};
+
 PlotGenerator.prototype.shape = function(obj) {
   this.obj.layout = this.obj.layout || {};
   let layout = this.obj.layout;
@@ -265,6 +278,11 @@ PlotTrace.prototype.marker = function(sym) {
 
 PlotTrace.prototype.name = function(n) {
   this.trace.name = n;
+  return this;
+};
+
+PlotTrace.prototype.on = function(event, func) {
+  this.gen.on(event, func);
   return this;
 };
 
