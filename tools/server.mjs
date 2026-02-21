@@ -25,44 +25,90 @@
  *
  */
 
+import { readFile } from 'fs';
 import * as http from 'http';
+import * as path from 'path'
 import { WebSocketServer } from 'ws';
 
-const index = `<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
-  </head>
-  <body>
-    <script>
-let ws = new WebSocket("ws://127.0.0.1:8081");
-ws.addEventListener('message', (m) => {
-  console.log('message', m);
-});
-    </script>
-  </body>
-</html>`;
+function url2path(url) {
+  const parts = url.split('/');
+  let filepath = '';
+  for (let p in parts) {
+    const part = parts[p];
+    if (part=='.') continue;
+    if (part=='..') return '';
+    if (path.dirname(part) != '.') return '';
+    filepath = path.join(filepath, part);
+  }
+  return filepath;
+}
 
-const hs = http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end(index);
-});
+function mimeType(filepath) {
+  const ext = path.extname(filepath);
+  if (ext == '.html') return 'text/html';
+  if (ext == '.js') return 'text/javascript';
+  return 'application/octet-stream';
+}
 
-hs.listen(8081, 'localhost', () => {
-  console.log('Server is running on', server.address());
-});
+function createServer(conf) {
 
-const server = new WebSocketServer({server: hs});
+  const hs = http.createServer(function (req, res) {
+    let url = req.url.trim().split('?')[0].split('#')[0]; // Remove query or anchor parts.
+    if (url.endsWith('/')) url += 'index.html';
+    const filepath = path.join(conf.root_dir, url2path(url));
+    console.error('url:', url);
+    console.error('path:', filepath);
 
-server.on('connection', (socket) => {
-    console.log('connection', socket);
-
-    socket.on('message', (m) => {
-        console.log('message: ' + m);
-        socket.send('' + m);
+    readFile(filepath, 'utf8', (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        res.end();
+      } else {
+        res.writeHead(200, {'Content-Type': mimeType(filepath)});
+        res.end(data);
+      }
     });
+  });
 
-    socket.on('close', () => {
-        console.log('close');
-    });
-});
+  hs.listen(conf.port, conf.address, () => {
+    console.error('Server is running on', server.address());
+  });
+
+  const server = new WebSocketServer({server: hs});
+
+  server.on('connection', (socket) => {
+      console.log('connection', socket);
+
+      socket.on('message', (m) => {
+          console.log('message: ' + m);
+          socket.send('' + m);
+      });
+
+      socket.on('close', () => {
+          console.log('close');
+      });
+  });
+}
+
+function startup() {
+  const fn_conf = 'AndrewWIDE.conf';
+  readFile(fn_conf, 'utf8', (err, data) => {
+    let conf = null;
+    if (err) console.error('Could not read configuration file:', fn_conf);
+    else {
+      try {
+        conf = JSON.parse(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    conf = conf || {};
+    conf.port = conf.port || 8081;
+    conf.address = conf.address || 'localhost';
+    conf.root_dir = conf.root_dir || '.';
+    conf.awdoc_dir = conf.awdoc_dir || '.';
+    const server = createServer(conf);
+  });
+}
+
+startup();
