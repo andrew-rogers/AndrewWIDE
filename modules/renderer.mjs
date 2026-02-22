@@ -250,8 +250,15 @@ class AwDoc {
   }
 
   load(fn) {
+    let fs = aw.storage;
+    if (fn.startsWith("?idbs=")) {
+      fn = decodeURIComponent(fn.slice(6));
+    } else if (fn.startsWith("?wsfs=")) {
+      fn = decodeURIComponent(fn.slice(6));
+      fs = aw.wsfs;
+    }
     let that = this;
-    aw.storage.readFile(fn, (err,data) => {
+    fs.readFile(fn, (err,data) => {
       that.obj = JSON.parse(data);
       that.render();
     });

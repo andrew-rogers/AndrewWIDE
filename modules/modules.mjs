@@ -8,6 +8,7 @@ import * as renderer from "./renderer.mjs"
 import * as section from "./section.mjs"
 import * as storage from "./storage.mjs"
 import * as wasmdsp from "./wasmdsp.mjs"
+import * as wsfs from "./wsfs.mjs"
 
 window.AndrewWIDE = window.AndrewWIDE || {};
 AndrewWIDE.classes = AndrewWIDE.classes || {};
@@ -22,3 +23,4 @@ python.init(AndrewWIDE);
 section.init(AndrewWIDE);
 storage.init(AndrewWIDE);
 wasmdsp.init(AndrewWIDE);
+wsfs.init(AndrewWIDE);

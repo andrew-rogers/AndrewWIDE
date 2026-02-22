@@ -82,8 +82,7 @@ class AwDocViewer {
 
   #render() {
     let fn = window.location.search;
-    if (fn.startsWith("?idbs=")) {
-      fn = decodeURIComponent(fn.slice(6));
+    if (fn.startsWith("?")) {
       AndrewWIDE.loadDoc(fn);
     }
     else {
