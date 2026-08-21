@@ -1,35 +1,15 @@
 AW{"type":"javascript"}
 
-let dir = "external/WasmDSP/";
-let suspend_id = AndrewWIDE.suspend("Waiting for WasmDSP imports.");
-
-function gotWasm(e) {
-    requirejs([dir + "modules/signal.js"], function(signal) {
-        WasmDSP.modules = WasmDSP.modules || {};
-        WasmDSP.modules.signal = signal;
-        WasmDSP.initialise(WasmDSP.modules, function() {
-            gotSignal();
-        });
-    });
-}
-
-function gotSignal() {
-    AndrewWIDE.resume(suspend_id);
-}
-
-requirejs([dir + "WasmDSP.js"], function(wasmdsp) {
-    window.WasmDSP = wasmdsp;
-    gotWasm();
-});
+AndrewWIDE.loadWasmDSPModules(['signal'])
 
 AW{"type":"javascript"}
 
-let bq = new WasmDSP.modules.signal.Biquad(1,0,1,-1.9,0.97);
+let bq = new AndrewWIDE.WasmDSP.modules.signal.Biquad(1,0,1,-1.9,0.97);
 let x=[1];
 for (let i=0; i<400; i++) x.push(0);
 let resp = bq.process(x);
 plot(resp);
-let bq1 = new WasmDSP.modules.signal.Biquad(1,0,1,-1.8,0.97);
+let bq1 = new AndrewWIDE.WasmDSP.modules.signal.Biquad(1,0,1,-1.8,0.97);
 let resp1 = bq1.process(x);
 plot(resp1);
 

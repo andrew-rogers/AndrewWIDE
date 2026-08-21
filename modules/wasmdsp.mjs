@@ -86,7 +86,6 @@ function loadWasmDSP(callback) {
     const id = aw.suspend("Loading WasmDSP.");
     requirejs(["WasmDSP"], function(w){
       wasmdsp = w;
-      wasmdsp.modules = {};  // WasmDSP library modules.
       aw.WasmDSP = w;
       if (callback) callback();
       aw.resume(id);
@@ -98,21 +97,13 @@ function loadWasmDSP(callback) {
 }
 
 function loadWasmDSPModules(mods, callback) {
-  loadWasmDSP(function(){
+  loadWasmDSP(function() {
     let cnt = 0;
     const id = aw.suspend("Loading WasmDSP modules.");
-    for (let i in mods) {
-      require([mods[i]], function(m){
-        wasmdsp.modules[mods[i]] = m;
-        cnt++;
-        if (cnt == mods.length) {
-          wasmdsp.initialise(wasmdsp.modules, function() {
-            if (callback) callback();
-            aw.resume(id);
-          });
-        }
-      });
-    }
+    wasmdsp.loadModules(mods, function () {
+      if (callback) callback();
+      aw.resume(id);
+    });
   });
 }
 
