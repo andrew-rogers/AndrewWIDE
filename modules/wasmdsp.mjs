@@ -28,6 +28,7 @@
 let aw = {};
 let initialised = false;
 let module = null; // WasmDSP module for AwDoc functions.
+let module_name = "";
 let prefix = "";
 let wasmdsp = null;
 
@@ -41,18 +42,9 @@ export function init(a) {
 }
 
 function callWasmFunc(func_name) {
-    if (!initialised) {
-        const id = aw.suspend("Initialising wasm.");
-        initialised = true;
-        wasmdsp.initialise([module], function() {
-            aw.wasm_mod = module.wasm;
-            module.wasm.exports[func_name]();
-            aw.resume(id);
-        });
-    }
-    else {
-        module.wasm.exports[func_name]();
-    }
+  initialiseWasm(function() {
+    module.wasm.exports[func_name]();
+  });
 }
 
 function cpp(section) {
@@ -76,9 +68,27 @@ function cpp(section) {
 }
 
 function getArray(name) {
+  initialiseWasm(function() {
     let arrs = module.arrays;
     arrs[name] = arrs[name] || [];
     return arrs[name];
+  });
+}
+
+function initialiseWasm(callback) {
+  if (!initialised) {
+    const id = aw.suspend("Initialising wasm.");
+    initialised = true;
+    wasmdsp.loadModules([module_name], function() {
+      module = wasmdsp.modules[module_name];
+      aw.wasm_mod = module.wasm;
+      if (callback) callback();
+      aw.resume(id);
+    });
+  }
+  else {
+    if (callback) callback();
+  }
 }
 
 function loadWasmDSP(callback) {
@@ -108,14 +118,8 @@ function loadWasmDSPModules(mods, callback) {
 }
 
 function renderModule(section) {
-    const id = aw.suspend("Loading WasmDSP module.");
-    loadWasmDSP(function() {
-        const module_name = section.obj.module;
-        prefix = section.obj.prefix;
-        requirejs([module_name], function(m){
-            module = m;
-            module.arrays = module.arrays || {};
-            aw.resume(id);
-        });
-    });
+  loadWasmDSP(function() {
+    module_name = section.obj.module;
+    prefix = section.obj.prefix;
+  });
 }
