@@ -68,11 +68,7 @@ function cpp(section) {
 }
 
 function getArray(name) {
-  initialiseWasm(function() {
-    let arrs = module.arrays;
-    arrs[name] = arrs[name] || [];
-    return arrs[name];
-  });
+  return module.wasm.default_scope.getArray(name);
 }
 
 function initialiseWasm(callback) {
@@ -121,5 +117,6 @@ function renderModule(section) {
   loadWasmDSP(function() {
     module_name = section.obj.module;
     prefix = section.obj.prefix;
+    initialiseWasm();
   });
 }
